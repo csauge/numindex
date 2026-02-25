@@ -1,10 +1,11 @@
-#:schema https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json
+# Configuration Cloudflare (Mode Unified Assets) pour Salvia 🌿
+
 name = "salvia"
-compatibility_date = "2024-02-25"
+compatibility_date = "2025-02-25"
 
 [assets]
 directory = "./dist"
 
-[pages_build_config]
-build_command = "npm run build"
-destination_dir = "dist"
+# Désactive workers.dev pour rester sur un site purement statique
+# (Tu pourras configurer ton domaine personnalisé dans le dashboard)
+workers_dev = false
