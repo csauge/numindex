@@ -1,0 +1,41 @@
+---
+interface Props {
+  title: string;
+  lang: string;
+}
+const { title, lang } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang} data-theme="garden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | Salvia</title>
+  </head>
+  <body class="min-h-screen flex flex-col font-sans">
+    <header class="navbar bg-base-100 border-b border-base-200 px-4">
+      <div class="flex-1">
+        <a href={`/${lang}`} class="text-xl font-bold tracking-tight flex items-center gap-2">
+          <span class="text-2xl">🌿</span> Salvia
+        </a>
+      </div>
+      <div class="flex-none">
+        <nav class="menu menu-horizontal px-1">
+          <li><a href="/fr" class={lang === 'fr' ? 'active font-bold' : ''}>FR</a></li>
+          <li><a href="/en" class={lang === 'en' ? 'active font-bold' : ''}>EN</a></li>
+        </nav>
+      </div>
+    </header>
+    <main class="flex-grow container mx-auto p-6 max-w-5xl">
+      <slot />
+    </main>
+    <footer class="footer footer-center p-10 bg-base-200 text-base-content rounded mt-12">
+      <aside>
+        <p>© {new Date().getFullYear()} - Salvia - Annuaire Numérique Responsable</p>
+      </aside>
+    </footer>
+  </body>
+</html>

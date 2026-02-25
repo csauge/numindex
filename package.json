@@ -1,0 +1,26 @@
+{
+  "name": "salvia",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "add-ressource": "node scripts/add-ressource.mjs",
+    "postbuild": "pagefind --site dist"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^6.0.2",
+    "astro": "^5.4.1",
+    "daisyui": "^4.12.24",
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.24",
+    "pagefind": "^1.4.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17"
+  }
+}

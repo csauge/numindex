@@ -1,0 +1,154 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'fr' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const allRessources = await getCollection('ressources');
+
+const sortedRessources = allRessources.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const categories = [...new Set(allRessources.map(res => res.data.category))].sort();
+
+const t = {
+  fr: {
+    title: "Ressources Numériques Responsables",
+    desc: "Explorez toutes les initiatives engagées pour un numérique plus sobre et accessible.",
+    searchPlaceholder: "Rechercher une société, un article...",
+    filterCat: "Toutes les catégories",
+    filterLang: "Toutes les langues",
+    discover: "Découvrir"
+  },
+  en: {
+    title: "Sustainable Digital Resources",
+    desc: "Explore all initiatives committed to a more sober and accessible digital world.",
+    searchPlaceholder: "Search for a company, article...",
+    filterCat: "All categories",
+    filterLang: "All languages",
+    discover: "Discover"
+  }
+}[lang];
+---
+
+<Layout title={t.title} lang={lang}>
+  <section>
+    <header class="mb-8 text-center md:text-left">
+      <h1 class="text-4xl font-extrabold mb-4">{t.title}</h1>
+      <p class="text-lg opacity-80">{t.desc}</p>
+    </header>
+
+    <!-- Barre de Recherche et Filtres -->
+    <div class="sticky top-4 z-30 mb-10 p-4 bg-base-100/80 backdrop-blur-md border border-base-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4">
+      <div class="flex-grow relative">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder={t.searchPlaceholder} 
+          class="input input-bordered w-full pl-10 h-11"
+        />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+      </div>
+
+      <div class="flex gap-2">
+        <select id="filter-category" class="select select-bordered h-11">
+          <option value="all">{t.filterCat}</option>
+          {categories.map(cat => <option value={cat}>{cat}</option>)}
+        </select>
+
+        <select id="filter-language" class="select select-bordered h-11">
+          <option value="all">{t.filterLang}</option>
+          <option value="fr">FR</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-4 flex justify-between items-center px-2">
+      <span id="results-count" class="text-xs font-bold uppercase tracking-widest opacity-50">
+        {sortedRessources.length} ressources
+      </span>
+    </div>
+    
+    <div id="resources-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {sortedRessources.map((res) => (
+        <article 
+          class="resource-card card bg-base-100 border border-base-200 hover:border-primary hover:shadow-lg transition-all duration-300"
+          data-category={res.data.category}
+          data-language={res.data.language}
+          data-search-content={`${res.data.title} ${res.data.description}`.toLowerCase()}
+        >
+          <div class="card-body p-6">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex gap-2">
+                <span class="badge badge-outline badge-sm uppercase text-[10px] font-medium">{res.data.category}</span>
+                <span class="badge badge-ghost badge-sm uppercase text-[10px] font-bold opacity-60">{res.data.language}</span>
+              </div>
+            </div>
+            <h2 class="card-title text-xl font-bold leading-tight mb-2">{res.data.title}</h2>
+            <p class="text-sm opacity-70 line-clamp-3 mb-6 leading-relaxed">{res.data.description}</p>
+            <div class="card-actions justify-end mt-auto">
+              <a href={res.data.link} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm btn-ghost hover:bg-primary hover:text-primary-content">
+                {t.discover} →
+              </a>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <!-- Message aucun résultat -->
+    <div id="no-results" class="hidden py-20 text-center">
+      <p class="text-2xl opacity-20 font-bold italic">Aucune ressource trouvée...</p>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const cards = document.querySelectorAll('.resource-card');
+  const searchInput = document.getElementById('search-input');
+  const catFilter = document.getElementById('filter-category');
+  const langFilter = document.getElementById('filter-language');
+  const countDisplay = document.getElementById('results-count');
+  const noResults = document.getElementById('no-results');
+
+  function updateFilters() {
+    const query = searchInput.value.toLowerCase().trim();
+    const cat = catFilter.value;
+    const lang = langFilter.value;
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const content = card.dataset.searchContent;
+      const cardCat = card.dataset.category;
+      const cardLang = card.dataset.language;
+      
+      const matchSearch = content.includes(query);
+      const matchCat = cat === 'all' || cardCat === cat;
+      const matchLang = lang === 'all' || cardLang === lang;
+
+      if (matchSearch && matchCat && matchLang) {
+        card.style.display = 'flex';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    countDisplay.textContent = `${visibleCount} ressource${visibleCount > 1 ? 's' : ''}`;
+    
+    if (visibleCount === 0) {
+      noResults.classList.remove('hidden');
+    } else {
+      noResults.classList.add('hidden');
+    }
+  }
+
+  searchInput.addEventListener('input', updateFilters);
+  catFilter.addEventListener('change', updateFilters);
+  langFilter.addEventListener('change', updateFilters);
+</script>
