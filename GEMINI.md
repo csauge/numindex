@@ -4,14 +4,15 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 
 ## 1. Principes Fondamentaux
 - **Sobriété Numérique :** Limiter le poids des pages. Pas de bibliothèques JS lourdes.
-- **Accessibilité :** HTML sémantique strict et respect des contrastes (thème 'garden').
-- **Performance :** Polices système uniquement. Pas d'appels vers des CDN tiers (Google Fonts, etc.).
+- **Accessibilité (RGAA) :** HTML sémantique strict, liens d'évitement, aria-labels sur tous les contrôles, aria-live pour les mises à jour dynamiques.
+- **Performance :** Polices système uniquement. Pas d'appels vers des CDN tiers.
+- **Identité Visuelle :** Palette "Papier Chaud" (#fdfcfb), logo 🌱, typographie aérée et contrastes élevés.
 
 ## 2. Stack Technique
 - **Framework :** Astro (Static Mode).
-- **Style :** Tailwind CSS + DaisyUI (Thème unique : `garden`).
+- **Style :** Tailwind CSS + DaisyUI (Thème unique : `garden` personnalisé).
 - **Données :** Astro Content Collections.
-- **Recherche :** Pagefind (Indexation statique post-build).
+- **Recherche :** Filtrage dynamique Vanilla JS intégré directement dans la grille de ressources (pas de Pagefind UI).
 
 ## 3. Structure des Données (Strict)
 Toute ressource doit être un fichier `.md` dans `src/content/ressources/{fr|en}/` avec le frontmatter suivant :
@@ -29,4 +30,4 @@ Toute ressource doit être un fichier `.md` dans `src/content/ressources/{fr|en}
 ## 5. Dépendances
 - Ne jamais installer de bibliothèque sans vérifier son impact sur le poids final.
 - Tailwind v3 est imposé pour la compatibilité avec DaisyUI v4.
-- Utiliser Pagefind pour la recherche côté client sans base de données.
+- Prioriser les solutions natives (Vanilla JS) pour l'interactivité.

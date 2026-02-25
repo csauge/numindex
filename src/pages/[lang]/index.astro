@@ -17,50 +17,57 @@ const categories = [...new Set(allRessources.map(res => res.data.category))].sor
 
 const t = {
   fr: {
-    title: "Ressources Numériques Responsables",
-    desc: "Explorez toutes les initiatives engagées pour un numérique plus sobre et accessible.",
+    title: "L'annuaire du numérique responsable",
+    desc: "Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
     searchPlaceholder: "Rechercher une société, un article...",
     filterCat: "Toutes les catégories",
     filterLang: "Toutes les langues",
-    discover: "Découvrir"
+    discover: "Découvrir la ressource",
+    labelCat: "Filtrer par catégorie",
+    labelLang: "Filtrer par langue de l'article"
   },
   en: {
-    title: "Sustainable Digital Resources",
-    desc: "Explore all initiatives committed to a more sober and accessible digital world.",
+    title: "Sustainable Digital Directory",
+    desc: "Explore initiatives committed to a more sober, ethical, and accessible digital future.",
     searchPlaceholder: "Search for a company, article...",
     filterCat: "All categories",
     filterLang: "All languages",
-    discover: "Discover"
+    discover: "Discover resource",
+    labelCat: "Filter by category",
+    labelLang: "Filter by article language"
   }
 }[lang];
 ---
 
 <Layout title={t.title} lang={lang}>
   <section>
-    <header class="mb-8 text-center md:text-left">
-      <h1 class="text-4xl font-extrabold mb-4">{t.title}</h1>
-      <p class="text-lg opacity-80">{t.desc}</p>
+    <header class="mb-12 text-center md:text-left max-w-2xl">
+      <h1 class="text-4xl md:text-5xl font-black mb-6 text-stone-800 tracking-tight leading-tight">{t.title}</h1>
+      <p class="text-lg text-stone-600 leading-relaxed">{t.desc}</p>
     </header>
 
     <!-- Barre de Recherche et Filtres -->
-    <div class="sticky top-4 z-30 mb-10 p-4 bg-base-100/80 backdrop-blur-md border border-base-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4">
-      <div class="flex-grow relative">
+    <div class="sticky top-20 z-30 mb-12 p-2 bg-white/80 backdrop-blur-md border border-stone-200 rounded-3xl shadow-sm flex flex-col md:flex-row gap-3">
+      <div class="flex-grow relative group">
+        <label for="search-input" class="sr-only">{t.searchPlaceholder}</label>
         <input 
           type="text" 
           id="search-input" 
           placeholder={t.searchPlaceholder} 
-          class="input input-bordered w-full pl-10 h-11"
+          class="input input-ghost w-full pl-12 h-12 bg-stone-50/50 focus:bg-white transition-all rounded-2xl border-none focus:ring-2 focus:ring-primary/20"
         />
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-4 top-3.5 opacity-30 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
       </div>
 
-      <div class="flex gap-2">
-        <select id="filter-category" class="select select-bordered h-11">
+      <div class="flex gap-2 p-1">
+        <label for="filter-category" class="sr-only">{t.labelCat}</label>
+        <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-xl h-10 min-h-0 text-sm">
           <option value="all">{t.filterCat}</option>
           {categories.map(cat => <option value={cat}>{cat}</option>)}
         </select>
 
-        <select id="filter-language" class="select select-bordered h-11">
+        <label for="filter-language" class="sr-only">{t.labelLang}</label>
+        <select id="filter-language" class="select select-ghost bg-stone-50/50 rounded-xl h-10 min-h-0 text-sm">
           <option value="all">{t.filterLang}</option>
           <option value="fr">FR</option>
           <option value="en">EN</option>
@@ -68,42 +75,58 @@ const t = {
       </div>
     </div>
 
-    <div class="mb-4 flex justify-between items-center px-2">
-      <span id="results-count" class="text-xs font-bold uppercase tracking-widest opacity-50">
+    <div class="mb-6 flex justify-between items-center px-2">
+      <span 
+        id="results-count" 
+        class="text-xs font-bold uppercase tracking-widest text-stone-400"
+        aria-live="polite"
+      >
         {sortedRessources.length} ressources
       </span>
     </div>
     
-    <div id="resources-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div id="resources-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {sortedRessources.map((res) => (
         <article 
-          class="resource-card card bg-base-100 border border-base-200 hover:border-primary hover:shadow-lg transition-all duration-300"
+          class="resource-card group flex flex-col bg-white border border-stone-100 rounded-3xl p-6 hover:shadow-xl hover:shadow-stone-200/50 hover:border-primary/20 transition-all duration-500"
           data-category={res.data.category}
           data-language={res.data.language}
           data-search-content={`${res.data.title} ${res.data.description}`.toLowerCase()}
         >
-          <div class="card-body p-6">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex gap-2">
-                <span class="badge badge-outline badge-sm uppercase text-[10px] font-medium">{res.data.category}</span>
-                <span class="badge badge-ghost badge-sm uppercase text-[10px] font-bold opacity-60">{res.data.language}</span>
-              </div>
+          <div class="flex justify-between items-start mb-6">
+            <div class="flex gap-2">
+              <span class="badge badge-sm bg-stone-100 border-none text-stone-500 uppercase text-[10px] font-bold tracking-wider px-2 py-3">{res.data.category}</span>
+              <span class="badge badge-sm bg-primary/10 border-none text-primary uppercase text-[10px] font-bold tracking-wider px-2 py-3" aria-label={`Langue : ${res.data.language}`}>{res.data.language}</span>
             </div>
-            <h2 class="card-title text-xl font-bold leading-tight mb-2">{res.data.title}</h2>
-            <p class="text-sm opacity-70 line-clamp-3 mb-6 leading-relaxed">{res.data.description}</p>
-            <div class="card-actions justify-end mt-auto">
-              <a href={res.data.link} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm btn-ghost hover:bg-primary hover:text-primary-content">
-                {t.discover} →
-              </a>
-            </div>
+          </div>
+          
+          <h2 class="text-xl font-bold text-stone-800 leading-tight mb-3 group-hover:text-primary transition-colors">
+            {res.data.title}
+          </h2>
+          
+          <p class="text-sm text-stone-500 line-clamp-4 mb-8 leading-relaxed">
+            {res.data.description}
+          </p>
+          
+          <div class="mt-auto pt-4 border-t border-stone-50">
+            <a 
+              href={res.data.link} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="flex items-center gap-2 text-sm font-bold text-primary hover:gap-3 transition-all"
+              aria-label={`${t.discover} : ${res.data.title}`}
+            >
+              {t.discover}
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </a>
           </div>
         </article>
       ))}
     </div>
 
-    <!-- Message aucun résultat -->
-    <div id="no-results" class="hidden py-20 text-center">
-      <p class="text-2xl opacity-20 font-bold italic">Aucune ressource trouvée...</p>
+    <div id="no-results" class="hidden py-32 text-center">
+      <p class="text-4xl mb-4">🏜️</p>
+      <p class="text-xl text-stone-300 font-medium italic">Aucune ressource ne correspond à votre recherche.</p>
     </div>
   </section>
 </Layout>
@@ -117,25 +140,25 @@ const t = {
   const noResults = document.getElementById('no-results');
 
   function updateFilters() {
-    const query = searchInput.value.toLowerCase().trim();
-    const cat = catFilter.value;
-    const lang = langFilter.value;
+    const query = (searchInput as HTMLInputElement).value.toLowerCase().trim();
+    const cat = (catFilter as HTMLSelectElement).value;
+    const lang = (langFilter as HTMLSelectElement).value;
     let visibleCount = 0;
 
     cards.forEach(card => {
-      const content = card.dataset.searchContent;
-      const cardCat = card.dataset.category;
-      const cardLang = card.dataset.language;
+      const content = (card as HTMLElement).dataset.searchContent;
+      const cardCat = (card as HTMLElement).dataset.category;
+      const cardLang = (card as HTMLElement).dataset.language;
       
       const matchSearch = content.includes(query);
       const matchCat = cat === 'all' || cardCat === cat;
       const matchLang = lang === 'all' || cardLang === lang;
 
       if (matchSearch && matchCat && matchLang) {
-        card.style.display = 'flex';
+        (card as HTMLElement).style.display = 'flex';
         visibleCount++;
       } else {
-        card.style.display = 'none';
+        (card as HTMLElement).style.display = 'none';
       }
     });
 
