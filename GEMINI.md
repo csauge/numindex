@@ -12,7 +12,8 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 - **Framework :** Astro (Static Mode).
 - **Style :** Tailwind CSS + DaisyUI (Thème unique : `garden` personnalisé).
 - **Données :** Astro Content Collections.
-- **Recherche :** Filtrage dynamique Vanilla JS intégré directement dans la grille de ressources (pas de Pagefind UI).
+- **Recherche :** Filtrage dynamique Vanilla JS intégré directement dans la grille de ressources.
+- **Déploiement :** Cloudflare Pages via `wrangler.toml` (Configuration as Code).
 
 ## 3. Structure des Données (Strict)
 Toute ressource doit être un fichier `.md` dans `src/content/ressources/{fr|en}/` avec le frontmatter suivant :
