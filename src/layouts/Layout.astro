@@ -4,6 +4,11 @@ interface Props {
   lang: string;
 }
 const { title, lang } = Astro.props;
+
+const t = {
+  fr: { propose: "Proposer" },
+  en: { propose: "Propose" }
+}[lang];
 ---
 
 <!doctype html>
@@ -22,10 +27,14 @@ const { title, lang } = Astro.props;
           <span class="text-2xl">🌿</span> Salvia
         </a>
       </div>
-      <div class="flex-none">
-        <nav class="menu menu-horizontal px-1">
-          <li><a href="/fr" class={lang === 'fr' ? 'active font-bold' : ''}>FR</a></li>
-          <li><a href="/en" class={lang === 'en' ? 'active font-bold' : ''}>EN</a></li>
+      <div class="flex-none gap-2 flex items-center">
+        <a href="#" class="btn btn-outline btn-primary btn-sm font-bold min-h-0 h-9">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          <span class="hidden md:inline">{t.propose}</span>
+        </a>
+        <nav class="menu menu-horizontal px-1 gap-1">
+          <li><a href="/fr" class={`h-9 flex items-center px-3 rounded-lg ${lang === 'fr' ? 'bg-base-200 font-bold' : ''}`}>FR</a></li>
+          <li><a href="/en" class={`h-9 flex items-center px-3 rounded-lg ${lang === 'en' ? 'bg-base-200 font-bold' : ''}`}>EN</a></li>
         </nav>
       </div>
     </header>
