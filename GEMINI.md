@@ -20,7 +20,7 @@ Toute ressource doit être un fichier `.md` dans `src/content/ressources/{fr|en}
 - `title`: string
 - `description`: string
 - `link`: url
-- `category`: 'société' | 'association' | 'article' | 'podcast'
+- `category`: 'Entreprise' | 'Association' | 'Article' | 'Podcast' | 'Outil'
 - `language`: 'fr' | 'en'
 - `date`: YYYY-MM-DD
 

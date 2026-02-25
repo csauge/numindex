@@ -6,9 +6,9 @@ const ressources = defineCollection({
     title: z.string(),
     description: z.string(),
     link: z.string().url(),
-    category: z.enum(['société', 'association', 'article', 'podcast']),
+    category: z.enum(['Entreprise', 'Association', 'Article', 'Podcast', 'Outil']),
     language: z.enum(['fr', 'en']),
-    date: z.coerce.date(), // Utilise z.coerce.date() pour une meilleure flexibilité
+    date: z.coerce.date(),
   }),
 });
 
