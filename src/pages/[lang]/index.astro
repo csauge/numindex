@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import { CATEGORIES, getCategoryLabel } from '../../utils/categories';
 
 export async function getStaticPaths() {
   return [
@@ -13,7 +14,9 @@ const { lang } = Astro.params;
 const allRessources = await getCollection('ressources');
 
 const sortedRessources = allRessources.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-const categories = [...new Set(allRessources.map(res => res.data.category))].sort();
+
+// Extraction des clés de catégories uniques présentes
+const activeCategoryKeys = [...new Set(allRessources.map(res => res.data.category))].sort();
 
 const t = {
   fr: {
@@ -63,7 +66,9 @@ const t = {
         <label for="filter-category" class="sr-only">{t.labelCat}</label>
         <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-xl h-10 min-h-0 text-sm">
           <option value="all">{t.filterCat}</option>
-          {categories.map(cat => <option value={cat}>{cat}</option>)}
+          {activeCategoryKeys.map(key => (
+            <option value={key}>{getCategoryLabel(key, lang)}</option>
+          ))}
         </select>
 
         <label for="filter-language" class="sr-only">{t.labelLang}</label>
@@ -95,7 +100,9 @@ const t = {
         >
           <div class="flex justify-between items-start mb-6">
             <div class="flex gap-2">
-              <span class="badge badge-sm bg-stone-100 border-none text-stone-500 uppercase text-[10px] font-bold tracking-wider px-2 py-3">{res.data.category}</span>
+              <span class="badge badge-sm bg-stone-100 border-none text-stone-500 uppercase text-[10px] font-bold tracking-wider px-2 py-3">
+                {getCategoryLabel(res.data.category, lang)}
+              </span>
               <span class="badge badge-sm bg-primary/10 border-none text-primary uppercase text-[10px] font-bold tracking-wider px-2 py-3" aria-label={`Langue : ${res.data.language}`}>{res.data.language}</span>
             </div>
           </div>
@@ -130,6 +137,51 @@ const t = {
     </div>
   </section>
 </Layout>
+
+<script>
+  const cards = document.querySelectorAll('.resource-card');
+  const searchInput = document.getElementById('search-input');
+  const catFilter = document.getElementById('filter-category');
+  const langFilter = document.getElementById('filter-language');
+  const countDisplay = document.getElementById('results-count');
+  const noResults = document.getElementById('no-results');
+
+  function updateFilters() {
+    const query = (searchInput as HTMLInputElement).value.toLowerCase().trim();
+    const cat = (catFilter as HTMLSelectElement).value;
+    const lang = (langFilter as HTMLSelectElement).value;
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const content = (card as HTMLElement).dataset.searchContent;
+      const cardCat = (card as HTMLElement).dataset.category;
+      const cardLang = (card as HTMLElement).dataset.language;
+      
+      const matchSearch = content.includes(query);
+      const matchCat = cat === 'all' || cardCat === cat;
+      const matchLang = lang === 'all' || cardLang === lang;
+
+      if (matchSearch && matchCat && matchLang) {
+        (card as HTMLElement).style.display = 'flex';
+        visibleCount++;
+      } else {
+        (card as HTMLElement).style.display = 'none';
+      }
+    });
+
+    countDisplay.textContent = `${visibleCount} ressource${visibleCount > 1 ? 's' : ''}`;
+    
+    if (visibleCount === 0) {
+      noResults.classList.remove('hidden');
+    } else {
+      noResults.classList.add('hidden');
+    }
+  }
+
+  searchInput.addEventListener('input', updateFilters);
+  catFilter.addEventListener('change', updateFilters);
+  langFilter.addEventListener('change', updateFilters);
+</script>
 
 <script>
   const cards = document.querySelectorAll('.resource-card');

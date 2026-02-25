@@ -6,7 +6,7 @@ const ressources = defineCollection({
     title: z.string(),
     description: z.string(),
     link: z.string().url(),
-    category: z.enum(['Entreprise', 'Association', 'Article', 'Podcast', 'Outil']),
+    category: z.enum(['entreprise', 'association', 'article', 'podcast', 'outil']),
     language: z.enum(['fr', 'en']),
     date: z.coerce.date(),
   }),

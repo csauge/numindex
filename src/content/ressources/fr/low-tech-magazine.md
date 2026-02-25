@@ -2,7 +2,7 @@
 title: "Low-tech Magazine"
 description: "Un magazine qui remet en question la croyance aveugle dans le progrès technologique. Le site lui-même est alimenté par l énergie solaire et conçu pour être ultra-léger."
 link: "https://solar.lowtechmagazine.com/fr/"
-category: "Article"
+category: "article"
 language: "fr"
 date: 2026-02-25
 ---

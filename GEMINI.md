@@ -20,9 +20,11 @@ Toute ressource doit être un fichier `.md` dans `src/content/ressources/{fr|en}
 - `title`: string
 - `description`: string
 - `link`: url
-- `category`: 'Entreprise' | 'Association' | 'Article' | 'Podcast' | 'Outil'
+- `category`: 'entreprise' | 'association' | 'article' | 'podcast' | 'outil'
 - `language`: 'fr' | 'en'
 - `date`: YYYY-MM-DD
+
+*Note : Les catégories doivent être écrites en minuscules (clés techniques). La traduction est gérée par `src/utils/categories.ts`.*
 
 ## 4. Logique i18n
 - L'interface (UI) est traduite via les routes `/[lang]/`.
