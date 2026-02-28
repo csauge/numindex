@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { CATEGORIES, getCategoryLabel } from '../../utils/categories';
-import { supabase } from '../../lib/supabase';
+import { supabase, getImageUrl } from '../../lib/supabase/client';
 
 export async function getStaticPaths() {
   return [
@@ -12,27 +12,19 @@ export async function getStaticPaths() {
 
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
-// Fetch all resources from Supabase
-const { data: resources, error } = await supabase
-  .from('resources')
-  .select('*')
-  .order('created_at', { ascending: false });
+// Fetch resources if Supabase is initialized
+let allRessources = [];
+if (supabase) {
+  const { data, error } = await supabase
+    .from('resources')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-if (error) {
-  console.error('Error fetching resources:', error);
+  if (error) console.error('Error fetching resources:', error);
+  else allRessources = data || [];
 }
 
-const allRessources = resources || [];
-
-// Fonction pour obtenir l'URL publique de l'image
-const getImageUrl = (path: string) => {
-  if (!path) return null;
-  // On assume que les images approuvées restent dans le bucket 'suggestions' pour l'instant
-  const { data } = supabase.storage.from('suggestions').getPublicUrl(path);
-  return data.publicUrl;
-};
-
-// Extraction des catégories uniques présentes dans les données réelles
+// Extract active categories for filter dropdown
 const activeCategoryKeys = [...new Set(allRessources.map(res => res.category))].sort();
 
 const t = {
@@ -66,7 +58,7 @@ const t = {
       <p class="text-lg text-stone-600 leading-relaxed">{t.desc}</p>
     </header>
 
-    <!-- Barre de Recherche et Filtres -->
+    <!-- Search & Filters -->
     <div class="sticky top-20 z-30 mb-12 p-2 bg-white/80 backdrop-blur-md border border-stone-200 rounded-3xl shadow-sm flex flex-col md:flex-row gap-3">
       <div class="flex-grow relative group">
         <label for="search-input" class="sr-only">{t.searchPlaceholder}</label>
@@ -98,11 +90,7 @@ const t = {
     </div>
 
     <div class="mb-6 flex justify-between items-center px-2">
-      <span 
-        id="results-count" 
-        class="text-xs font-bold uppercase tracking-widest text-stone-400"
-        aria-live="polite"
-      >
+      <span id="results-count" class="text-xs font-bold uppercase tracking-widest text-stone-400" aria-live="polite">
         {allRessources.length} ressources
       </span>
     </div>
@@ -186,9 +174,9 @@ const t = {
   const noResults = document.getElementById('no-results');
 
   function updateFilters() {
-    const query = (searchInput as HTMLInputElement).value.toLowerCase().trim();
-    const cat = (catFilter as HTMLSelectElement).value;
-    const lang = (langFilter as HTMLSelectElement).value;
+    const query = (searchInput as HTMLInputElement)?.value.toLowerCase().trim() || '';
+    const cat = (catFilter as HTMLSelectElement)?.value || 'all';
+    const lang = (langFilter as HTMLSelectElement)?.value || 'all';
     let visibleCount = 0;
 
     cards.forEach(card => {
@@ -212,11 +200,8 @@ const t = {
       countDisplay.textContent = `${visibleCount} ressource${visibleCount > 1 ? 's' : ''}`;
     }
     
-    if (visibleCount === 0) {
-      noResults?.classList.remove('hidden');
-    } else {
-      noResults?.classList.add('hidden');
-    }
+    if (visibleCount === 0) noResults?.classList.remove('hidden');
+    else noResults?.classList.add('hidden');
   }
 
   searchInput?.addEventListener('input', updateFilters);

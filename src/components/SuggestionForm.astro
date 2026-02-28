@@ -114,7 +114,8 @@ const t = {
     submitBtn.innerText = msgLoading;
 
     try {
-      const { supabase } = await import('../lib/supabase');
+      const { supabase } = await import('../lib/supabase/client');
+      if (!supabase) throw new Error('Supabase not initialized');
       
       const title = formData.get('title') as string;
       const description = formData.get('description') as string;
