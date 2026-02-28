@@ -1,0 +1,137 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase';
+import { getCategoryLabel } from '../../utils/categories';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'fr' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params as { lang: 'fr' | 'en' };
+
+// Récupérer les suggestions en attente
+const { data: suggestions, error } = await supabase
+  .from('suggestions')
+  .select('*')
+  .eq('status', 'pending')
+  .order('created_at', { ascending: false });
+
+const getImageUrl = (path: string) => {
+  if (!path) return null;
+  const { data } = supabase.storage.from('suggestions').getPublicUrl(path);
+  return data.publicUrl;
+};
+
+const t = {
+  fr: { title: "Modération", noPending: "Aucune suggestion en attente.", approve: "Approuver", reject: "Rejeter" },
+  en: { title: "Moderation", noPending: "No pending suggestions.", approve: "Approve", reject: "Reject" }
+}[lang];
+---
+
+<Layout title={t.title} lang={lang}>
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-black mb-8">{t.title}</h1>
+
+    {suggestions?.length === 0 && (
+      <div class="bg-stone-50 border border-stone-200 p-12 rounded-3xl text-center">
+        <p class="text-stone-400 font-medium italic">{t.noPending}</p>
+      </div>
+    )}
+
+    <div class="grid gap-6">
+      {suggestions?.map((res) => (
+        <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start">
+          {res.image_url && (
+            <div class="w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative">
+              <img src={getImageUrl(res.image_url)} alt="" class="absolute inset-0 w-full h-full object-contain p-2" />
+            </div>
+          )}
+          
+          <div class="flex-grow">
+            <div class="flex gap-2 mb-2">
+              <span class="badge badge-outline badge-sm uppercase text-[10px] font-bold">{getCategoryLabel(res.category, lang)}</span>
+              <span class="badge badge-ghost badge-sm uppercase text-[10px] font-bold">{res.language}</span>
+            </div>
+            <h2 class="text-xl font-bold mb-2">{res.title}</h2>
+            <p class="text-stone-500 text-sm mb-4">{res.description}</p>
+            <div class="flex flex-wrap gap-1 mb-4">
+              {res.metadata?.tags?.map((tag: string) => (
+                <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#{tag}</span>
+              ))}
+            </div>
+            <a href={res.link} target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block">{res.link}</a>
+          </div>
+
+          <div class="flex md:flex-col gap-2 w-full md:w-auto">
+            <button 
+              class="btn btn-success btn-sm flex-grow approve-btn" 
+              data-id={res.id}
+              data-data={JSON.stringify(res)}
+            >
+              {t.approve}
+            </button>
+            <button class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id={res.id}>
+              {t.reject}
+            </button>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  document.querySelectorAll('.approve-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      const data = JSON.parse(btn.getAttribute('data-data') || '{}');
+      
+      btn.classList.add('loading');
+      
+      // 1. Insérer dans 'resources'
+      const { error: insertError } = await supabase
+        .from('resources')
+        .insert([{
+          title: data.title,
+          description: data.description,
+          link: data.link,
+          category: data.category,
+          language: data.language,
+          image_url: data.image_url,
+          metadata: data.metadata
+        }]);
+
+      if (insertError) {
+        alert("Erreur lors de l'approbation");
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // 2. Mettre à jour le statut de la suggestion
+      await supabase
+        .from('suggestions')
+        .update({ status: 'approved' })
+        .eq('id', id);
+
+      location.reload();
+    });
+  });
+
+  document.querySelectorAll('.reject-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      if (confirm('Rejeter cette suggestion ?')) {
+        await supabase
+          .from('suggestions')
+          .update({ status: 'rejected' })
+          .eq('id', id);
+        location.reload();
+      }
+    });
+  });
+</script>

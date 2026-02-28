@@ -1,15 +1,2 @@
-import { defineCollection, z } from 'astro:content';
-
-const ressources = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    link: z.string().url(),
-    category: z.enum(['entreprise', 'association', 'article', 'podcast', 'outil']),
-    language: z.enum(['fr', 'en']),
-    date: z.coerce.date(),
-  }),
-});
-
-export const collections = { ressources };
+// No local collections for now. Resources are managed via Supabase.
+export const collections = {};

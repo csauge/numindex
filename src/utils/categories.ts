@@ -4,6 +4,7 @@ export const CATEGORIES = {
   article: { fr: 'Article', en: 'Article' },
   podcast: { fr: 'Podcast', en: 'Podcast' },
   outil: { fr: 'Outil', en: 'Tool' },
+  livre: { fr: 'Livre', en: 'Book' },
 } as const;
 
 export type CategoryKey = keyof typeof CATEGORIES;

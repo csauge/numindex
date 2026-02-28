@@ -1,0 +1,187 @@
+---
+import { CATEGORIES, type CategoryKey } from '../utils/categories';
+
+interface Props {
+  lang: 'fr' | 'en';
+}
+
+const { lang } = Astro.props;
+
+const t = {
+  fr: {
+    title: 'Proposer une ressource',
+    name: 'Nom de la ressource',
+    description: 'Description',
+    link: 'Lien (URL)',
+    category: 'Catégorie',
+    tags: 'Tags (séparés par des virgules)',
+    image: 'Image (sera compressée)',
+    submit: 'Envoyer la suggestion',
+    loading: 'Chargement...',
+    success: 'Merci ! Votre suggestion a été envoyée pour modération.',
+    error: 'Une erreur est survenue. Veuillez réessayer.'
+  },
+  en: {
+    title: 'Suggest a resource',
+    name: 'Resource name',
+    description: 'Description',
+    link: 'Link (URL)',
+    category: 'Category',
+    tags: 'Tags (comma separated)',
+    image: 'Image (will be compressed)',
+    submit: 'Send suggestion',
+    loading: 'Loading...',
+    success: 'Thank you! Your suggestion has been sent for moderation.',
+    error: 'An error occurred. Please try again.'
+  }
+}[lang];
+---
+
+<div class="max-w-2xl mx-auto p-6 bg-base-100 rounded-xl shadow-sm border border-base-200">
+  <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+    <span>🌱</span> {t.title}
+  </h2>
+
+  <form 
+    id="suggestion-form" 
+    class="space-y-4"
+    data-msg-success={t.success}
+    data-msg-error={t.error}
+    data-msg-loading={t.loading}
+    data-msg-submit={t.submit}
+  >
+    <div class="form-control">
+      <label class="label"><span class="label-text">{t.name}</span></label>
+      <input type="text" name="title" required class="input input-bordered w-full" />
+    </div>
+
+    <div class="form-control">
+      <label class="label"><span class="label-text">{t.description}</span></label>
+      <textarea name="description" required class="textarea textarea-bordered h-24"></textarea>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="form-control">
+        <label class="label"><span class="label-text">{t.category}</span></label>
+        <select name="category" class="select select-bordered w-full">
+          {Object.entries(CATEGORIES).map(([key, labels]) => (
+            <option value={key}>{labels[lang]}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">{t.link}</span></label>
+        <input type="url" name="link" required class="input input-bordered w-full" />
+      </div>
+    </div>
+
+    <div class="form-control">
+      <label class="label"><span class="label-text">{t.tags}</span></label>
+      <input type="text" name="tags" placeholder="low-tech, open-source..." class="input input-bordered w-full" />
+    </div>
+
+    <div class="form-control">
+      <label class="label"><span class="label-text">{t.image}</span></label>
+      <input type="file" name="image" accept="image/*" class="file-input file-input-bordered w-full" />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-full mt-4">
+      {t.submit}
+    </button>
+
+    <div id="form-feedback" class="mt-4 hidden alert"></div>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('suggestion-form') as HTMLFormElement;
+  const feedback = document.getElementById('form-feedback');
+
+  const msgSuccess = form?.dataset.msgSuccess || '';
+  const msgError = form?.dataset.msgError || '';
+  const msgLoading = form?.dataset.msgLoading || '';
+  const msgSubmit = form?.dataset.msgSubmit || '';
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log("Formulaire soumis...");
+    
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = msgLoading;
+
+    try {
+      const { supabase } = await import('../lib/supabase');
+      
+      const title = formData.get('title') as string;
+      const description = formData.get('description') as string;
+      const link = formData.get('link') as string;
+      const category = formData.get('category') as string;
+      const tagsString = formData.get('tags') as string;
+      const imageFile = formData.get('image') as File;
+
+      const tags = tagsString ? tagsString.split(',').map(t => t.trim()) : [];
+      
+      let imageUrl = '';
+
+      // 1. Image Compression & Upload
+      if (imageFile && imageFile.size > 0) {
+        console.log("Compression de l'image...");
+        const imageCompression = (await import('browser-image-compression')).default;
+        const options = {
+          maxSizeMB: 0.4, // Increased for better quality
+          maxWidthOrHeight: 1200, // Increased for larger screens
+          useWebWorker: true,
+          fileType: 'image/webp'
+        };
+        
+        try {
+          const compressedFile = await imageCompression(imageFile, options);
+          const fileName = `${Date.now()}-${imageFile.name.split('.')[0]}.webp`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('suggestions')
+            .upload(fileName, compressedFile);
+            
+          if (uploadError) throw uploadError;
+          if (uploadData) imageUrl = uploadData.path;
+        } catch (error) {
+          console.error('Erreur Upload/Compression:', error);
+        }
+      }
+
+      // 2. Supabase Submission
+      console.log("Envoi à Supabase...");
+      const { error } = await supabase
+        .from('suggestions')
+        .insert([{
+          title,
+          description,
+          link,
+          category,
+          language: window.location.pathname.includes('/en') ? 'en' : 'fr',
+          metadata: { tags },
+          image_url: imageUrl,
+          status: 'pending'
+        }]);
+
+      if (error) throw error;
+
+      console.log("Succès !");
+      feedback?.classList.remove('hidden', 'alert-error');
+      feedback?.classList.add('alert-success');
+      feedback!.innerText = msgSuccess;
+      form.reset();
+    } catch (err) {
+      console.error('Erreur détaillée:', err);
+      feedback?.classList.remove('hidden', 'alert-success');
+      feedback?.classList.add('alert-error');
+      feedback!.innerText = msgError;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = msgSubmit;
+    }
+  });
+</script>

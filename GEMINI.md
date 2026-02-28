@@ -8,27 +8,26 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 - **Performance :** Polices système uniquement. Pas d'appels vers des CDN tiers.
 - **Identité Visuelle :** Palette "Papier Chaud" (#fdfcfb), logo 🌱, typographie aérée et contrastes élevés.
 
-## 2. Stack Technique
-- **Framework :** Astro (Static Mode).
+## 2. Stack Technique (Full-Stack Serverless)
+- **Frontend :** Astro (Static Mode pour les pages ressources, Hybrid/SSR pour le dynamisme).
 - **Style :** Tailwind CSS + DaisyUI (Thème unique : `garden` personnalisé).
-- **Données :** Astro Content Collections.
-- **Recherche :** Filtrage dynamique Vanilla JS intégré directement dans la grille de ressources.
-- **Déploiement :** Cloudflare Pages via `wrangler.toml` (Configuration as Code).
+- **Base de Données :** Supabase (Hébergé en France ou à minima Europe).
+  - Utilisation de `JSONB` (`metadata`) pour la flexibilité des types de ressources.
+  - Filtrage via opérateurs SQL (`@>`) pour les tags.
+- **Backend & Modération :** Cloudflare Workers.
+  - Système de contribution via table `suggestions`.
+  - Validation admin avant transfert vers table `resources`.
+- **Images :** WebP (client) et AVIF (serveur via Astro Assets).
 
-## 3. Structure des Données (Strict)
-Toute ressource doit être un fichier `.md` dans `src/content/ressources/{fr|en}/` avec le frontmatter suivant :
-- `title`: string
-- `description`: string
-- `link`: url
-- `category`: 'entreprise' | 'association' | 'article' | 'podcast' | 'outil'
-- `language`: 'fr' | 'en'
-- `date`: YYYY-MM-DD
+## 3. Structure des Données (Supabase)
+Toute ressource doit être stockée dans la table `resources` avec :
+- `title`, `description`, `link`, `category`, `language`, `image_url`.
+- `metadata` (JSONB) : contient un tableau `tags` et des champs spécifiques au type.
 
-*Note : Les catégories doivent être écrites en minuscules (clés techniques). La traduction est gérée par `src/utils/categories.ts`.*
-
-## 4. Logique i18n
-- L'interface (UI) est traduite via les routes `/[lang]/`.
-- Le contenu est **global** : les ressources de toutes les langues sont affichées ensemble, triées par date, avec un badge de langue.
+## 4. Logique i18n & Recherche
+- Interface traduite via `/[lang]/`.
+- Contenu global : ressources triées par date avec badge de langue.
+- Recherche en temps réel via composants interactifs (îles).
 
 ## 5. Dépendances
 - Ne jamais installer de bibliothèque sans vérifier son impact sur le poids final.
