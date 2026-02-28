@@ -6,14 +6,16 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "npm run build && wrangler dev",
     "astro": "astro",
     "add-ressource": "node scripts/add-ressource.mjs",
     "postbuild": "pagefind --site dist",
     "cleanup-images": "node scripts/cleanup-images.mjs",
-    "optimize-images": "node scripts/optimize-images.mjs"
+    "optimize-images": "node scripts/optimize-images.mjs",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.12",
     "@astrojs/tailwind": "^6.0.2",
     "@supabase/supabase-js": "^2.98.0",
     "astro": "^5.4.1",
@@ -27,6 +29,7 @@
     "autoprefixer": "^10.4.24",
     "pagefind": "^1.4.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "wrangler": "^4.69.0"
   }
 }
