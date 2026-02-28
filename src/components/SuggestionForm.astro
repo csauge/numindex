@@ -82,11 +82,19 @@ const t = {
     </div>
 
     <div class="form-control">
-      <label class="label"><span class="label-text">{t.image}</span></label>
-      <input type="file" name="image" accept="image/*" class="file-input file-input-bordered w-full" />
+      <label class="label"><span class="label-text font-semibold text-stone-600">{t.image}</span></label>
+      <input 
+        type="file" 
+        name="image" 
+        accept="image/*" 
+        class="file-input file-input-bordered file-input-primary w-full bg-stone-50/50 border-stone-200 text-stone-500 text-sm focus:outline-primary/30 transition-all hover:border-primary/50" 
+      />
+      <label class="label">
+        <span class="label-text-alt text-stone-400 italic">Format WebP, JPG ou PNG (max 5MB)</span>
+      </label>
     </div>
 
-    <button type="submit" class="btn btn-primary w-full mt-4">
+    <button type="submit" class="btn btn-primary w-full mt-4 hover:bg-[#52b788] transition-colors shadow-sm">
       {t.submit}
     </button>
 
