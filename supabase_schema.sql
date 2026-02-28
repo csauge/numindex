@@ -6,7 +6,7 @@ CREATE TABLE resources (
   title TEXT NOT NULL,
   description TEXT,
   link TEXT,
-  category TEXT NOT NULL CHECK (category IN ('entreprise', 'association', 'article', 'podcast', 'outil', 'plante', 'livre')),
+  category TEXT NOT NULL CHECK (category IN ('entreprise', 'association', 'article', 'podcast', 'outil', 'livre')),
   language TEXT NOT NULL CHECK (language IN ('fr', 'en')),
   image_url TEXT,
   metadata JSONB DEFAULT '{"tags": []}'::jsonb,

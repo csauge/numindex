@@ -3,33 +3,37 @@
 Ce document définit les règles immuables pour le développement de l'annuaire Salvia.
 
 ## 1. Principes Fondamentaux
-- **Sobriété Numérique :** Limiter le poids des pages. Pas de bibliothèques JS lourdes.
+- **Sobriété Numérique :** Limiter le poids des pages. Pas de bibliothèques JS lourdes. Nettoyage automatique des médias inutilisés.
 - **Accessibilité (RGAA) :** HTML sémantique strict, liens d'évitement, aria-labels sur tous les contrôles, aria-live pour les mises à jour dynamiques.
 - **Performance :** Polices système uniquement. Pas d'appels vers des CDN tiers.
 - **Identité Visuelle :** Palette "Papier Chaud" (#fdfcfb), logo 🌱, typographie aérée et contrastes élevés.
 
 ## 2. Stack Technique (Full-Stack Serverless)
-- **Frontend :** Astro (Static Mode pour les pages ressources, Hybrid/SSR pour le dynamisme).
+- **Frontend :** Astro (Static Mode pour les ressources, Hybrid/SSR pour l'admin).
 - **Style :** Tailwind CSS + DaisyUI (Thème unique : `garden` personnalisé).
-- **Base de Données :** Supabase (Hébergé en France ou à minima Europe).
-  - Utilisation de `JSONB` (`metadata`) pour la flexibilité des types de ressources.
+- **Base de Données :** Supabase (PostgreSQL 🇫🇷).
+  - Utilisation de `JSONB` (`metadata`) pour la flexibilité des types.
   - Filtrage via opérateurs SQL (`@>`) pour les tags.
-- **Backend & Modération :** Cloudflare Workers.
-  - Système de contribution via table `suggestions`.
-  - Validation admin avant transfert vers table `resources`.
-- **Images :** WebP (client) et AVIF (serveur via Astro Assets).
+- **Maintenance :** Script de nettoyage (`scripts/cleanup-images.mjs`) via GitHub Actions (hebdomadaire).
+- **Images :** WebP compressé (client) et rendu via `object-contain` pour les logos.
 
-## 3. Structure des Données (Supabase)
+## 3. Standards d'Ingénierie (Clean Code)
+- **Deduplication :** Toute logique partagée (ex: client Supabase, helpers d'image) doit être centralisée dans `src/lib/`.
+- **Zéro Déchet :** Supprimer systématiquement le code mort, les fichiers inutilisés et les dépendances obsolètes.
+- **Formatage :** Code lisible, typé (TypeScript) et correctement indenté.
+- **Documentation Vivante :** Mettre à jour `GEMINI.md` et `README.md` à CHAQUE changement structurel pour qu'ils reflètent fidèlement l'état actuel du code.
+
+## 4. Structure des Données (Supabase)
 Toute ressource doit être stockée dans la table `resources` avec :
 - `title`, `description`, `link`, `category`, `language`, `image_url`.
 - `metadata` (JSONB) : contient un tableau `tags` et des champs spécifiques au type.
 
-## 4. Logique i18n & Recherche
+## 5. Logique i18n & Recherche
 - Interface traduite via `/[lang]/`.
 - Contenu global : ressources triées par date avec badge de langue.
-- Recherche en temps réel via composants interactifs (îles).
+- Recherche en temps réel via composants interactifs.
 
-## 5. Dépendances
+## 6. Dépendances
 - Ne jamais installer de bibliothèque sans vérifier son impact sur le poids final.
 - Tailwind v3 est imposé pour la compatibilité avec DaisyUI v4.
 - Prioriser les solutions natives (Vanilla JS) pour l'interactivité.

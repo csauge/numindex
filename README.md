@@ -1,39 +1,55 @@
 # 🌱 Salvia
 
-**Salvia** est un annuaire open-source de ressources numériques responsables (sociétés, associations, articles, podcasts). Le projet est conçu pour être un modèle de **sobriété numérique** et d'**accessibilité**.
+**Salvia** est un annuaire open-source de ressources numériques responsables (sociétés, associations, articles, podcasts, outils, livres). Le projet est conçu pour être un modèle de **sobriété numérique** et d'**accessibilité**.
 
 ---
 
 ## ✨ Points Forts du Projet
 
-- **Sobriété Éclatante :** Un site statique performant avec une palette visuelle "Papier Chaud" apaisante.
-- **Accessibilité (RGAA Ready) :** Navigation clavier optimisée, liens d'évitement, support complet des lecteurs d'écran (aria-labels, aria-live).
-- **Filtrage Intelligent :** Recherche textuelle et filtres (catégorie, langue) instantanés en Vanilla JS, sans appel serveur.
-- **i18n Hybride :** Interface multilingue mais contenu global (accès à toutes les ressources quelle que soit la langue sélectionnée).
+- **Sobriété Éclatante :** Un site performant avec une palette visuelle "Papier Chaud" apaisante.
+- **Accessibilité (RGAA Ready) :** Navigation clavier optimisée, liens d'évitement, support complet des lecteurs d'écran.
+- **Architecture Full-Stack Serverless :** Performance du statique (Astro) alliée à la puissance du dynamique (Supabase).
+- **Maintenance Automatisée :** Nettoyage hebdomadaire automatique des médias inutilisés pour une empreinte numérique minimale.
 
 ## 🛠 Stack Technique
 
-- **Framework :** [Astro](https://astro.build/) (Static Mode)
+- **Frontend :** [Astro](https://astro.build/) (Static & Hybrid)
 - **Styling :** [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/)
-- **Données :** Astro Content Collections (Markdown locaux)
-- **Interactivité :** Vanilla JS (0 dépendance externe pour la recherche)
+- **Base de Données :** [Supabase](https://supabase.com/) (PostgreSQL + Storage)
+- **Maintenance :** GitHub Actions + Node.js scripts
 
 ## 📖 Comment contribuer ?
 
-Salvia est un projet communautaire. Vous pouvez proposer une ressource via le bouton dédié (bientôt disponible) ou en créant une Pull Request :
+Salvia est un projet communautaire. Vous pouvez proposer une ressource directement via l'interface :
 
-1. Créez un fichier `.md` dans `src/content/ressources/fr/` ou `src/content/ressources/en/`.
-2. Suivez le schéma strict défini dans `src/content/config.ts`.
-3. Soumettez votre PR !
+1. Cliquez sur le bouton **Proposer** dans la barre de navigation.
+2. Remplissez le formulaire (votre image sera automatiquement compressée).
+3. Une fois validée par un modérateur, votre ressource apparaîtra sur l'accueil !
 
 ## 🏗 Installation Locale
 
+1. Clonez le dépôt :
+   ```bash
+   git clone https://github.com/csauge/salvia.git
+   cd salvia
+   ```
+2. Installez les dépendances :
+   ```bash
+   npm install
+   ```
+3. Configurez votre fichier `.env` (voir `.env.example`).
+4. Lancez le serveur de développement :
+   ```bash
+   npm run dev
+   ```
+
+## 🧹 Maintenance
+
+Pour nettoyer manuellement les images orphelines dans le stockage :
 ```bash
-git clone https://github.com/votre-compte/salvia.git
-cd salvia
-npm install
-npm run dev
+node scripts/cleanup-images.mjs
 ```
+*(Nécessite la clé `SUPABASE_SERVICE_ROLE_KEY` dans votre `.env`)*
 
 ---
 
