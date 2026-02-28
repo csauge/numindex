@@ -17,6 +17,7 @@
     "astro": "^5.4.1",
     "browser-image-compression": "^2.0.2",
     "daisyui": "^4.12.24",
+    "dotenv": "^17.3.1",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
