@@ -8,23 +8,24 @@
 
 - **Sobriété Éclatante :** Un site performant avec une palette visuelle "Papier Chaud" apaisante.
 - **Accessibilité (RGAA Ready) :** Navigation clavier optimisée, liens d'évitement, support complet des lecteurs d'écran.
-- **Architecture Full-Stack Serverless :** Performance du statique (Astro) alliée à la puissance du dynamique (Supabase).
-- **Maintenance Automatisée :** Nettoyage hebdomadaire automatique des médias inutilisés pour une empreinte numérique minimale.
+- **Architecture Statique & Réactive :** Performance du statique (Astro) avec mises à jour en temps réel via Webhooks Supabase.
+- **Optimisation d'Image :** Compression agressive côté client (< 50Ko) et optimisation serveur via `sharp`.
 
 ## 🛠 Stack Technique
 
-- **Frontend :** [Astro](https://astro.build/) (Static & Hybrid)
+- **Frontend :** [Astro](https://astro.build/) (Static Mode)
+- **Hébergement :** [Cloudflare Pages](https://pages.cloudflare.com/)
 - **Styling :** [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/)
 - **Base de Données :** [Supabase](https://supabase.com/) (PostgreSQL + Storage)
-- **Maintenance :** GitHub Actions + Node.js scripts
+- **CI/CD :** GitHub Actions (Maintenance) + Webhooks Supabase (Auto-rebuild)
 
 ## 📖 Comment contribuer ?
 
 Salvia est un projet communautaire. Vous pouvez proposer une ressource directement via l'interface :
 
 1. Cliquez sur le bouton **Proposer** dans la barre de navigation.
-2. Remplissez le formulaire (votre image sera automatiquement compressée).
-3. Une fois validée par un modérateur, votre ressource apparaîtra sur l'accueil !
+2. Remplissez le formulaire (votre image sera automatiquement compressée à un format ultra-léger).
+3. Une fois validée par un modérateur, le site se reconstruira automatiquement pour afficher votre ressource.
 
 ## 🏗 Installation Locale
 
@@ -43,13 +44,21 @@ Salvia est un projet communautaire. Vous pouvez proposer une ressource directeme
    npm run dev
    ```
 
-## 🧹 Maintenance
+## 🧹 Maintenance & Scripts
 
-Pour nettoyer manuellement les images orphelines dans le stockage :
-```bash
-node scripts/cleanup-images.mjs
-```
-*(Nécessite la clé `SUPABASE_SERVICE_ROLE_KEY` dans votre `.env`)*
+Plusieurs scripts sont disponibles pour maintenir une empreinte numérique minimale :
+
+- **Nettoyage des images orphelines :**
+  ```bash
+  npm run cleanup-images
+  ```
+  *(Supprime les images dans Supabase qui ne sont plus liées à une ressource)*
+
+- **Optimisation des images existantes :**
+  ```bash
+  npm run optimize-images
+  ```
+  *(Redimensionne et compresse toutes les images du bucket au format WebP)*
 
 ---
 
