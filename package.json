@@ -9,7 +9,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "add-ressource": "node scripts/add-ressource.mjs",
-    "postbuild": "pagefind --site dist"
+    "postbuild": "pagefind --site dist",
+    "cleanup-images": "node scripts/cleanup-images.mjs",
+    "optimize-images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@astrojs/tailwind": "^6.0.2",
@@ -18,6 +20,7 @@
     "browser-image-compression": "^2.0.2",
     "daisyui": "^4.12.24",
     "dotenv": "^17.3.1",
+    "sharp": "^0.34.5",
     "typescript": "^5.7.3"
   },
   "devDependencies": {

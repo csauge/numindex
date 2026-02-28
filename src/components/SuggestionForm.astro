@@ -133,10 +133,11 @@ const t = {
         console.log("Compression de l'image...");
         const imageCompression = (await import('browser-image-compression')).default;
         const options = {
-          maxSizeMB: 0.4, // Increased for better quality
-          maxWidthOrHeight: 1200, // Increased for larger screens
+          maxSizeMB: 0.05, // 50KB - targeted for extreme sobriety
+          maxWidthOrHeight: 800, // Sufficient for small grid cards
           useWebWorker: true,
-          fileType: 'image/webp'
+          fileType: 'image/webp',
+          initialQuality: 0.8 // Good balance between size and clarity
         };
         
         try {
