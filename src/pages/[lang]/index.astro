@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { CATEGORIES, getCategoryLabel } from '../../utils/categories';
+import { CATEGORIES, getCategoryLabel, getCategoryIcon } from '../../utils/categories';
 import { supabase, getImageUrl } from '../../lib/supabase/client';
 
 export async function getStaticPaths() {
@@ -31,7 +31,7 @@ const t = {
   fr: {
     title: "L'annuaire du numérique responsable",
     desc: "Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
-    searchPlaceholder: "Rechercher une société, un article...",
+    searchPlaceholder: "Rechercher un outil, une entreprise, un article...",
     filterCat: "Toutes les catégories",
     filterLang: "Toutes les langues",
     discover: "Découvrir la ressource",
@@ -43,7 +43,7 @@ const t = {
   en: {
     title: "Sustainable Digital Directory",
     desc: "Explore initiatives committed to a more sober, ethical, and accessible digital future.",
-    searchPlaceholder: "Search for a company, article...",
+    searchPlaceholder: "Search for a tool, company, article...",
     filterCat: "All categories",
     filterLang: "All languages",
     discover: "Discover resource",
@@ -125,8 +125,8 @@ const t = {
             </a>
           </div>
 
-          {res.image_url && (
-            <div class="relative w-full pt-[50%] overflow-hidden bg-stone-50/30 border-b border-stone-50">
+          <div class="relative w-full pt-[50%] overflow-hidden bg-stone-50/30 border-b border-stone-50">
+            {res.image_url ? (
               <img 
                 src={getImageUrl(res.image_url)} 
                 alt="" 
@@ -134,8 +134,14 @@ const t = {
                 loading="lazy"
                 decoding="async"
               />
-            </div>
-          )}
+            ) : (
+              <div class="absolute inset-0 flex items-center justify-center p-6 text-stone-200 group-hover:text-primary/20 transition-colors duration-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(res.category)} />
+                </svg>
+              </div>
+            )}
+          </div>
           
           <div class="p-4 flex flex-col flex-grow">
             <div class="flex justify-between items-start mb-2">

@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCategoryLabel } from '../../utils/categories';
+import { getCategoryLabel, getCategoryIcon } from '../../utils/categories';
 import { supabase, getImageUrl } from '../../lib/supabase/client';
 
 export async function getStaticPaths() {
@@ -32,9 +32,10 @@ const t = {
     approve: "Approuver", 
     reject: "Rejeter",
     action_create: "Nouveau",
-    action_update: "Modif",
-    action_delete: "Suppr",
-    reason_label: "Motif :",
+    action_update: "Modification",
+    action_delete: "Suppression",
+    reason_label: "Motif de suppression :",
+    target_id: "ID cible :",
     back: "Retour à l'accueil"
   },
   en: { 
@@ -45,16 +46,17 @@ const t = {
     action_create: "New",
     action_update: "Update",
     action_delete: "Delete",
-    reason_label: "Reason:",
+    reason_label: "Reason for deletion:",
+    target_id: "Target ID:",
     back: "Back to home"
   }
 }[lang];
 
-const getActionBadgeClass = (action: string) => {
+const getActionDetails = (action: string) => {
   switch (action) {
-    case 'update': return 'badge-info';
-    case 'delete': return 'badge-error';
-    default: return 'badge-success';
+    case 'update': return { class: 'bg-emerald-100 text-emerald-700 border-emerald-200' };
+    case 'delete': return { class: 'bg-red-100 text-red-700 border-red-200' };
+    default: return { class: 'bg-emerald-600 text-white border-emerald-700' };
   }
 };
 ---
@@ -77,60 +79,73 @@ const getActionBadgeClass = (action: string) => {
     )}
 
     <div class="grid gap-6">
-      {suggestions.map((res) => (
-        <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start overflow-hidden relative">
-          <div class={`absolute top-0 right-0 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm ${getActionBadgeClass(res.action)}`}>
-            {t[`action_${res.action}`] || res.action}
-          </div>
-
-          {res.image_url && res.action !== 'delete' && (
-            <div class="w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative">
-              <img src={getImageUrl(res.image_url)} alt="" class="absolute inset-0 w-full h-full object-contain p-2" />
-            </div>
-          )}
-          
-          <div class="flex-grow">
-            <div class="flex gap-2 mb-2">
-              <span class="badge badge-outline badge-sm uppercase text-[10px] font-bold">{getCategoryLabel(res.category, lang)}</span>
-              <span class="badge badge-ghost badge-sm uppercase text-[10px] font-bold">{res.language}</span>
+      {suggestions.map((res) => {
+        const actionDetails = getActionDetails(res.action);
+        return (
+          <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden">
+            
+            <div class="w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative flex items-center justify-center text-stone-200">
+              {res.image_url ? (
+                <img src={getImageUrl(res.image_url)} alt="" class="absolute inset-0 w-full h-full object-contain p-2" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(res.category)} />
+                </svg>
+              )}
             </div>
             
-            <h2 class="text-xl font-bold mb-2">{res.title}</h2>
-            
-            {res.action === 'delete' ? (
-              <div class="bg-red-50 p-4 rounded-xl border border-red-100">
-                <p class="text-xs font-bold text-red-800 uppercase mb-1">{t.reason_label}</p>
-                <p class="text-red-700 italic text-sm">{res.reason}</p>
-                <p class="mt-2 text-[10px] text-red-400">ID Ressource : {res.resource_id}</p>
+            <div class="flex-grow w-full">
+              <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider shadow-sm ${actionDetails.class}`}>
+                  {res.action === 'create' && <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>}
+                  {res.action === 'update' && <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>}
+                  {res.action === 'delete' && <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+                  {t[`action_${res.action}`] || res.action}
+                </span>
+                <span class="badge badge-outline badge-sm uppercase text-[10px] font-bold">{getCategoryLabel(res.category, lang)}</span>
+                <span class="badge badge-ghost badge-sm uppercase text-[10px] font-bold">{res.language}</span>
               </div>
-            ) : (
-              <>
-                <p class="text-stone-500 text-sm mb-4">{res.description}</p>
-                <div class="flex flex-wrap gap-1 mb-4">
-                  {res.metadata?.tags?.map((tag: string) => (
-                    <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#{tag}</span>
-                  ))}
-                </div>
-                <a href={res.link} target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block">{res.link}</a>
-                {res.action === 'update' && <p class="text-[10px] text-stone-300 italic">Mise à jour de : {res.resource_id}</p>}
-              </>
-            )}
-          </div>
+              
+              <h2 class="text-xl font-bold mb-2">{res.title}</h2>
+              <p class="text-stone-500 text-sm mb-4">{res.description}</p>
+              
+              <div class="flex flex-wrap gap-1 mb-4">
+                {res.metadata?.tags?.map((tag: string) => (
+                  <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#{tag}</span>
+                ))}
+              </div>
+              
+              <a href={res.link} target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block">{res.link}</a>
 
-          <div class="flex md:flex-col gap-2 w-full md:w-auto">
-            <button 
-              class="btn btn-primary btn-sm flex-grow approve-btn border-none hover:bg-[#52b788] transition-colors shadow-sm" 
-              data-id={res.id}
-              data-data={JSON.stringify(res)}
-            >
-              {t.approve}
-            </button>
-            <button class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id={res.id}>
-              {t.reject}
-            </button>
-          </div>
-        </article>
-      ))}
+              {res.action === 'delete' && (
+                <div class="mt-4 bg-red-50 p-4 rounded-xl border border-red-100">
+                  <p class="text-xs font-bold text-red-800 uppercase mb-1">{t.reason_label}</p>
+                  <p class="text-red-700 italic text-sm">{res.reason}</p>
+                </div>
+              )}
+
+              {res.resource_id && (
+                <p class="mt-4 text-[10px] text-stone-300 font-mono tracking-tighter opacity-70">
+                  {t.target_id} {res.resource_id}
+                </p>
+              )}
+            </div>
+
+            <div class="flex md:flex-col gap-2 w-full md:w-auto">
+              <button 
+                class="btn btn-primary btn-sm flex-grow approve-btn border-none hover:bg-[#52b788] transition-colors shadow-sm" 
+                data-id={res.id}
+                data-data={JSON.stringify(res)}
+              >
+                {t.approve}
+              </button>
+              <button class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id={res.id}>
+                {t.reject}
+              </button>
+            </div>
+          </article>
+        );
+      })}
     </div>
   </div>
 </Layout>
@@ -193,7 +208,6 @@ const getActionBadgeClass = (action: string) => {
         return;
       }
 
-      // Mettre à jour le statut de la suggestion
       const { error: sugError } = await supabase
         .from('suggestions')
         .update({ status: 'approved' })
@@ -201,7 +215,6 @@ const getActionBadgeClass = (action: string) => {
 
       if (sugError) {
         console.error("Erreur mise à jour suggestion:", sugError);
-        alert("La ressource a été traitée mais le statut de la suggestion n'a pu être mis à jour.");
       }
 
       location.reload();
@@ -223,9 +236,3 @@ const getActionBadgeClass = (action: string) => {
     });
   });
 </script>
-
-<style>
-  .badge-success { background-color: #2d6a4f; }
-  .badge-info { background-color: #40916c; }
-  .badge-error { background-color: #d90429; }
-</style>

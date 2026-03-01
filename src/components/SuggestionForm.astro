@@ -24,7 +24,7 @@ const t = {
     tags: 'Tags (séparés par des virgules)',
     image: 'Image (sera compressée)',
     reason: 'Motif de la suppression',
-    target: 'Ressource concernée :',
+    target: 'Aperçu de la ressource :',
     submit: 'Envoyer la suggestion',
     loading: 'Chargement...',
     success: 'Merci ! Votre suggestion a été envoyée pour modération. Redirection...',
@@ -42,7 +42,7 @@ const t = {
     tags: 'Tags (comma separated)',
     image: 'Image (will be compressed)',
     reason: 'Reason for deletion',
-    target: 'Target resource:',
+    target: 'Resource preview:',
     submit: 'Send suggestion',
     loading: 'Loading...',
     success: 'Thank you! Your suggestion has been sent for moderation. Redirecting...',
@@ -52,9 +52,27 @@ const t = {
 ---
 
 <div class="max-w-2xl mx-auto p-6 bg-base-100 rounded-xl shadow-sm border border-base-200">
-  <h2 id="form-title" class="text-2xl font-bold mb-6 flex items-center gap-2">
-    <span id="form-icon">➕</span> <span id="form-title-text">{t.titleCreate}</span>
+  <h2 id="form-title" class="text-2xl font-bold mb-6 flex items-center gap-3">
+    <div id="form-icon-container" class="p-2 bg-stone-50 rounded-lg border border-stone-100 flex items-center justify-center">
+      <span id="form-icon-placeholder">➕</span>
+    </div>
+    <span id="form-title-text">{t.titleCreate}</span>
   </h2>
+
+  {/* Unified Resource Preview Block */}
+  <div id="resource-preview-block" class="mb-8 p-4 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-4">
+    <div id="resource-preview-img" class="w-20 h-20 rounded-lg bg-white border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-stone-200">
+      {/* Icon or image will be injected here */}
+    </div>
+    <div class="flex-grow">
+      <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t.target}</p>
+      <p id="resource-preview-title" class="font-bold text-stone-800 leading-tight">Nouveau projet...</p>
+      <div class="flex gap-2 mt-1">
+        <span id="resource-preview-badge-cat" class="text-[9px] font-bold uppercase text-stone-400">CATÉGORIE</span>
+        <span id="resource-preview-badge-lang" class="text-[9px] font-bold uppercase text-primary">FR</span>
+      </div>
+    </div>
+  </div>
 
   <form 
     id="suggestion-form" 
@@ -68,12 +86,12 @@ const t = {
     <div id="standard-fields" class="space-y-4">
       <div class="form-control">
         <label class="label"><span class="label-text">{t.name}</span></label>
-        <input type="text" name="title" required class="input input-bordered w-full" />
+        <input type="text" name="title" required placeholder="Ex: Salvia" class="input input-bordered w-full" />
       </div>
 
       <div class="form-control">
         <label class="label"><span class="label-text">{t.description}</span></label>
-        <textarea name="description" required class="textarea textarea-bordered h-24"></textarea>
+        <textarea name="description" required placeholder="Brève description..." class="textarea textarea-bordered h-24"></textarea>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -97,7 +115,7 @@ const t = {
 
       <div class="form-control">
         <label class="label"><span class="label-text">{t.link}</span></label>
-        <input type="url" name="link" required class="input input-bordered w-full" />
+        <input type="url" name="link" required placeholder="https://..." class="input input-bordered w-full" />
       </div>
 
       <div class="form-control">
@@ -125,14 +143,6 @@ const t = {
     </div>
 
     <div id="delete-fields" class="hidden space-y-4">
-      <div class="p-4 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-4">
-        <div id="delete-preview-img" class="w-16 h-16 rounded-lg bg-stone-200 overflow-hidden flex-shrink-0"></div>
-        <div>
-          <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t.target}</p>
-          <p id="delete-preview-title" class="font-bold text-stone-800"></p>
-        </div>
-      </div>
-
       <div class="form-control">
         <label class="label"><span class="label-text font-bold text-error">{t.reason}</span></label>
         <textarea name="reason" placeholder="Ex: Le site n'existe plus..." class="textarea textarea-bordered textarea-error h-32"></textarea>
@@ -153,26 +163,30 @@ const t = {
 
 <script>
   import { supabase, getImageUrl } from '../lib/supabase/client';
+  import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 
   const form = document.getElementById('suggestion-form') as HTMLFormElement;
   const toastContainer = document.getElementById('toast-container');
   const toastMessage = document.getElementById('toast-message');
   const toastText = document.getElementById('toast-text');
   
-  const formIcon = document.getElementById('form-icon');
+  const formIconContainer = document.getElementById('form-icon-container');
   const formTitleText = document.getElementById('form-title-text');
   const standardFields = document.getElementById('standard-fields');
   const deleteFields = document.getElementById('delete-fields');
-  const deletePreviewTitle = document.getElementById('delete-preview-title');
-  const deletePreviewImg = document.getElementById('delete-preview-img');
+
+  // Preview elements
+  const previewImg = document.getElementById('resource-preview-img');
+  const previewTitle = document.getElementById('resource-preview-title');
+  const previewCat = document.getElementById('resource-preview-badge-cat');
+  const previewLang = document.getElementById('resource-preview-badge-lang');
 
   const msgSuccess = form?.dataset.msgSuccess || '';
   const msgError = form?.dataset.msgError || '';
   const msgLoading = form?.dataset.msgLoading || '';
   const msgSubmit = form?.dataset.msgSubmit || '';
-  const uiLang = form?.dataset.lang || 'fr';
+  const uiLang = (form?.dataset.lang || 'fr') as 'fr' | 'en';
 
-  // Get params from URL
   const urlParams = new URLSearchParams(window.location.search);
   const resourceId = urlParams.get('id');
   const action = urlParams.get('action') || 'create';
@@ -181,14 +195,22 @@ const t = {
     fr: {
       titleCreate: 'Proposer un ajout de ressource',
       titleUpdate: 'Proposer une modification de ressource',
-      titleDelete: 'Proposer une suppression de ressource'
+      titleDelete: 'Proposer une suppression de ressource',
+      defaultTitle: 'Nouveau projet...'
     },
     en: {
       titleCreate: 'Suggest a resource addition',
       titleUpdate: 'Suggest a resource modification',
-      titleDelete: 'Suggest a resource deletion'
+      titleDelete: 'Suggest a resource deletion',
+      defaultTitle: 'New project...'
     }
   }[uiLang];
+
+  const icons = {
+    create: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>',
+    update: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>',
+    delete: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>'
+  };
 
   let existingData: any = null;
 
@@ -209,11 +231,43 @@ const t = {
     }
   }
 
+  function updatePreview() {
+    if (!previewTitle || !previewCat || !previewLang || !previewImg) return;
+
+    const titleInput = form.querySelector('[name="title"]') as HTMLInputElement;
+    const catInput = form.querySelector('[name="category"]') as HTMLSelectElement;
+    const langInput = form.querySelector('[name="language"]') as HTMLSelectElement;
+    const imageInput = form.querySelector('[name="image"]') as HTMLInputElement;
+
+    previewTitle.innerText = titleInput.value || existingData?.title || i18n.defaultTitle;
+    previewCat.innerText = getCategoryLabel(catInput.value || existingData?.category || 'entreprise', uiLang);
+    previewLang.innerText = (langInput.value || existingData?.language || 'fr').toUpperCase();
+
+    // Image logic
+    if (imageInput?.files && imageInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.innerHTML = `<img src="${e.target?.result}" class="w-full h-full object-contain p-1" />`;
+      };
+      reader.readAsDataURL(imageInput.files[0]);
+    } else if (existingData?.image_url) {
+      const url = getImageUrl(existingData.image_url);
+      previewImg.innerHTML = `<img src="${url}" class="w-full h-full object-contain p-1" />`;
+    } else {
+      // Default category icon
+      const cat = catInput.value || existingData?.category || 'entreprise';
+      previewImg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${getCategoryIcon(cat)}" /></svg>`;
+    }
+  }
+
   // Initialize UI
   async function initForm() {
+    if (formIconContainer) {
+      formIconContainer.innerHTML = icons[action as keyof typeof icons] || icons.create;
+    }
+
     if ((action === 'update' || action === 'delete') && resourceId) {
       if (action === 'delete') {
-        if (formIcon) formIcon.innerText = '🗑️';
         if (formTitleText) formTitleText.innerText = i18n.titleDelete;
         standardFields?.classList.add('hidden');
         deleteFields?.classList.remove('hidden');
@@ -226,7 +280,6 @@ const t = {
         const reasonInput = deleteFields?.querySelector('textarea');
         if (reasonInput) reasonInput.required = true;
       } else {
-        if (formIcon) formIcon.innerText = '✏️';
         if (formTitleText) formTitleText.innerText = i18n.titleUpdate;
       }
       
@@ -239,33 +292,26 @@ const t = {
 
         if (data) {
           existingData = data;
-          if (action === 'delete') {
-            if (deletePreviewTitle) deletePreviewTitle.innerText = data.title;
-            if (deletePreviewImg && data.image_url) {
-              const url = getImageUrl(data.image_url);
-              if (url) deletePreviewImg.innerHTML = `<img src="${url}" class="w-full h-full object-contain p-1" />`;
-            }
-          } else {
-            const titleInput = form.querySelector('[name="title"]') as HTMLInputElement;
-            const descInput = form.querySelector('[name="description"]') as HTMLTextAreaElement;
-            const catInput = form.querySelector('[name="category"]') as HTMLSelectElement;
-            const langInput = form.querySelector('[name="language"]') as HTMLSelectElement;
-            const linkInput = form.querySelector('[name="link"]') as HTMLInputElement;
-            const tagsInput = form.querySelector('[name="tags"]') as HTMLInputElement;
-
-            if (titleInput) titleInput.value = data.title || '';
-            if (descInput) descInput.value = data.description || '';
-            if (catInput) catInput.value = data.category || '';
-            if (langInput) langInput.value = data.language || 'fr';
-            if (linkInput) linkInput.value = data.link || '';
-            if (tagsInput) tagsInput.value = data.metadata?.tags?.join(', ') || '';
+          if (action !== 'delete') {
+            (form.querySelector('[name="title"]') as HTMLInputElement).value = data.title || '';
+            (form.querySelector('[name="description"]') as HTMLTextAreaElement).value = data.description || '';
+            (form.querySelector('[name="category"]') as HTMLSelectElement).value = data.category || '';
+            (form.querySelector('[name="language"]') as HTMLSelectElement).value = data.language || 'fr';
+            (form.querySelector('[name="link"]') as HTMLInputElement).value = data.link || '';
+            (form.querySelector('[name="tags"]') as HTMLInputElement).value = data.metadata?.tags?.join(', ') || '';
           }
+          updatePreview();
         }
       }
     } else {
-      if (formIcon) formIcon.innerText = '➕';
       if (formTitleText) formTitleText.innerText = i18n.titleCreate;
+      updatePreview(); // Show default for create
     }
+
+    // Attach listeners for live preview
+    form.querySelectorAll('input, select, textarea').forEach(input => {
+      input.addEventListener('input', updatePreview);
+    });
   }
 
   initForm();
