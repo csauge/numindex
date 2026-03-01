@@ -41,77 +41,53 @@ const t = {
     desc: "Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
     searchPlaceholder: "Rechercher un outil, une entreprise, un article...",
     filterCat: "Toutes les catégories",
-    filterLang: "Toutes les langues",
-    discover: "Découvrir la ressource",
-    labelCat: "Filtrer par catégorie",
-    labelLang: "Filtrer par langue de l'article",
-    edit: "Modifier",
-    report: "Supprimer",
-    by: "Par",
-    contributions: "Ressources proposées :"
+    filterLang: "Toutes les langues"
   },
   en: {
     title: "Sustainable Digital Directory",
     desc: "Explore initiatives committed to a more sober, ethical, and accessible digital future.",
     searchPlaceholder: "Search for a tool, company, article...",
     filterCat: "All categories",
-    filterLang: "All languages",
-    discover: "Discover resource",
-    labelCat: "Filter by category",
-    labelLang: "Filter by article language",
-    edit: "Edit",
-    report: "Delete",
-    by: "By",
-    contributions: "Proposed resources:"
+    filterLang: "All languages"
   }
 }[lang];
 
-// Helper to get entity names from IDs
 const getRelatedNames = (ids: string[]) => {
   return ids
     .map(id => entities.find(e => e.id === id)?.title)
     .filter(Boolean);
 };
-
-// Helper to get child resources for an entity
-const getEntityChildren = (entityId: string) => {
-  return allRessources
-    .filter(res => res.related_ids?.includes(entityId))
-    .map(res => res.title);
-};
 ---
 
 <Layout title={t.title} lang={lang}>
   <section>
-    <header class="mb-12 text-center md:text-left w-full">
-      <h1 class="text-3xl md:text-4xl lg:text-5xl font-black mb-6 text-stone-800 tracking-tight leading-tight">{t.title}</h1>
-      <p class="text-base md:text-lg text-stone-600 leading-relaxed">{t.desc}</p>
+    <header class="mb-12 text-center md:text-left w-full max-w-2xl">
+      <h1 class="text-3xl md:text-4xl font-black mb-4 text-stone-800 tracking-tight leading-tight">{t.title}</h1>
+      <p class="text-stone-500 leading-relaxed italic text-sm">{t.desc}</p>
     </header>
 
-    {/* Search & Filters */}
-    <div class="sticky top-20 z-30 mb-12 p-2 bg-white/80 backdrop-blur-md border border-stone-200 rounded-3xl shadow-sm flex flex-col md:flex-row gap-3">
+    {/* Search & Filters Compact */}
+    <div class="sticky top-20 z-30 mb-12 p-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-2">
       <div class="flex-grow relative group">
         <label for="search-input" class="sr-only">{t.searchPlaceholder}</label>
         <input 
           type="text" 
           id="search-input" 
           placeholder={t.searchPlaceholder} 
-          class="input input-ghost w-full pl-12 h-12 bg-stone-50/50 focus:bg-white transition-all rounded-2xl border-none focus:ring-2 focus:ring-primary/20"
+          class="input input-ghost w-full pl-10 h-10 bg-stone-50/50 focus:bg-white transition-all rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm"
         />
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-4 top-3.5 opacity-30 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3.5 top-3 opacity-30 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
       </div>
 
-      <div class="flex gap-2 p-1">
-        <label for="filter-category" class="sr-only">{t.labelCat}</label>
-        <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-xl h-10 min-h-0 text-sm">
+      <div class="flex gap-2 p-0.5">
+        <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
           <option value="all">{t.filterCat}</option>
           {activeCategoryKeys.map(key => (
             <option value={key}>{getCategoryLabel(key, lang)}</option>
           ))}
         </select>
 
-        <label for="filter-language" class="sr-only">{t.labelLang}</label>
-        <select id="filter-language" class="select select-ghost bg-stone-50/50 rounded-xl h-10 min-h-0 text-sm">
+        <select id="filter-language" class="select select-ghost bg-stone-50/50 rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
           <option value="all">{t.filterLang}</option>
           <option value="fr">FR</option>
           <option value="en">EN</option>
@@ -119,127 +95,66 @@ const getEntityChildren = (entityId: string) => {
       </div>
     </div>
 
-    <div class="mb-6 flex justify-between items-center px-2">
-      <span id="results-count" class="text-xs font-bold uppercase tracking-widest text-stone-400" aria-live="polite">
+    <div class="mb-6 flex justify-between items-center px-2 text-[10px] font-black uppercase tracking-widest text-stone-300">
+      <span id="results-count" aria-live="polite">
         {allRessources.length} ressources
       </span>
     </div>
     
-    <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+    <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       {allRessources.map((res) => {
         const relatedNames = getRelatedNames(res.related_ids || []);
-        const children = getCategoryType(res.category) === 'entity' ? getEntityChildren(res.id) : [];
-        
         return (
-          <article 
-            class="resource-card group flex flex-col bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-stone-200/40 hover:border-primary/20 transition-all duration-300 relative"
+          <a 
+            href={`/${lang}/resource/${res.id}`}
+            class="resource-card group flex flex-col bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-stone-200/40 hover:border-primary/30 transition-all duration-300"
             data-category={res.category}
             data-language={res.language}
-            data-search-content={`${res.title} ${res.description} ${res.tags?.join(' ')} ${relatedNames.join(' ')} ${children.join(' ')}`.toLowerCase()}
+            data-search-content={`${res.title} ${res.description} ${res.tags?.join(' ')} ${relatedNames.join(' ')}`.toLowerCase()}
           >
-            {/* Quick Actions overlay */}
-            <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <a 
-                href={`/${lang}/propose?id=${res.id}&action=update`}
-                class="p-1.5 bg-white/90 backdrop-blur shadow-sm rounded-lg hover:text-primary transition-colors border border-stone-100"
-                title={t.edit}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              </a>
-              <a 
-                href={`/${lang}/propose?id=${res.id}&action=delete`}
-                class="p-1.5 bg-white/90 backdrop-blur shadow-sm rounded-lg hover:text-error transition-colors border border-stone-100"
-                title={t.report}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              </a>
-            </div>
-
-            <div class="relative w-full pt-[50%] overflow-hidden bg-stone-50/30 border-b border-stone-50">
+            <div class="relative w-full pt-[56%] bg-stone-50/30 border-b border-stone-50 flex items-center justify-center">
               {res.image_url ? (
                 <img 
                   src={getImageUrl(res.image_url)} 
                   alt="" 
-                  class="absolute inset-0 w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500 ease-out"
+                  class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500 ease-out"
                   loading="lazy"
-                  decoding="async"
                 />
               ) : (
-                <div class="absolute inset-0 flex items-center justify-center p-6 text-stone-200 group-hover:text-primary/20 transition-colors duration-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="absolute inset-0 flex items-center justify-center text-stone-100 group-hover:text-primary/10 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(res.category)} />
                   </svg>
                 </div>
               )}
+              <div class="absolute top-2 right-2 flex gap-1">
+                <span class="px-1.5 py-0.5 bg-white/90 backdrop-blur text-[8px] font-black uppercase rounded border border-stone-100 text-stone-400 group-hover:text-primary transition-colors">
+                  {res.language}
+                </span>
+              </div>
             </div>
             
             <div class="p-4 flex flex-col flex-grow">
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex flex-wrap gap-1.5">
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-stone-400 bg-stone-100/50 px-1.5 py-0.5 rounded">
-                    {getCategoryLabel(res.category, lang)}
-                  </span>
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/5 px-1.5 py-0.5 rounded" aria-label={`Langue : ${res.language}`}>{res.language}</span>
-                </div>
-              </div>
+              <span class="text-[8px] font-black uppercase tracking-widest text-stone-300 mb-1">
+                {getCategoryLabel(res.category, lang)}
+              </span>
               
-              <h2 class="text-base font-bold text-stone-800 leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1">
+              <h2 class="text-[13px] font-bold text-stone-800 leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
                 {res.title}
               </h2>
-
-              {/* Display Parent for Resource */}
-              {relatedNames.length > 0 && (
-                <p class="text-[10px] text-stone-400 mb-2 truncate">
-                  <span class="italic font-medium">{t.by}</span> {relatedNames.join(', ')}
-                </p>
-              )}
-
-              {/* Display Children for Entity */}
-              {children.length > 0 && (
-                <div class="mb-3">
-                  <p class="text-[9px] font-bold text-stone-300 uppercase tracking-tighter mb-1">{t.contributions}</p>
-                  <div class="flex flex-wrap gap-1">
-                    {children.map(child => (
-                      <span class="text-[9px] px-1.5 py-0.5 bg-stone-50 text-stone-400 rounded-md border border-stone-100 italic">{child}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
               
-              <p class="text-xs text-stone-500 line-clamp-2 mb-4 leading-relaxed flex-grow">
+              <p class="text-[11px] text-stone-500 line-clamp-2 leading-relaxed opacity-70 group-hover:opacity-100 transition-opacity">
                 {res.description}
               </p>
-
-              {res.tags && res.tags.length > 0 && (
-                <div class="flex flex-wrap gap-1 mb-4">
-                  {res.tags.slice(0, 3).map((tag: string) => (
-                    <span class="text-[9px] text-stone-400 font-medium bg-stone-50 px-1.5 py-0.5 rounded-full">#{tag}</span>
-                  ))}
-                  {res.tags.length > 3 && <span class="text-[9px] text-stone-300">+{res.tags.length - 3}</span>}
-                </div>
-              )}
-              
-              <div class="mt-auto pt-3 border-t border-stone-50">
-                <a 
-                  href={res.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  class="flex items-center gap-1.5 text-xs font-bold text-primary hover:gap-2 transition-all"
-                  aria-label={`${t.discover} : ${res.title}`}
-                >
-                  {t.discover}
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                </a>
-              </div>
             </div>
-          </article>
+          </a>
         );
       })}
     </div>
 
-    <div id="no-results" class="hidden py-32 text-center">
-      <p class="text-4xl mb-4">🏜️</p>
-      <p class="text-xl text-stone-300 font-medium italic">Aucune ressource ne correspond à votre recherche.</p>
+    <div id="no-results" class="hidden py-32 text-center text-stone-300 italic">
+      <p class="text-4xl mb-4 opacity-20">🏜️</p>
+      <p>Aucune ressource trouvée.</p>
     </div>
   </section>
 </Layout>

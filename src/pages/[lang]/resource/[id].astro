@@ -1,0 +1,186 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCategoryLabel, getCategoryIcon, getCategoryType, ACTION_ICONS } from '../../../utils/categories';
+import { supabase, getImageUrl } from '../../../lib/supabase/client';
+import type { Resource } from '../../../lib/supabase/types';
+
+export async function getStaticPaths() {
+  if (!supabase) return [];
+  
+  const { data } = await supabase.from('resources').select('id');
+  if (!data) return [];
+
+  const locales = ['fr', 'en'];
+  
+  return data.flatMap((res) => 
+    locales.map((lang) => ({
+      params: { lang, id: res.id }
+    }))
+  );
+}
+
+const { id, lang } = Astro.params;
+
+// Fetch current resource
+const { data: res } = await supabase
+  .from('resources')
+  .select('*')
+  .eq('id', id)
+  .single();
+
+if (!res) return Astro.redirect(`/${lang}`);
+
+// Fetch related entities (if this is a resource) or children (if this is an entity)
+let relatedResources: Resource[] = [];
+if (getCategoryType(res.category) === 'entity') {
+  const { data } = await supabase
+    .from('resources')
+    .select('id, title, category, language')
+    .contains('related_ids', [id]);
+  if (data) relatedResources = data as Resource[];
+} else if (res.related_ids?.length > 0) {
+  const { data } = await supabase
+    .from('resources')
+    .select('id, title, category, language')
+    .in('id', res.related_ids);
+  if (data) relatedResources = data as Resource[];
+}
+
+const t = {
+  fr: {
+    back: "Retour à l'annuaire",
+    visit: "Visiter le site officiel",
+    details: "Détails",
+    tags: "Mots-clés",
+    relations: getCategoryType(res.category) === 'entity' ? "Ressources proposées :" : "Proposé par :",
+    meta: "Informations",
+    created: "Ajouté le",
+    updated: "Mis à jour le",
+    edit: "Modifier",
+    report: "Supprimer"
+  },
+  en: {
+    back: "Back to directory",
+    visit: "Visit official website",
+    details: "Details",
+    tags: "Tags",
+    relations: getCategoryType(res.category) === 'entity' ? "Proposed resources:" : "Proposed by:",
+    meta: "Information",
+    created: "Added on",
+    updated: "Updated on",
+    edit: "Edit",
+    report: "Delete"
+  }
+}[lang as 'fr' | 'en'];
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+};
+---
+
+<Layout title={res.title} lang={lang as string}>
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    
+    {/* Navigation Retour */}
+    <a href={`/${lang}`} class="inline-flex items-center gap-2 text-stone-400 hover:text-primary transition-colors text-sm font-bold mb-12 group">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+      {t.back}
+    </a>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+      
+      {/* Colonne Gauche : Visuel & Actions */}
+      <div class="space-y-8">
+        <div class="aspect-square rounded-3xl bg-white border border-stone-200 shadow-sm overflow-hidden flex items-center justify-center p-6 relative group">
+          {res.image_url ? (
+            <img src={getImageUrl(res.image_url)} alt="" class="w-full h-full object-contain" />
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 text-stone-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(res.category)} />
+            </svg>
+          )}
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <a href={res.link} target="_blank" rel="noopener noreferrer" class="btn btn-primary w-full shadow-md shadow-primary/20 rounded-2xl font-black">
+            {t.visit}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </a>
+          <div class="flex gap-2">
+            <a href={`/${lang}/propose?id=${res.id}&action=update`} class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-primary gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.update} /></svg>
+              {t.edit}
+            </a>
+            <a href={`/${lang}/propose?id=${res.id}&action=delete`} class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-error gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.delete} /></svg>
+              {t.report}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Colonne Droite : Contenu */}
+      <div class="md:col-span-2 space-y-10">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <span class="badge badge-outline text-[10px] font-black uppercase tracking-wider h-6 border-stone-200 text-stone-400">
+              {getCategoryLabel(res.category, lang as 'fr' | 'en')}
+            </span>
+            <span class="badge badge-ghost text-[10px] font-black uppercase tracking-wider h-6 bg-stone-100 text-stone-500 border-none">
+              {res.language}
+            </span>
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-stone-800 leading-tight">{res.title}</h1>
+        </div>
+
+        <div class="prose prose-stone max-w-none">
+          <p class="text-lg text-stone-600 leading-relaxed italic">{res.description}</p>
+        </div>
+
+        {res.tags?.length > 0 && (
+          <div class="space-y-4">
+            <h2 class="text-xs font-black uppercase tracking-widest text-stone-300">{t.tags}</h2>
+            <div class="flex flex-wrap gap-2">
+              {res.tags.map((tag: string) => (
+                <span class="px-3 py-1 bg-white border border-stone-200 rounded-full text-xs font-bold text-stone-500 shadow-sm hover:border-primary/30 transition-colors cursor-default">#{tag}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {relatedResources.length > 0 && (
+          <div class="space-y-4 pt-8 border-t border-stone-100">
+            <h2 class="text-xs font-black uppercase tracking-widest text-stone-300">{t.relations}</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {relatedResources.map((rel) => (
+                <a href={`/${rel.language}/resource/${rel.id}`} class="flex items-center gap-3 p-3 bg-white border border-stone-100 rounded-2xl hover:border-primary/20 hover:shadow-md transition-all group">
+                  <div class="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center text-stone-300 group-hover:text-primary transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(rel.category)} />
+                    </svg>
+                  </div>
+                  <span class="text-sm font-bold text-stone-700 group-hover:text-primary transition-colors">{rel.title}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div class="pt-8 border-t border-stone-100 flex flex-wrap gap-x-8 gap-y-4">
+          <div>
+            <p class="text-[9px] font-black uppercase tracking-tighter text-stone-300">{t.created}</p>
+            <p class="text-xs font-bold text-stone-500">{formatDate(res.created_at)}</p>
+          </div>
+          {res.updated_at !== res.created_at && (
+            <div>
+              <p class="text-[9px] font-black uppercase tracking-tighter text-stone-300">{t.updated}</p>
+              <p class="text-xs font-bold text-stone-500">{formatDate(res.updated_at)}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
