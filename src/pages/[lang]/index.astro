@@ -1,7 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { CATEGORIES, getCategoryLabel, getCategoryIcon } from '../../utils/categories';
+import { getCategoryLabel, getCategoryIcon } from '../../utils/categories';
 import { supabase, getImageUrl } from '../../lib/supabase/client';
+import type { Resource } from '../../lib/supabase/types';
 
 export async function getStaticPaths() {
   return [
@@ -13,7 +14,7 @@ export async function getStaticPaths() {
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
 // Fetch resources if Supabase is initialized
-let allRessources = [];
+let allRessources: Resource[] = [];
 if (supabase) {
   const { data, error } = await supabase
     .from('resources')
@@ -21,7 +22,7 @@ if (supabase) {
     .order('created_at', { ascending: false });
 
   if (error) console.error('Error fetching resources:', error);
-  else allRessources = data || [];
+  else allRessources = (data || []) as Resource[];
 }
 
 // Extract active categories for filter dropdown

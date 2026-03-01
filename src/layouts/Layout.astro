@@ -1,4 +1,6 @@
 ---
+import { ACTION_ICONS } from '../utils/categories';
+
 interface Props {
   title: string;
   lang: string;
@@ -59,7 +61,9 @@ const t = {
           class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-3 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all"
           aria-label={lang === 'fr' ? 'Accéder à la modération' : 'Access moderation'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.moderate} />
+          </svg>
           <span class="hidden md:inline">{t.admin}</span>
         </a>
 
@@ -69,7 +73,9 @@ const t = {
           class="btn btn-primary btn-sm font-bold min-h-0 h-9 px-4 rounded-full border-none shadow-md shadow-emerald-200/50 hover:bg-[#52b788] hover:scale-105 active:scale-95 transition-all"
           aria-label={lang === 'fr' ? 'Proposer une nouvelle ressource' : 'Propose a new resource'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.create} />
+          </svg>
           <span class="hidden md:inline">{t.propose}</span>
         </a>
 

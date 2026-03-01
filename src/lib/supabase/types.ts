@@ -1,3 +1,7 @@
+export interface ResourceMetadata {
+  tags: string[];
+}
+
 export interface Resource {
   id: string;
   title: string;
@@ -5,16 +9,19 @@ export interface Resource {
   link: string;
   category: string;
   language: 'fr' | 'en';
-  image_url?: string;
-  metadata: {
-    tags: string[];
-    [key: string]: any;
-  };
+  image_url?: string | null;
+  metadata: ResourceMetadata;
   created_at: string;
   updated_at: string;
 }
 
+export type SuggestionStatus = 'pending' | 'approved' | 'rejected';
+export type SuggestionAction = 'create' | 'update' | 'delete';
+
 export interface Suggestion extends Omit<Resource, 'updated_at'> {
-  status: 'pending' | 'approved' | 'rejected';
-  submitted_by?: string;
+  status: SuggestionStatus;
+  action: SuggestionAction;
+  resource_id?: string | null;
+  reason?: string | null;
+  submitted_by?: string | null;
 }

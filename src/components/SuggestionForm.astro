@@ -1,14 +1,15 @@
 ---
-import { CATEGORIES, type CategoryKey } from '../utils/categories';
+import { CATEGORIES, type CategoryKey, ACTION_ICONS } from '../utils/categories';
+import type { Suggestion, SuggestionAction, Resource } from '../lib/supabase/types';
 
 interface Props {
   lang: 'fr' | 'en';
-  initialData?: any;
-  resourceId?: string;
-  action?: 'create' | 'update' | 'delete';
+  initialData?: Partial<Resource> | null;
+  resourceId?: string | null;
+  action?: SuggestionAction;
 }
 
-const { lang, initialData: rawInitialData, resourceId, action: initialAction = 'create' } = Astro.props;
+const { lang, initialData: rawInitialData, resourceId, action = 'create' } = Astro.props;
 const initialData = rawInitialData || {};
 
 const t = {
@@ -54,9 +55,13 @@ const t = {
 <div class="max-w-2xl mx-auto p-6 bg-base-100 rounded-xl shadow-sm border border-base-200">
   <h2 id="form-title" class="text-2xl font-bold mb-6 flex items-center gap-3">
     <div id="form-icon-container" class="p-2 bg-stone-50 rounded-lg border border-stone-100 flex items-center justify-center">
-      <span id="form-icon-placeholder">➕</span>
+      <span id="form-icon-placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS[action]} />
+        </svg>
+      </span>
     </div>
-    <span id="form-title-text">{t.titleCreate}</span>
+    <span id="form-title-text">{action === 'delete' ? t.titleDelete : (action === 'update' ? t.titleUpdate : t.titleCreate)}</span>
   </h2>
 
   {/* Unified Resource Preview Block */}
@@ -163,7 +168,8 @@ const t = {
 
 <script>
   import { supabase, getImageUrl } from '../lib/supabase/client';
-  import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
+  import { getCategoryIcon, getCategoryLabel, ACTION_ICONS } from '../utils/categories';
+  import type { Resource, SuggestionAction } from '../lib/supabase/types';
 
   const form = document.getElementById('suggestion-form') as HTMLFormElement;
   const toastContainer = document.getElementById('toast-container');
@@ -189,7 +195,7 @@ const t = {
 
   const urlParams = new URLSearchParams(window.location.search);
   const resourceId = urlParams.get('id');
-  const action = urlParams.get('action') || 'create';
+  const action = (urlParams.get('action') || 'create') as SuggestionAction;
 
   const i18n = {
     fr: {
@@ -206,13 +212,7 @@ const t = {
     }
   }[uiLang];
 
-  const icons = {
-    create: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>',
-    update: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>',
-    delete: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>'
-  };
-
-  let existingData: any = null;
+  let existingData: Resource | null = null;
 
   async function showToast(message: string, type: 'success' | 'error') {
     if (!toastContainer || !toastMessage || !toastText) return;
@@ -263,7 +263,8 @@ const t = {
   // Initialize UI
   async function initForm() {
     if (formIconContainer) {
-      formIconContainer.innerHTML = icons[action as keyof typeof icons] || icons.create;
+      const iconPath = ACTION_ICONS[action];
+      formIconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${action === 'delete' ? 'text-error' : 'text-primary'}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}" /></svg>`;
     }
 
     if ((action === 'update' || action === 'delete') && resourceId) {
@@ -291,7 +292,7 @@ const t = {
           .single();
 
         if (data) {
-          existingData = data;
+          existingData = data as Resource;
           if (action !== 'delete') {
             (form.querySelector('[name="title"]') as HTMLInputElement).value = data.title || '';
             (form.querySelector('[name="description"]') as HTMLTextAreaElement).value = data.description || '';
@@ -305,10 +306,9 @@ const t = {
       }
     } else {
       if (formTitleText) formTitleText.innerText = i18n.titleCreate;
-      updatePreview(); // Show default for create
+      updatePreview();
     }
 
-    // Attach listeners for live preview
     form.querySelectorAll('input, select, textarea').forEach(input => {
       input.addEventListener('input', updatePreview);
     });
@@ -362,8 +362,8 @@ const t = {
         description: action === 'delete' ? existingData?.description : formData.get('description'),
         link: action === 'delete' ? existingData?.link : formData.get('link'),
         category: action === 'delete' ? existingData?.category : formData.get('category'),
-        language: action === 'delete' ? existingData?.language : formData.get('language'),
-        metadata: action === 'delete' ? existingData?.metadata : { tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) },
+        language: action === 'delete' ? (existingData?.language || 'fr') : formData.get('language'),
+        metadata: action === 'delete' ? (existingData?.metadata || { tags: [] }) : { tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) },
         image_url: imageUrl || null,
         status: 'pending',
         action: action,

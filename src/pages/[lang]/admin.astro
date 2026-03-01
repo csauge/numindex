@@ -1,7 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCategoryLabel, getCategoryIcon } from '../../utils/categories';
+import { getCategoryLabel, getCategoryIcon, ACTION_ICONS } from '../../utils/categories';
 import { supabase, getImageUrl } from '../../lib/supabase/client';
+import type { Suggestion, SuggestionAction } from '../../lib/supabase/types';
 
 export async function getStaticPaths() {
   return [
@@ -13,7 +14,7 @@ export async function getStaticPaths() {
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
 // Récupérer les suggestions en attente si Supabase est initialisé
-let suggestions = [];
+let suggestions: Suggestion[] = [];
 if (supabase) {
   const { data, error } = await supabase
     .from('suggestions')
@@ -22,7 +23,7 @@ if (supabase) {
     .order('created_at', { ascending: false });
 
   if (error) console.error('Error fetching suggestions:', error);
-  else suggestions = data || [];
+  else suggestions = (data || []) as Suggestion[];
 }
 
 const t = {
@@ -52,11 +53,11 @@ const t = {
   }
 }[lang];
 
-const getActionDetails = (action: string) => {
+const getActionClass = (action: SuggestionAction) => {
   switch (action) {
-    case 'update': return { class: 'bg-emerald-100 text-emerald-700 border-emerald-200' };
-    case 'delete': return { class: 'bg-red-100 text-red-700 border-red-200' };
-    default: return { class: 'bg-emerald-600 text-white border-emerald-700' };
+    case 'update': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    case 'delete': return 'bg-red-100 text-red-700 border-red-200';
+    default: return 'bg-emerald-600 text-white border-emerald-700';
   }
 };
 ---
@@ -80,7 +81,9 @@ const getActionDetails = (action: string) => {
 
     <div class="grid gap-6">
       {suggestions.map((res) => {
-        const actionDetails = getActionDetails(res.action);
+        const actionClass = getActionClass(res.action);
+        const actionIcon = ACTION_ICONS[res.action];
+        
         return (
           <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden">
             
@@ -96,10 +99,10 @@ const getActionDetails = (action: string) => {
             
             <div class="flex-grow w-full">
               <div class="flex flex-wrap items-center gap-2 mb-3">
-                <span class={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider shadow-sm ${actionDetails.class}`}>
-                  {res.action === 'create' && <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>}
-                  {res.action === 'update' && <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>}
-                  {res.action === 'delete' && <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+                <span class={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider shadow-sm ${actionClass}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={actionIcon} />
+                  </svg>
                   {t[`action_${res.action}`] || res.action}
                 </span>
                 <span class="badge badge-outline badge-sm uppercase text-[10px] font-bold">{getCategoryLabel(res.category, lang)}</span>
@@ -152,13 +155,14 @@ const getActionDetails = (action: string) => {
 
 <script>
   import { supabase } from '../../lib/supabase/client';
+  import type { Suggestion } from '../../lib/supabase/types';
 
   document.querySelectorAll('.approve-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!supabase) return;
       
       const id = btn.getAttribute('data-id');
-      const data = JSON.parse(btn.getAttribute('data-data') || '{}');
+      const data = JSON.parse(btn.getAttribute('data-data') || '{}') as Suggestion;
       
       btn.classList.add('loading');
       
