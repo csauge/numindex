@@ -299,7 +299,7 @@ const t = {
             (form.querySelector('[name="category"]') as HTMLSelectElement).value = data.category || '';
             (form.querySelector('[name="language"]') as HTMLSelectElement).value = data.language || 'fr';
             (form.querySelector('[name="link"]') as HTMLInputElement).value = data.link || '';
-            (form.querySelector('[name="tags"]') as HTMLInputElement).value = data.metadata?.tags?.join(', ') || '';
+            (form.querySelector('[name="tags"]') as HTMLInputElement).value = data.tags?.join(', ') || '';
           }
           updatePreview();
         }
@@ -357,13 +357,17 @@ const t = {
         }
       }
 
+      const tagsString = formData.get('tags') as string;
+      const tags = tagsString ? tagsString.split(',').map(t => t.trim()).filter(Boolean) : [];
+
       const payload = {
         title: action === 'delete' ? existingData?.title : formData.get('title'),
         description: action === 'delete' ? existingData?.description : formData.get('description'),
         link: action === 'delete' ? existingData?.link : formData.get('link'),
         category: action === 'delete' ? existingData?.category : formData.get('category'),
         language: action === 'delete' ? (existingData?.language || 'fr') : formData.get('language'),
-        metadata: action === 'delete' ? (existingData?.metadata || { tags: [] }) : { tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) },
+        tags: action === 'delete' ? (existingData?.tags || []) : tags,
+        metadata: action === 'delete' ? (existingData?.metadata || {}) : {},
         image_url: imageUrl || null,
         status: 'pending',
         action: action,

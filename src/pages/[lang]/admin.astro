@@ -113,7 +113,7 @@ const getActionClass = (action: SuggestionAction) => {
               <p class="text-stone-500 text-sm mb-4">{res.description}</p>
               
               <div class="flex flex-wrap gap-1 mb-4">
-                {res.metadata?.tags?.map((tag: string) => (
+                {res.tags?.map((tag: string) => (
                   <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#{tag}</span>
                 ))}
               </div>
@@ -121,7 +121,7 @@ const getActionClass = (action: SuggestionAction) => {
               <a href={res.link} target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block">{res.link}</a>
 
               {res.action === 'delete' && (
-                <div class="mt-4 bg-red-50 p-4 rounded-xl border border-red-100">
+                <div class="mt-4 bg-red-50 p-4 rounded-xl border border-red-100 mb-4">
                   <p class="text-xs font-bold text-red-800 uppercase mb-1">{t.reason_label}</p>
                   <p class="text-red-700 italic text-sm">{res.reason}</p>
                 </div>
@@ -178,6 +178,7 @@ const getActionClass = (action: SuggestionAction) => {
             category: data.category,
             language: data.language,
             image_url: data.image_url,
+            tags: data.tags,
             metadata: data.metadata
           }]);
         resError = err;
@@ -188,6 +189,7 @@ const getActionClass = (action: SuggestionAction) => {
           link: data.link,
           category: data.category,
           language: data.language,
+          tags: data.tags,
           metadata: data.metadata
         };
         if (data.image_url) updateData.image_url = data.image_url;

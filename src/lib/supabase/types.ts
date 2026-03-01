@@ -1,7 +1,3 @@
-export interface ResourceMetadata {
-  tags: string[];
-}
-
 export interface Resource {
   id: string;
   title: string;
@@ -10,7 +6,8 @@ export interface Resource {
   category: string;
   language: 'fr' | 'en';
   image_url?: string | null;
-  metadata: ResourceMetadata;
+  tags: string[];
+  metadata: Record<string, any>;
   created_at: string;
   updated_at: string;
 }
