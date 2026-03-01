@@ -19,10 +19,11 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 - **Images :** WebP compressé (client), redimensionnement serveur via `sharp` et rendu via `object-contain`.
 
 ## 3. Standards d'Ingénierie (Clean Code)
-- **Deduplication :** Toute logique partagée (ex: client Supabase, helpers d'image) doit être centralisée dans `src/lib/`.
+- **Deduplication :** Toute logique partagée (ex: client Supabase, helpers d'image, icônes) doit être centralisée dans `src/lib/` ou `src/utils/`.
 - **Zéro Déchet :** Supprimer systématiquement le code mort, les fichiers inutilisés et les dépendances obsolètes.
 - **Automatisation du Déploiement :** Le site utilise des **Webhooks Supabase** connectés à Cloudflare Pages. Tout `INSERT`, `UPDATE` ou `DELETE` sur la table `resources` déclenche automatiquement un nouveau build pour garantir la fraîcheur des données statiques.
-- **Formatage :** Code lisible, typé (TypeScript) et correctement indenté.
+- **Formatage & Typage :** Code lisible, typage TypeScript strict (pas de `any`) et indentation correcte.
+- **Synchronisation BDD :** Le fichier `supabase_schema.sql` doit être mis à jour à CHAQUE changement structurel de la base de données pour servir de source de vérité.
 - **Documentation Vivante :** Mettre à jour `GEMINI.md` et `README.md` à CHAQUE changement structurel pour qu'ils reflètent fidèlement l'état actuel du code.
 
 ## 4. Structure des Données (Supabase)

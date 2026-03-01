@@ -9,7 +9,8 @@ CREATE TABLE resources (
   category TEXT NOT NULL CHECK (category IN ('entreprise', 'association', 'article', 'podcast', 'outil', 'livre', 'autre')),
   language TEXT NOT NULL CHECK (language IN ('fr', 'en')),
   image_url TEXT,
-  metadata JSONB DEFAULT '{"tags": []}'::jsonb,
+  tags TEXT[] DEFAULT '{}', -- Dedicated tags column for performance
+  metadata JSONB DEFAULT '{}'::jsonb, -- Flexible storage for category-specific data
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -24,7 +25,8 @@ CREATE TABLE suggestions (
   category TEXT,
   language TEXT,
   image_url TEXT,
-  metadata JSONB DEFAULT '{"tags": []}'::jsonb,
+  tags TEXT[] DEFAULT '{}',
+  metadata JSONB DEFAULT '{}'::jsonb,
   
   -- Workflow data
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
@@ -37,6 +39,7 @@ CREATE TABLE suggestions (
 );
 
 -- Indexes for performance
+CREATE INDEX idx_resources_tags ON resources USING GIN (tags);
 CREATE INDEX idx_suggestions_resource_id ON suggestions(resource_id);
 CREATE INDEX idx_suggestions_status ON suggestions(status);
 CREATE INDEX idx_suggestions_action ON suggestions(action);
@@ -51,12 +54,11 @@ CREATE POLICY "Anyone can read resources" ON resources
 FOR SELECT USING (true);
 
 -- Admin (or Anon Key in this simple setup) can manage resources
--- Note: In a production environment, restrict this to authenticated admins
 CREATE POLICY "Anyone can insert resources" ON resources 
 FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Anyone can update resources" ON resources 
-FOR UPDATE USING (true);
+FOR UPDATE USING (true) WITH CHECK (true);
 
 CREATE POLICY "Anyone can delete resources" ON resources 
 FOR DELETE USING (true);
