@@ -26,13 +26,48 @@ if (supabase) {
 }
 
 const t = {
-  fr: { title: "Modération", noPending: "Aucune suggestion en attente.", approve: "Approuver", reject: "Rejeter" },
-  en: { title: "Moderation", noPending: "No pending suggestions.", approve: "Approve", reject: "Reject" }
+  fr: { 
+    title: "Modération", 
+    noPending: "Aucune suggestion en attente.", 
+    approve: "Approuver", 
+    reject: "Rejeter",
+    action_create: "Nouveau",
+    action_update: "Modif",
+    action_delete: "Suppr",
+    reason_label: "Motif :",
+    back: "Retour à l'accueil"
+  },
+  en: { 
+    title: "Moderation", 
+    noPending: "No pending suggestions.", 
+    approve: "Approve", 
+    reject: "Reject",
+    action_create: "New",
+    action_update: "Update",
+    action_delete: "Delete",
+    reason_label: "Reason:",
+    back: "Back to home"
+  }
 }[lang];
+
+const getActionBadgeClass = (action: string) => {
+  switch (action) {
+    case 'update': return 'badge-info';
+    case 'delete': return 'badge-error';
+    default: return 'badge-success';
+  }
+};
 ---
 
 <Layout title={t.title} lang={lang}>
   <div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+      <a href={`/${lang}`} class="text-sm font-medium text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        {t.back}
+      </a>
+    </div>
+
     <h1 class="text-3xl font-black mb-8">{t.title}</h1>
 
     {suggestions.length === 0 && (
@@ -43,8 +78,12 @@ const t = {
 
     <div class="grid gap-6">
       {suggestions.map((res) => (
-        <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start">
-          {res.image_url && (
+        <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start overflow-hidden relative">
+          <div class={`absolute top-0 right-0 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm ${getActionBadgeClass(res.action)}`}>
+            {t[`action_${res.action}`] || res.action}
+          </div>
+
+          {res.image_url && res.action !== 'delete' && (
             <div class="w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative">
               <img src={getImageUrl(res.image_url)} alt="" class="absolute inset-0 w-full h-full object-contain p-2" />
             </div>
@@ -55,14 +94,27 @@ const t = {
               <span class="badge badge-outline badge-sm uppercase text-[10px] font-bold">{getCategoryLabel(res.category, lang)}</span>
               <span class="badge badge-ghost badge-sm uppercase text-[10px] font-bold">{res.language}</span>
             </div>
+            
             <h2 class="text-xl font-bold mb-2">{res.title}</h2>
-            <p class="text-stone-500 text-sm mb-4">{res.description}</p>
-            <div class="flex flex-wrap gap-1 mb-4">
-              {res.metadata?.tags?.map((tag: string) => (
-                <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#{tag}</span>
-              ))}
-            </div>
-            <a href={res.link} target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block">{res.link}</a>
+            
+            {res.action === 'delete' ? (
+              <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                <p class="text-xs font-bold text-red-800 uppercase mb-1">{t.reason_label}</p>
+                <p class="text-red-700 italic text-sm">{res.reason}</p>
+                <p class="mt-2 text-[10px] text-red-400">ID Ressource : {res.resource_id}</p>
+              </div>
+            ) : (
+              <>
+                <p class="text-stone-500 text-sm mb-4">{res.description}</p>
+                <div class="flex flex-wrap gap-1 mb-4">
+                  {res.metadata?.tags?.map((tag: string) => (
+                    <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#{tag}</span>
+                  ))}
+                </div>
+                <a href={res.link} target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block">{res.link}</a>
+                {res.action === 'update' && <p class="text-[10px] text-stone-300 italic">Mise à jour de : {res.resource_id}</p>}
+              </>
+            )}
           </div>
 
           <div class="flex md:flex-col gap-2 w-full md:w-auto">
@@ -95,40 +147,72 @@ const t = {
       
       btn.classList.add('loading');
       
-      // 1. Insérer dans 'resources'
-      const { error: insertError } = await supabase
-        .from('resources')
-        .insert([{
+      let resError = null;
+
+      if (data.action === 'create') {
+        const { error: err } = await supabase
+          .from('resources')
+          .insert([{
+            title: data.title,
+            description: data.description,
+            link: data.link,
+            category: data.category,
+            language: data.language,
+            image_url: data.image_url,
+            metadata: data.metadata
+          }]);
+        resError = err;
+      } else if (data.action === 'update') {
+        const updateData: any = {
           title: data.title,
           description: data.description,
           link: data.link,
           category: data.category,
           language: data.language,
-          image_url: data.image_url,
           metadata: data.metadata
-        }]);
+        };
+        if (data.image_url) updateData.image_url = data.image_url;
 
-      if (insertError) {
-        alert("Erreur lors de l'approbation");
+        const { error: err } = await supabase
+          .from('resources')
+          .update(updateData)
+          .eq('id', data.resource_id);
+        resError = err;
+      } else if (data.action === 'delete') {
+        const { error: err } = await supabase
+          .from('resources')
+          .delete()
+          .eq('id', data.resource_id);
+        resError = err;
+      }
+
+      if (resError) {
+        console.error("Erreur d'approbation détaillée:", resError);
+        alert(`L'opération a échoué : ${resError.message}`);
         btn.classList.remove('loading');
         return;
       }
 
-      // 2. Mettre à jour le statut de la suggestion
-      await supabase
+      // Mettre à jour le statut de la suggestion
+      const { error: sugError } = await supabase
         .from('suggestions')
         .update({ status: 'approved' })
         .eq('id', id);
+
+      if (sugError) {
+        console.error("Erreur mise à jour suggestion:", sugError);
+        alert("La ressource a été traitée mais le statut de la suggestion n'a pu être mis à jour.");
+      }
 
       location.reload();
     });
   });
 
   document.querySelectorAll('.reject-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (e) => {
       if (!supabase) return;
       
-      const id = btn.getAttribute('data-id');
+      const id = (e.currentTarget as HTMLElement).getAttribute('data-id');
       if (confirm('Rejeter cette suggestion ?')) {
         await supabase
           .from('suggestions')
@@ -139,3 +223,9 @@ const t = {
     });
   });
 </script>
+
+<style>
+  .badge-success { background-color: #2d6a4f; }
+  .badge-info { background-color: #40916c; }
+  .badge-error { background-color: #d90429; }
+</style>

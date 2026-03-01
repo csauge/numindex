@@ -36,7 +36,9 @@ const t = {
     filterLang: "Toutes les langues",
     discover: "Découvrir la ressource",
     labelCat: "Filtrer par catégorie",
-    labelLang: "Filtrer par langue de l'article"
+    labelLang: "Filtrer par langue de l'article",
+    edit: "Modifier",
+    report: "Supprimer"
   },
   en: {
     title: "Sustainable Digital Directory",
@@ -46,7 +48,9 @@ const t = {
     filterLang: "All languages",
     discover: "Discover resource",
     labelCat: "Filter by category",
-    labelLang: "Filter by article language"
+    labelLang: "Filter by article language",
+    edit: "Edit",
+    report: "Delete"
   }
 }[lang];
 ---
@@ -98,11 +102,29 @@ const t = {
     <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
       {allRessources.map((res) => (
         <article 
-          class="resource-card group flex flex-col bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-stone-200/40 hover:border-primary/20 transition-all duration-300"
+          class="resource-card group flex flex-col bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-stone-200/40 hover:border-primary/20 transition-all duration-300 relative"
           data-category={res.category}
           data-language={res.language}
           data-search-content={`${res.title} ${res.description} ${res.metadata?.tags?.join(' ')}`.toLowerCase()}
         >
+          {/* Quick Actions overlay */}
+          <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <a 
+              href={`/${lang}/propose?id=${res.id}&action=update`}
+              class="p-1.5 bg-white/90 backdrop-blur shadow-sm rounded-lg hover:text-primary transition-colors border border-stone-100"
+              title={t.edit}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            </a>
+            <a 
+              href={`/${lang}/propose?id=${res.id}&action=delete`}
+              class="p-1.5 bg-white/90 backdrop-blur shadow-sm rounded-lg hover:text-error transition-colors border border-stone-100"
+              title={t.report}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </a>
+          </div>
+
           {res.image_url && (
             <div class="relative w-full pt-[50%] overflow-hidden bg-stone-50/30 border-b border-stone-50">
               <img 

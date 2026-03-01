@@ -3,43 +3,57 @@ import { CATEGORIES, type CategoryKey } from '../utils/categories';
 
 interface Props {
   lang: 'fr' | 'en';
+  initialData?: any;
+  resourceId?: string;
+  action?: 'create' | 'update' | 'delete';
 }
 
-const { lang } = Astro.props;
+const { lang, initialData: rawInitialData, resourceId, action: initialAction = 'create' } = Astro.props;
+const initialData = rawInitialData || {};
 
 const t = {
   fr: {
-    title: 'Proposer une ressource',
+    titleCreate: 'Proposer un ajout de ressource',
+    titleUpdate: 'Proposer une modification de ressource',
+    titleDelete: 'Proposer une suppression de ressource',
     name: 'Nom de la ressource',
     description: 'Description',
     link: 'Lien (URL)',
     category: 'Catégorie',
+    resourceLang: 'Langue de la ressource',
     tags: 'Tags (séparés par des virgules)',
     image: 'Image (sera compressée)',
+    reason: 'Motif de la suppression',
+    target: 'Ressource concernée :',
     submit: 'Envoyer la suggestion',
     loading: 'Chargement...',
-    success: 'Merci ! Votre suggestion a été envoyée pour modération.',
+    success: 'Merci ! Votre suggestion a été envoyée pour modération. Redirection...',
     error: 'Une erreur est survenue. Veuillez réessayer.'
   },
   en: {
-    title: 'Suggest a resource',
+    titleCreate: 'Suggest a resource addition',
+    titleUpdate: 'Suggest a resource modification',
+    titleDelete: 'Suggest a resource deletion',
     name: 'Resource name',
     description: 'Description',
     link: 'Link (URL)',
     category: 'Category',
+    resourceLang: 'Resource language',
     tags: 'Tags (comma separated)',
     image: 'Image (will be compressed)',
+    reason: 'Reason for deletion',
+    target: 'Target resource:',
     submit: 'Send suggestion',
     loading: 'Loading...',
-    success: 'Thank you! Your suggestion has been sent for moderation.',
+    success: 'Thank you! Your suggestion has been sent for moderation. Redirecting...',
     error: 'An error occurred. Please try again.'
   }
 }[lang];
 ---
 
 <div class="max-w-2xl mx-auto p-6 bg-base-100 rounded-xl shadow-sm border border-base-200">
-  <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-    <span>🌱</span> {t.title}
+  <h2 id="form-title" class="text-2xl font-bold mb-6 flex items-center gap-2">
+    <span id="form-icon">➕</span> <span id="form-title-text">{t.titleCreate}</span>
   </h2>
 
   <form 
@@ -49,71 +63,215 @@ const t = {
     data-msg-error={t.error}
     data-msg-loading={t.loading}
     data-msg-submit={t.submit}
+    data-lang={lang}
   >
-    <div class="form-control">
-      <label class="label"><span class="label-text">{t.name}</span></label>
-      <input type="text" name="title" required class="input input-bordered w-full" />
-    </div>
-
-    <div class="form-control">
-      <label class="label"><span class="label-text">{t.description}</span></label>
-      <textarea name="description" required class="textarea textarea-bordered h-24"></textarea>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div id="standard-fields" class="space-y-4">
       <div class="form-control">
-        <label class="label"><span class="label-text">{t.category}</span></label>
-        <select name="category" class="select select-bordered w-full">
-          {Object.entries(CATEGORIES).map(([key, labels]) => (
-            <option value={key}>{labels[lang]}</option>
-          ))}
-        </select>
+        <label class="label"><span class="label-text">{t.name}</span></label>
+        <input type="text" name="title" required class="input input-bordered w-full" />
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">{t.description}</span></label>
+        <textarea name="description" required class="textarea textarea-bordered h-24"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label"><span class="label-text">{t.category}</span></label>
+          <select name="category" class="select select-bordered w-full">
+            {Object.entries(CATEGORIES).map(([key, labels]) => (
+              <option value={key}>{labels[lang]}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">{t.resourceLang}</span></label>
+          <select name="language" class="select select-bordered w-full">
+            <option value="fr">Français (FR)</option>
+            <option value="en">English (EN)</option>
+          </select>
+        </div>
       </div>
 
       <div class="form-control">
         <label class="label"><span class="label-text">{t.link}</span></label>
         <input type="url" name="link" required class="input input-bordered w-full" />
       </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">{t.tags}</span></label>
+        <input 
+          type="text" 
+          name="tags" 
+          placeholder="low-tech, open-source..." 
+          class="input input-bordered w-full" 
+        />
+      </div>
+
+      <div class="form-control" id="image-field">
+        <label class="label"><span class="label-text font-semibold text-stone-600">{t.image}</span></label>
+        <input 
+          type="file" 
+          name="image" 
+          accept="image/*" 
+          class="file-input file-input-bordered file-input-primary w-full bg-stone-50/50 border-stone-200 text-stone-500 text-sm focus:outline-primary/30 transition-all hover:border-primary/50" 
+        />
+        <label class="label">
+          <span class="label-text-alt text-stone-400 italic">Format WebP, JPG ou PNG (max 5MB)</span>
+        </label>
+      </div>
     </div>
 
-    <div class="form-control">
-      <label class="label"><span class="label-text">{t.tags}</span></label>
-      <input type="text" name="tags" placeholder="low-tech, open-source..." class="input input-bordered w-full" />
-    </div>
+    <div id="delete-fields" class="hidden space-y-4">
+      <div class="p-4 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-4">
+        <div id="delete-preview-img" class="w-16 h-16 rounded-lg bg-stone-200 overflow-hidden flex-shrink-0"></div>
+        <div>
+          <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t.target}</p>
+          <p id="delete-preview-title" class="font-bold text-stone-800"></p>
+        </div>
+      </div>
 
-    <div class="form-control">
-      <label class="label"><span class="label-text font-semibold text-stone-600">{t.image}</span></label>
-      <input 
-        type="file" 
-        name="image" 
-        accept="image/*" 
-        class="file-input file-input-bordered file-input-primary w-full bg-stone-50/50 border-stone-200 text-stone-500 text-sm focus:outline-primary/30 transition-all hover:border-primary/50" 
-      />
-      <label class="label">
-        <span class="label-text-alt text-stone-400 italic">Format WebP, JPG ou PNG (max 5MB)</span>
-      </label>
+      <div class="form-control">
+        <label class="label"><span class="label-text font-bold text-error">{t.reason}</span></label>
+        <textarea name="reason" placeholder="Ex: Le site n'existe plus..." class="textarea textarea-bordered textarea-error h-32"></textarea>
+      </div>
     </div>
 
     <button type="submit" class="btn btn-primary w-full mt-4 hover:bg-[#52b788] transition-colors shadow-sm">
       {t.submit}
     </button>
-
-    <div id="form-feedback" class="mt-4 hidden alert"></div>
   </form>
+
+  <div id="toast-container" class="toast toast-top toast-center z-[100] hidden">
+    <div id="toast-message" class="alert shadow-lg border-none text-white font-bold px-8 py-4 rounded-2xl">
+      <span id="toast-text"></span>
+    </div>
+  </div>
 </div>
 
 <script>
+  import { supabase, getImageUrl } from '../lib/supabase/client';
+
   const form = document.getElementById('suggestion-form') as HTMLFormElement;
-  const feedback = document.getElementById('form-feedback');
+  const toastContainer = document.getElementById('toast-container');
+  const toastMessage = document.getElementById('toast-message');
+  const toastText = document.getElementById('toast-text');
+  
+  const formIcon = document.getElementById('form-icon');
+  const formTitleText = document.getElementById('form-title-text');
+  const standardFields = document.getElementById('standard-fields');
+  const deleteFields = document.getElementById('delete-fields');
+  const deletePreviewTitle = document.getElementById('delete-preview-title');
+  const deletePreviewImg = document.getElementById('delete-preview-img');
 
   const msgSuccess = form?.dataset.msgSuccess || '';
   const msgError = form?.dataset.msgError || '';
   const msgLoading = form?.dataset.msgLoading || '';
   const msgSubmit = form?.dataset.msgSubmit || '';
+  const uiLang = form?.dataset.lang || 'fr';
+
+  // Get params from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const resourceId = urlParams.get('id');
+  const action = urlParams.get('action') || 'create';
+
+  const i18n = {
+    fr: {
+      titleCreate: 'Proposer un ajout de ressource',
+      titleUpdate: 'Proposer une modification de ressource',
+      titleDelete: 'Proposer une suppression de ressource'
+    },
+    en: {
+      titleCreate: 'Suggest a resource addition',
+      titleUpdate: 'Suggest a resource modification',
+      titleDelete: 'Suggest a resource deletion'
+    }
+  }[uiLang];
+
+  let existingData: any = null;
+
+  async function showToast(message: string, type: 'success' | 'error') {
+    if (!toastContainer || !toastMessage || !toastText) return;
+    toastText.innerText = message;
+    toastMessage.className = `alert shadow-lg border-none text-white font-bold px-8 py-4 rounded-2xl ${type === 'success' ? 'bg-primary' : 'bg-error'}`;
+    toastContainer.classList.remove('hidden');
+    
+    if (type === 'success') {
+      setTimeout(() => {
+        window.location.href = `/${uiLang}`;
+      }, 2000);
+    } else {
+      setTimeout(() => {
+        toastContainer.classList.add('hidden');
+      }, 5000);
+    }
+  }
+
+  // Initialize UI
+  async function initForm() {
+    if ((action === 'update' || action === 'delete') && resourceId) {
+      if (action === 'delete') {
+        if (formIcon) formIcon.innerText = '🗑️';
+        if (formTitleText) formTitleText.innerText = i18n.titleDelete;
+        standardFields?.classList.add('hidden');
+        deleteFields?.classList.remove('hidden');
+        
+        const inputs = standardFields?.querySelectorAll('input, textarea, select');
+        inputs?.forEach(input => {
+          (input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).required = false;
+        });
+
+        const reasonInput = deleteFields?.querySelector('textarea');
+        if (reasonInput) reasonInput.required = true;
+      } else {
+        if (formIcon) formIcon.innerText = '✏️';
+        if (formTitleText) formTitleText.innerText = i18n.titleUpdate;
+      }
+      
+      if (supabase) {
+        const { data } = await supabase
+          .from('resources')
+          .select('*')
+          .eq('id', resourceId)
+          .single();
+
+        if (data) {
+          existingData = data;
+          if (action === 'delete') {
+            if (deletePreviewTitle) deletePreviewTitle.innerText = data.title;
+            if (deletePreviewImg && data.image_url) {
+              const url = getImageUrl(data.image_url);
+              if (url) deletePreviewImg.innerHTML = `<img src="${url}" class="w-full h-full object-contain p-1" />`;
+            }
+          } else {
+            const titleInput = form.querySelector('[name="title"]') as HTMLInputElement;
+            const descInput = form.querySelector('[name="description"]') as HTMLTextAreaElement;
+            const catInput = form.querySelector('[name="category"]') as HTMLSelectElement;
+            const langInput = form.querySelector('[name="language"]') as HTMLSelectElement;
+            const linkInput = form.querySelector('[name="link"]') as HTMLInputElement;
+            const tagsInput = form.querySelector('[name="tags"]') as HTMLInputElement;
+
+            if (titleInput) titleInput.value = data.title || '';
+            if (descInput) descInput.value = data.description || '';
+            if (catInput) catInput.value = data.category || '';
+            if (langInput) langInput.value = data.language || 'fr';
+            if (linkInput) linkInput.value = data.link || '';
+            if (tagsInput) tagsInput.value = data.metadata?.tags?.join(', ') || '';
+          }
+        }
+      }
+    } else {
+      if (formIcon) formIcon.innerText = '➕';
+      if (formTitleText) formTitleText.innerText = i18n.titleCreate;
+    }
+  }
+
+  initForm();
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log("Formulaire soumis...");
     
     const formData = new FormData(form);
     const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
@@ -122,74 +280,62 @@ const t = {
     submitBtn.innerText = msgLoading;
 
     try {
-      const { supabase } = await import('../lib/supabase/client');
       if (!supabase) throw new Error('Supabase not initialized');
       
-      const title = formData.get('title') as string;
-      const description = formData.get('description') as string;
-      const link = formData.get('link') as string;
-      const category = formData.get('category') as string;
-      const tagsString = formData.get('tags') as string;
-      const imageFile = formData.get('image') as File;
+      let imageUrl = existingData?.image_url || '';
 
-      const tags = tagsString ? tagsString.split(',').map(t => t.trim()) : [];
-      
-      let imageUrl = '';
-
-      // 1. Image Compression & Upload
-      if (imageFile && imageFile.size > 0) {
-        console.log("Compression de l'image...");
-        const imageCompression = (await import('browser-image-compression')).default;
-        const options = {
-          maxSizeMB: 0.05, // 50KB - targeted for extreme sobriety
-          maxWidthOrHeight: 800, // Sufficient for small grid cards
-          useWebWorker: true,
-          fileType: 'image/webp',
-          initialQuality: 0.8 // Good balance between size and clarity
-        };
-        
-        try {
-          const compressedFile = await imageCompression(imageFile, options);
-          const fileName = `${Date.now()}-${imageFile.name.split('.')[0]}.webp`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('suggestions')
-            .upload(fileName, compressedFile);
-            
-          if (uploadError) throw uploadError;
-          if (uploadData) imageUrl = uploadData.path;
-        } catch (error) {
-          console.error('Erreur Upload/Compression:', error);
+      if (action !== 'delete') {
+        const imageFile = formData.get('image') as File;
+        if (imageFile && imageFile.size > 0) {
+          const imageCompression = (await import('browser-image-compression')).default;
+          const options = {
+            maxSizeMB: 0.05,
+            maxWidthOrHeight: 800,
+            useWebWorker: true,
+            fileType: 'image/webp',
+            initialQuality: 0.8
+          };
+          
+          try {
+            const compressedFile = await imageCompression(imageFile, options);
+            const fileName = `${Date.now()}-${imageFile.name.split('.')[0]}.webp`;
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('suggestions')
+              .upload(fileName, compressedFile);
+              
+            if (uploadError) throw uploadError;
+            if (uploadData) imageUrl = uploadData.path;
+          } catch (error) {
+            console.error('Erreur Upload/Compression:', error);
+          }
         }
       }
 
-      // 2. Supabase Submission
-      console.log("Envoi à Supabase...");
+      const payload = {
+        title: action === 'delete' ? existingData?.title : formData.get('title'),
+        description: action === 'delete' ? existingData?.description : formData.get('description'),
+        link: action === 'delete' ? existingData?.link : formData.get('link'),
+        category: action === 'delete' ? existingData?.category : formData.get('category'),
+        language: action === 'delete' ? existingData?.language : formData.get('language'),
+        metadata: action === 'delete' ? existingData?.metadata : { tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) },
+        image_url: imageUrl || null,
+        status: 'pending',
+        action: action,
+        resource_id: resourceId || null,
+        reason: formData.get('reason') || null
+      };
+
       const { error } = await supabase
         .from('suggestions')
-        .insert([{
-          title,
-          description,
-          link,
-          category,
-          language: window.location.pathname.includes('/en') ? 'en' : 'fr',
-          metadata: { tags },
-          image_url: imageUrl,
-          status: 'pending'
-        }]);
+        .insert([payload]);
 
       if (error) throw error;
 
-      console.log("Succès !");
-      feedback?.classList.remove('hidden', 'alert-error');
-      feedback?.classList.add('alert-success');
-      feedback!.innerText = msgSuccess;
+      showToast(msgSuccess, 'success');
       form.reset();
     } catch (err) {
-      console.error('Erreur détaillée:', err);
-      feedback?.classList.remove('hidden', 'alert-success');
-      feedback?.classList.add('alert-error');
-      feedback!.innerText = msgError;
-    } finally {
+      console.error('Erreur:', err);
+      showToast(msgError, 'error');
       submitBtn.disabled = false;
       submitBtn.innerText = msgSubmit;
     }

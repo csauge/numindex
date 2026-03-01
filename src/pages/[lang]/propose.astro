@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import SuggestionForm from '../../components/SuggestionForm.astro';
+import { supabase } from '../../lib/supabase/client';
 
 export async function getStaticPaths() {
   return [
@@ -10,14 +11,29 @@ export async function getStaticPaths() {
 }
 
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
+const id = Astro.url.searchParams.get('id');
+const actionParam = Astro.url.searchParams.get('action');
+
+const action = (actionParam === 'update' || actionParam === 'delete') ? actionParam : 'create';
+
+// Si on modifie ou supprime, on récupère les données actuelles
+let initialData = null;
+if (id && supabase) {
+  const { data } = await supabase
+    .from('resources')
+    .select('*')
+    .eq('id', id)
+    .single();
+  initialData = data;
+}
 
 const t = {
   fr: {
-    title: "Proposer une ressource",
+    title: action === 'delete' ? "Signaler une ressource" : (action === 'update' ? "Modifier une ressource" : "Proposer une ressource"),
     back: "Retour à l'accueil"
   },
   en: {
-    title: "Suggest a resource",
+    title: action === 'delete' ? "Report a resource" : (action === 'update' ? "Edit a resource" : "Suggest a resource"),
     back: "Back to home"
   }
 }[lang];
@@ -31,5 +47,10 @@ const t = {
     </a>
   </div>
 
-  <SuggestionForm lang={lang} />
+  <SuggestionForm 
+    lang={lang} 
+    initialData={initialData} 
+    resourceId={id} 
+    action={action} 
+  />
 </Layout>
