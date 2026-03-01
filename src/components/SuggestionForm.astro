@@ -1,5 +1,5 @@
 ---
-import { CATEGORIES, type CategoryKey, ACTION_ICONS } from '../utils/categories';
+import { CATEGORIES, type CategoryKey, ACTION_ICONS, getCategoryType } from '../utils/categories';
 import type { Suggestion, SuggestionAction, Resource } from '../lib/supabase/types';
 
 interface Props {
@@ -23,6 +23,8 @@ const t = {
     category: 'Catégorie',
     resourceLang: 'Langue de la ressource',
     tags: 'Tags (séparés par des virgules)',
+    related: 'Contributeurs / Organisations liés',
+    relatedPlaceholder: 'Chercher une entreprise, association...',
     image: 'Image (sera compressée)',
     reason: 'Motif de la suppression',
     target: 'Aperçu de la ressource :',
@@ -41,6 +43,8 @@ const t = {
     category: 'Category',
     resourceLang: 'Resource language',
     tags: 'Tags (comma separated)',
+    related: 'Related Contributors / Organizations',
+    relatedPlaceholder: 'Search for a company, association...',
     image: 'Image (will be compressed)',
     reason: 'Reason for deletion',
     target: 'Resource preview:',
@@ -67,7 +71,6 @@ const t = {
   {/* Unified Resource Preview Block */}
   <div id="resource-preview-block" class="mb-8 p-4 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-4">
     <div id="resource-preview-img" class="w-20 h-20 rounded-lg bg-white border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-stone-200">
-      {/* Icon or image will be injected here */}
     </div>
     <div class="flex-grow">
       <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t.target}</p>
@@ -102,7 +105,7 @@ const t = {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="form-control">
           <label class="label"><span class="label-text">{t.category}</span></label>
-          <select name="category" class="select select-bordered w-full">
+          <select name="category" id="category-select" class="select select-bordered w-full">
             {Object.entries(CATEGORIES).map(([key, labels]) => (
               <option value={key}>{labels[lang]}</option>
             ))}
@@ -115,6 +118,26 @@ const t = {
             <option value="fr">Français (FR)</option>
             <option value="en">English (EN)</option>
           </select>
+        </div>
+      </div>
+
+      {/* Relations multi-sélecteur (Affiché conditionnellement par script) */}
+      <div id="related-container" class="form-control hidden">
+        <label class="label"><span class="label-text">{t.related}</span></label>
+        <div class="relative">
+          <input 
+            type="text" 
+            id="related-search" 
+            placeholder={t.relatedPlaceholder} 
+            class="input input-bordered w-full" 
+            autocomplete="off"
+          />
+          <div id="related-results" class="absolute left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-lg shadow-xl z-[60] hidden max-h-48 overflow-y-auto">
+            {/* Résultats de recherche injectés ici */}
+          </div>
+        </div>
+        <div id="selected-related" class="flex flex-wrap gap-2 mt-2">
+          {/* Badges des entités sélectionnées */}
         </div>
       </div>
 
@@ -168,7 +191,7 @@ const t = {
 
 <script>
   import { supabase, getImageUrl } from '../lib/supabase/client';
-  import { getCategoryIcon, getCategoryLabel, ACTION_ICONS } from '../utils/categories';
+  import { getCategoryIcon, getCategoryLabel, ACTION_ICONS, getCategoryType } from '../utils/categories';
   import type { Resource, SuggestionAction } from '../lib/supabase/types';
 
   const form = document.getElementById('suggestion-form') as HTMLFormElement;
@@ -180,6 +203,13 @@ const t = {
   const formTitleText = document.getElementById('form-title-text');
   const standardFields = document.getElementById('standard-fields');
   const deleteFields = document.getElementById('delete-fields');
+  const catSelect = document.getElementById('category-select') as HTMLSelectElement;
+
+  // Related selector elements
+  const relatedContainer = document.getElementById('related-container');
+  const relatedSearch = document.getElementById('related-search') as HTMLInputElement;
+  const relatedResults = document.getElementById('related-results');
+  const selectedRelatedContainer = document.getElementById('selected-related');
 
   // Preview elements
   const previewImg = document.getElementById('resource-preview-img');
@@ -213,6 +243,8 @@ const t = {
   }[uiLang];
 
   let existingData: Resource | null = null;
+  let allEntities: Resource[] = [];
+  let selectedRelatedIds: string[] = [];
 
   async function showToast(message: string, type: 'success' | 'error') {
     if (!toastContainer || !toastMessage || !toastText) return;
@@ -243,7 +275,6 @@ const t = {
     previewCat.innerText = getCategoryLabel(catInput.value || existingData?.category || 'entreprise', uiLang);
     previewLang.innerText = (langInput.value || existingData?.language || 'fr').toUpperCase();
 
-    // Image logic
     if (imageInput?.files && imageInput.files[0]) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -254,14 +285,60 @@ const t = {
       const url = getImageUrl(existingData.image_url);
       previewImg.innerHTML = `<img src="${url}" class="w-full h-full object-contain p-1" />`;
     } else {
-      // Default category icon
       const cat = catInput.value || existingData?.category || 'entreprise';
       previewImg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${getCategoryIcon(cat)}" /></svg>`;
     }
+
+    // Dynamic visibility of Related selector
+    const catType = getCategoryType(catInput.value);
+    if (catType === 'resource' && action !== 'delete') {
+      relatedContainer?.classList.remove('hidden');
+    } else {
+      relatedContainer?.classList.add('hidden');
+    }
+  }
+
+  function renderSelectedRelated() {
+    if (!selectedRelatedContainer) return;
+    selectedRelatedContainer.innerHTML = '';
+    
+    selectedRelatedIds.forEach(id => {
+      const entity = allEntities.find(e => e.id === id);
+      if (!entity) return;
+      
+      const badge = document.createElement('div');
+      badge.className = 'badge badge-primary gap-2 font-bold py-3 pl-3 pr-1';
+      badge.innerHTML = `
+        <span>${entity.title}</span>
+        <button type="button" class="hover:text-red-200" data-id="${id}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      `;
+      
+      badge.querySelector('button')?.addEventListener('click', () => {
+        selectedRelatedIds = selectedRelatedIds.filter(rid => rid !== id);
+        renderSelectedRelated();
+      });
+      
+      selectedRelatedContainer.appendChild(badge);
+    });
+  }
+
+  async function fetchEntities() {
+    if (!supabase) return;
+    const { data } = await supabase
+      .from('resources')
+      .select('id, title, category')
+      .in('category', ['entreprise', 'association', 'personne'])
+      .order('title');
+    
+    if (data) allEntities = data as Resource[];
   }
 
   // Initialize UI
   async function initForm() {
+    await fetchEntities();
+
     if (formIconContainer) {
       const iconPath = ACTION_ICONS[action];
       formIconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${action === 'delete' ? 'text-error' : 'text-primary'}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}" /></svg>`;
@@ -272,12 +349,10 @@ const t = {
         if (formTitleText) formTitleText.innerText = i18n.titleDelete;
         standardFields?.classList.add('hidden');
         deleteFields?.classList.remove('hidden');
-        
         const inputs = standardFields?.querySelectorAll('input, textarea, select');
         inputs?.forEach(input => {
           (input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).required = false;
         });
-
         const reasonInput = deleteFields?.querySelector('textarea');
         if (reasonInput) reasonInput.required = true;
       } else {
@@ -300,6 +375,8 @@ const t = {
             (form.querySelector('[name="language"]') as HTMLSelectElement).value = data.language || 'fr';
             (form.querySelector('[name="link"]') as HTMLInputElement).value = data.link || '';
             (form.querySelector('[name="tags"]') as HTMLInputElement).value = data.tags?.join(', ') || '';
+            selectedRelatedIds = data.related_ids || [];
+            renderSelectedRelated();
           }
           updatePreview();
         }
@@ -311,6 +388,54 @@ const t = {
 
     form.querySelectorAll('input, select, textarea').forEach(input => {
       input.addEventListener('input', updatePreview);
+    });
+
+    // Related search logic
+    relatedSearch?.addEventListener('input', (e) => {
+      const val = (e.target as HTMLInputElement).value.toLowerCase();
+      if (val.length < 1) {
+        relatedResults?.classList.add('hidden');
+        return;
+      }
+      
+      const filtered = allEntities.filter(ent => 
+        ent.title.toLowerCase().includes(val) && !selectedRelatedIds.includes(ent.id)
+      );
+      
+      if (filtered.length > 0 && relatedResults) {
+        relatedResults.innerHTML = filtered.map(ent => `
+          <button type="button" class="w-full text-left px-4 py-3 hover:bg-stone-50 border-b border-stone-100 last:border-none flex items-center justify-between group" data-id="${ent.id}">
+            <div>
+              <p class="font-bold text-sm text-stone-800">${ent.title}</p>
+              <p class="text-[10px] text-stone-400 uppercase">${ent.category}</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-200 group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          </button>
+        `).join('');
+        
+        relatedResults.classList.remove('hidden');
+        
+        relatedResults.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            if (id && !selectedRelatedIds.includes(id)) {
+              selectedRelatedIds.push(id);
+              relatedSearch.value = '';
+              relatedResults.classList.add('hidden');
+              renderSelectedRelated();
+            }
+          });
+        });
+      } else {
+        relatedResults?.classList.add('hidden');
+      }
+    });
+
+    // Close results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!relatedSearch?.contains(e.target as Node)) {
+        relatedResults?.classList.add('hidden');
+      }
     });
   }
 
@@ -367,6 +492,7 @@ const t = {
         category: action === 'delete' ? existingData?.category : formData.get('category'),
         language: action === 'delete' ? (existingData?.language || 'fr') : formData.get('language'),
         tags: action === 'delete' ? (existingData?.tags || []) : tags,
+        related_ids: action === 'delete' ? (existingData?.related_ids || []) : selectedRelatedIds,
         metadata: action === 'delete' ? (existingData?.metadata || {}) : {},
         image_url: imageUrl || null,
         status: 'pending',

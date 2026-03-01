@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCategoryLabel, getCategoryIcon, ACTION_ICONS } from '../../utils/categories';
 import { supabase, getImageUrl } from '../../lib/supabase/client';
-import type { Suggestion, SuggestionAction } from '../../lib/supabase/types';
+import type { Suggestion, SuggestionAction, Resource } from '../../lib/supabase/types';
 
 export async function getStaticPaths() {
   return [
@@ -13,17 +13,22 @@ export async function getStaticPaths() {
 
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
-// Récupérer les suggestions en attente si Supabase est initialisé
+// Récupérer les suggestions et toutes les ressources pour résoudre les noms
 let suggestions: Suggestion[] = [];
+let allResources: Resource[] = [];
+
 if (supabase) {
-  const { data, error } = await supabase
+  const { data: sugData } = await supabase
     .from('suggestions')
     .select('*')
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
+  if (sugData) suggestions = sugData as Suggestion[];
 
-  if (error) console.error('Error fetching suggestions:', error);
-  else suggestions = (data || []) as Suggestion[];
+  const { data: resData } = await supabase
+    .from('resources')
+    .select('id, title');
+  if (resData) allResources = resData as Resource[];
 }
 
 const t = {
@@ -37,7 +42,8 @@ const t = {
     action_delete: "Suppression",
     reason_label: "Motif de suppression :",
     target_id: "ID cible :",
-    back: "Retour à l'accueil"
+    back: "Retour à l'accueil",
+    by: "Par"
   },
   en: { 
     title: "Moderation", 
@@ -49,7 +55,8 @@ const t = {
     action_delete: "Delete",
     reason_label: "Reason for deletion:",
     target_id: "Target ID:",
-    back: "Back to home"
+    back: "Back to home",
+    by: "By"
   }
 }[lang];
 
@@ -59,6 +66,12 @@ const getActionClass = (action: SuggestionAction) => {
     case 'delete': return 'bg-red-100 text-red-700 border-red-200';
     default: return 'bg-emerald-600 text-white border-emerald-700';
   }
+};
+
+const getRelatedNames = (ids: string[] = []) => {
+  return ids
+    .map(id => allResources.find(r => r.id === id)?.title)
+    .filter(Boolean);
 };
 ---
 
@@ -83,6 +96,7 @@ const getActionClass = (action: SuggestionAction) => {
       {suggestions.map((res) => {
         const actionClass = getActionClass(res.action);
         const actionIcon = ACTION_ICONS[res.action];
+        const relatedNames = getRelatedNames(res.related_ids || []);
         
         return (
           <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden">
@@ -109,7 +123,14 @@ const getActionClass = (action: SuggestionAction) => {
                 <span class="badge badge-ghost badge-sm uppercase text-[10px] font-bold">{res.language}</span>
               </div>
               
-              <h2 class="text-xl font-bold mb-2">{res.title}</h2>
+              <h2 class="text-xl font-bold mb-1">{res.title}</h2>
+
+              {relatedNames.length > 0 && (
+                <p class="text-xs text-stone-400 mb-3">
+                  <span class="italic font-medium">{t.by}</span> {relatedNames.join(', ')}
+                </p>
+              )}
+
               <p class="text-stone-500 text-sm mb-4">{res.description}</p>
               
               <div class="flex flex-wrap gap-1 mb-4">
@@ -179,6 +200,7 @@ const getActionClass = (action: SuggestionAction) => {
             language: data.language,
             image_url: data.image_url,
             tags: data.tags,
+            related_ids: data.related_ids,
             metadata: data.metadata
           }]);
         resError = err;
@@ -190,6 +212,7 @@ const getActionClass = (action: SuggestionAction) => {
           category: data.category,
           language: data.language,
           tags: data.tags,
+          related_ids: data.related_ids,
           metadata: data.metadata
         };
         if (data.image_url) updateData.image_url = data.image_url;
