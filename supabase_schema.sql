@@ -6,10 +6,16 @@ CREATE TABLE resources (
   title TEXT NOT NULL,
   description TEXT,
   link TEXT,
-  category TEXT NOT NULL CHECK (category IN ('entreprise', 'association', 'article', 'podcast', 'outil', 'livre', 'autre')),
+  -- Categories aligned with src/utils/categories.ts
+  category TEXT NOT NULL CHECK (category IN (
+    'entreprise', 'association', 'cooperative', 'public', 'personne', 
+    'article', 'livre', 'podcast', 'video', 'infographie', 
+    'referentiel', 'logiciel', 'jeu', 'formation', 'evenement', 'autre'
+  )),
   language TEXT NOT NULL CHECK (language IN ('fr', 'en')),
   image_url TEXT,
-  tags TEXT[] DEFAULT '{}', -- Dedicated tags column for performance
+  tags TEXT[] DEFAULT '{}',
+  related_ids UUID[] DEFAULT '{}', -- UUIDs of related entities (co-authors, partners, etc.)
   metadata JSONB DEFAULT '{}'::jsonb, -- Flexible storage for category-specific data
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
@@ -22,10 +28,15 @@ CREATE TABLE suggestions (
   title TEXT,
   description TEXT,
   link TEXT,
-  category TEXT,
-  language TEXT,
+  category TEXT CHECK (category IN (
+    'entreprise', 'association', 'cooperative', 'public', 'personne', 
+    'article', 'livre', 'podcast', 'video', 'infographie', 
+    'referentiel', 'logiciel', 'jeu', 'formation', 'evenement', 'autre'
+  )),
+  language TEXT CHECK (language IN ('fr', 'en')),
   image_url TEXT,
   tags TEXT[] DEFAULT '{}',
+  related_ids UUID[] DEFAULT '{}',
   metadata JSONB DEFAULT '{}'::jsonb,
   
   -- Workflow data
@@ -40,6 +51,7 @@ CREATE TABLE suggestions (
 
 -- Indexes for performance
 CREATE INDEX idx_resources_tags ON resources USING GIN (tags);
+CREATE INDEX idx_resources_related_ids ON resources USING GIN (related_ids);
 CREATE INDEX idx_suggestions_resource_id ON suggestions(resource_id);
 CREATE INDEX idx_suggestions_status ON suggestions(status);
 CREATE INDEX idx_suggestions_action ON suggestions(action);
