@@ -105,3 +105,8 @@ export const getCategoryType = (key: string): 'entity' | 'resource' => {
   const category = CATEGORIES[key as CategoryKey];
   return category ? category.type : 'resource';
 };
+
+export const getCategoryGroup = (key: string): CategoryGroup => {
+  const category = CATEGORIES[key as CategoryKey];
+  return category ? category.group : 'AUTRE';
+};

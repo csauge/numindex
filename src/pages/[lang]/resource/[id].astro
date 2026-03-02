@@ -57,7 +57,8 @@ const t = {
     created: "Ajouté le",
     updated: "Mis à jour le",
     edit: "Modifier",
-    report: "Supprimer"
+    report: "Supprimer",
+    published: "Publié le"
   },
   en: {
     back: "Back to directory",
@@ -69,14 +70,13 @@ const t = {
     created: "Added on",
     updated: "Updated on",
     edit: "Edit",
-    report: "Delete"
+    report: "Delete",
+    published: "Published on"
   }
 }[lang as 'fr' | 'en'];
 
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', {
-    day: 'numeric', month: 'long', year: 'numeric'
-  });
+const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }) => {
+  return new Date(dateStr).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', options);
 };
 ---
 
@@ -131,6 +131,18 @@ const formatDate = (dateStr: string) => {
             <span class="badge badge-ghost text-[10px] font-black uppercase tracking-wider h-6 bg-stone-100 text-stone-500 border-none">
               {res.language}
             </span>
+            {res.metadata?.city && (
+              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                {res.metadata.city}
+              </span>
+            )}
+            {res.metadata?.published_at && (
+              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                {t.published} {formatDate(res.metadata.published_at)}
+              </span>
+            )}
           </div>
           <h1 class="text-4xl md:text-5xl font-black text-stone-800 leading-tight">{res.title}</h1>
         </div>
