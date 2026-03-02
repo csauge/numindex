@@ -1,5 +1,14 @@
 -- SQL Schema for Salvia 🌿
 
+-- 0. Helper function for updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- 1. Resources Table (Public Catalog)
 CREATE TABLE resources (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -20,6 +29,11 @@ CREATE TABLE resources (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Trigger for resources
+CREATE TRIGGER update_resources_updated_at 
+BEFORE UPDATE ON resources 
+FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
 -- 2. Suggestions Table (Moderation Queue)
 CREATE TABLE suggestions (
