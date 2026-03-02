@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import SuggestionForm from '../../components/SuggestionForm.astro';
+import type { SuggestionAction } from '../../lib/supabase/types';
 
 export async function getStaticPaths() {
   return [
@@ -11,13 +12,17 @@ export async function getStaticPaths() {
 
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
+// Récupération des paramètres d'URL (SSR/Hybrid)
+const action = (Astro.url.searchParams.get('action') || 'create') as SuggestionAction;
+const resourceId = Astro.url.searchParams.get('id');
+
 const t = {
   fr: {
-    title: "Proposer une ressource",
+    title: action === 'delete' ? "Supprimer une ressource" : (action === 'update' ? "Modifier une ressource" : "Proposer une ressource"),
     back: "Retour à l'accueil"
   },
   en: {
-    title: "Suggest a resource",
+    title: action === 'delete' ? "Delete resource" : (action === 'update' ? "Update resource" : "Suggest a resource"),
     back: "Back to home"
   }
 }[lang];
@@ -31,5 +36,5 @@ const t = {
     </a>
   </div>
 
-  <SuggestionForm lang={lang} />
+  <SuggestionForm lang={lang} action={action} resourceId={resourceId} />
 </Layout>

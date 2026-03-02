@@ -1,23 +1,10 @@
 ---
+export const prerender = false;
+
 import Layout from '../../../layouts/Layout.astro';
 import { getCategoryLabel, getCategoryIcon, getCategoryType, ACTION_ICONS } from '../../../utils/categories';
 import { supabase, getImageUrl } from '../../../lib/supabase/client';
 import type { Resource } from '../../../lib/supabase/types';
-
-export async function getStaticPaths() {
-  if (!supabase) return [];
-  
-  const { data } = await supabase.from('resources').select('id');
-  if (!data) return [];
-
-  const locales = ['fr', 'en'];
-  
-  return data.flatMap((res) => 
-    locales.map((lang) => ({
-      params: { lang, id: res.id }
-    }))
-  );
-}
 
 const { id, lang } = Astro.params;
 

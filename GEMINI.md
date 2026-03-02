@@ -2,41 +2,37 @@
 
 Ce document définit les règles immuables pour le développement de l'annuaire Salvia.
 
-## 1. Principes Fondamentaux
-- **Sobriété Numérique :** Limiter le poids des pages. Pas de bibliothèques JS lourdes. Nettoyage automatique des médias inutilisés. Compression d'image agressive (< 50 Ko).
-- **Accessibilité (RGAA) :** HTML sémantique strict, liens d'évitement, aria-labels sur tous les contrôles, aria-live pour les mises à jour dynamiques.
-- **Performance :** Polices système uniquement. Pas d'appels vers des CDN tiers. Score Lighthouse > 95 sur tous les axes.
-- **Identité Visuelle :** Palette "Papier Chaud" (#fdfcfb), logo 🌱, typographie aérée et contrastes élevés.
+## 1. Principes Fondamentaux (Écoconception)
+- **Sobriété Numérique :** Limiter le poids des pages. Pas de bibliothèques JS lourdes.
+- **Sobriété des Médias :** Utilisation systématique du format **AVIF** via les transformations Supabase. Compression agressive client-side (< 50 Ko).
+- **Sobriété Réseau :** Utiliser des miniatures (thumbnails) adaptées au contexte d'affichage (ex: 400px pour la grille).
+- **Sobriété CPU :** Utiliser des fonctions `debounce` pour les recherches en temps réel afin d'économiser la batterie mobile.
+- **Accessibilité (RGAA) :** HTML sémantique strict, liens d'évitement, aria-labels, et gestion propre du focus clavier.
+- **Performance :** Polices système uniquement. Score Lighthouse > 95 sur tous les axes.
 
-## 2. Stack Technique (Full-Stack Serverless)
-- **Frontend :** Astro (Static Mode pour les ressources, Hybrid/SSR pour l'admin).
-- **Hébergement :** Cloudflare Pages (Connecté au dépôt GitHub).
-- **Style :** Tailwind CSS + DaisyUI (Thème unique : `garden` personnalisé).
-- **Base de Données :** Supabase (PostgreSQL 🇫🇷 Paris).
-  - Utilisation de `JSONB` (`metadata`) pour la flexibilité des types.
-  - Filtrage via opérateurs SQL (`@>`) pour les tags.
-- **Maintenance :** Script de nettoyage (`scripts/cleanup-images.mjs`) via GitHub Actions (hebdomadaire).
-- **Images :** WebP compressé (client), redimensionnement serveur via `sharp` et rendu via `object-contain`.
+## 2. Stack Technique (Astro 5 Hybrid)
+- **Frontend :** Astro en mode **Static** par défaut, avec pages de détails et admin en **SSR** (`export const prerender = false`) pour une mise à jour instantanée des données.
+- **Hébergement :** Cloudflare Pages (Adaptateur Cloudflare avec `imageService: 'compile'`).
+- **Style :** Tailwind CSS 3 + DaisyUI 4 (Thème unique : `garden` personnalisé).
+- **Base de Données :** Supabase (PostgreSQL).
+  - Utilisation de `JSONB` (`metadata`) pour les données flexibles (ville, dates spécifiques).
+  - Trigger SQL pour la gestion automatique de `updated_at`.
 
-## 3. Standards d'Ingénierie (Clean Code)
-- **Deduplication :** Toute logique partagée (ex: client Supabase, helpers d'image, icônes) doit être centralisée dans `src/lib/` ou `src/utils/`.
-- **Zéro Déchet :** Supprimer systématiquement le code mort, les fichiers inutilisés et les dépendances obsolètes.
-- **Automatisation du Déploiement :** Le site utilise des **Webhooks Supabase** connectés à Cloudflare Pages. Tout `INSERT`, `UPDATE` ou `DELETE` sur la table `resources` déclenche automatiquement un nouveau build pour garantir la fraîcheur des données statiques.
-- **Formatage & Typage :** Code lisible, typage TypeScript strict (pas de `any`) et indentation correcte.
-- **Synchronisation BDD :** Le fichier `supabase_schema.sql` doit être mis à jour à CHAQUE changement structurel de la base de données pour servir de source de vérité.
-- **Documentation Vivante :** Mettre à jour `GEMINI.md` et `README.md` à CHAQUE changement structurel pour qu'ils reflètent fidèlement l'état actuel du code.
+## 3. Standards d'Ingénierie (Clean Code & Maintainability)
+- **Deduplication & Modularité :** Extraire la logique métier complexe du DOM (ex: `src/lib/services.ts`).
+- **Lisibilité :** Privilégier les objets de mapping pour manipuler le DOM (`elements = { ... }`) plutôt que des sélections éparpillées.
+- **Taille de code :** Maîtriser et réduire la quantité de code. Un composant ne doit pas dépasser ~300 lignes si sa logique peut être externalisée.
+- **Robustesse :** Validation des données côté client avant envoi. Gestion des états d'erreur et de chargement (Toasts, feedback visuel).
+- **Zéro Déchet :** Supprimer systématiquement le code mort et les scripts orphelins (ex: anciens scripts de migration Markdown).
 
-## 4. Structure des Données (Supabase)
-Toute ressource doit être stockée dans la table `resources` avec :
+## 4. Structure des Données
+Toute ressource est stockée dans la table `resources` avec :
 - `title`, `description`, `link`, `category`, `language`, `image_url`.
-- `metadata` (JSONB) : contient un tableau `tags` et des champs spécifiques au type.
+- `metadata` (JSONB) : `city`, `published_at`, etc.
+- `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'un article).
 
-## 5. Logique i18n & Recherche
-- Interface traduite via `/[lang]/`.
-- Contenu global : ressources triées par date avec badge de langue.
-- Recherche en temps réel via composants interactifs (Vanilla JS + Pagefind).
-
-## 6. Dépendances
-- Ne jamais installer de bibliothèque sans vérifier son impact sur le poids final.
-- Tailwind v3 est imposé pour la compatibilité avec DaisyUI v4.
-- Prioriser les solutions natives (Vanilla JS) pour l'interactivité.
+## 5. Logique i18n
+- Interface bilingue via `/[lang]/`.
+- Contenu global : ressources triées par date de création avec badge de langue.
+- Recherche multi-critères : Texte, Catégorie, Langue.
+---

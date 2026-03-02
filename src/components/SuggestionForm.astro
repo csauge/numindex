@@ -1,216 +1,167 @@
 ---
-import { CATEGORIES, type CategoryKey, ACTION_ICONS, getCategoryType, getCategoryGroup } from '../utils/categories';
-import type { Suggestion, SuggestionAction, Resource } from '../lib/supabase/types';
+import { CATEGORIES, ACTION_ICONS, getCategoryType, getCategoryGroup } from '../utils/categories';
+import type { SuggestionAction, Resource } from '../lib/supabase/types';
 
 interface Props {
   lang: 'fr' | 'en';
-  initialData?: Partial<Resource> | null;
   resourceId?: string | null;
   action?: SuggestionAction;
 }
 
-const { lang, initialData: rawInitialData, resourceId, action = 'create' } = Astro.props;
-const initialData = rawInitialData || {};
+const { lang } = Astro.props;
 
 const t = {
   fr: {
-    titleCreate: 'Proposer un ajout de ressource',
-    titleUpdate: 'Proposer une modification de ressource',
-    titleDelete: 'Proposer une suppression de ressource',
+    titleCreate: 'Proposer un ajout',
+    titleUpdate: 'Proposer une modification',
+    titleDelete: 'Proposer une suppression',
     name: 'Nom de la ressource',
     description: 'Description',
     link: 'Lien (URL)',
     category: 'Catégorie',
-    resourceLang: 'Langue de la ressource',
-    tags: 'Tags (séparés par des virgules)',
-    related: 'Contributeurs / Organisations liés',
-    relatedPlaceholder: 'Chercher une entreprise, association...',
-    image: 'Image (sera compressée)',
-    reason: 'Motif de la suppression',
-    target: 'Aperçu de la ressource :',
-    submit: 'Envoyer la suggestion',
-    loading: 'Chargement...',
-    success: 'Merci ! Votre suggestion a été envoyée pour modération. Redirection...',
-    error: 'Une erreur est survenue. Veuillez réessayer.',
-    city: 'Ville / Localisation',
-    cityPlaceholder: 'Rechercher une ville...',
-    pubDate: 'Date de parution',
+    resourceLang: 'Langue',
+    tags: 'Tags (virgules)',
+    related: 'Organisations liées',
+    relatedPlaceholder: 'Chercher...',
+    image: 'Image (WebP)',
+    reason: 'Motif suppression',
+    target: 'Aperçu :',
+    submitCreate: 'Envoyer la proposition',
+    submitUpdate: 'Envoyer la modification',
+    submitDelete: 'Confirmer la suppression',
+    loading: 'Envoi...',
+    success: 'Suggestion envoyée !',
+    error: 'Erreur technique.',
+    city: 'Ville',
+    cityPlaceholder: 'Rechercher...',
+    pubDate: 'Date parution',
   },
   en: {
-    titleCreate: 'Suggest a resource addition',
-    titleUpdate: 'Suggest a resource modification',
-    titleDelete: 'Suggest a resource deletion',
+    titleCreate: 'Suggest addition',
+    titleUpdate: 'Suggest modification',
+    titleDelete: 'Suggest deletion',
     name: 'Resource name',
     description: 'Description',
     link: 'Link (URL)',
     category: 'Category',
-    resourceLang: 'Resource language',
-    tags: 'Tags (comma separated)',
-    related: 'Related Contributors / Organizations',
-    relatedPlaceholder: 'Search for a company, association...',
-    image: 'Image (will be compressed)',
-    reason: 'Reason for deletion',
-    target: 'Resource preview:',
-    submit: 'Send suggestion',
-    loading: 'Loading...',
-    success: 'Thank you! Your suggestion has been sent for moderation. Redirecting...',
-    error: 'An error occurred. Please try again.',
-    city: 'City / Location',
-    cityPlaceholder: 'Search for a city...',
+    resourceLang: 'Language',
+    tags: 'Tags (commas)',
+    related: 'Related Organizations',
+    relatedPlaceholder: 'Search...',
+    image: 'Image (WebP)',
+    reason: 'Reason',
+    target: 'Preview:',
+    submitCreate: 'Send suggestion',
+    submitUpdate: 'Send modification',
+    submitDelete: 'Confirm deletion',
+    loading: 'Sending...',
+    success: 'Suggestion sent!',
+    error: 'Error occurred.',
+    city: 'City',
+    cityPlaceholder: 'Search...',
     pubDate: 'Publication date',
   }
 }[lang];
 ---
 
 <div class="max-w-2xl mx-auto p-6 bg-base-100 rounded-xl shadow-sm border border-base-200">
-  <h2 id="form-title" class="text-2xl font-bold mb-6 flex items-center gap-3">
-    <div id="form-icon-container" class="p-2 bg-stone-50 rounded-lg border border-stone-100 flex items-center justify-center">
-      <span id="form-icon-placeholder">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS[action]} />
-        </svg>
-      </span>
+  <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+    <div id="form-icon-container" class="p-2 rounded-lg border flex items-center justify-center bg-stone-50 border-stone-100">
+      <svg id="action-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.create} />
+      </svg>
     </div>
-    <span id="form-title-text">{action === 'delete' ? t.titleDelete : (action === 'update' ? t.titleUpdate : t.titleCreate)}</span>
+    <span id="form-title-text">{t.titleCreate}</span>
   </h2>
 
-  {/* Unified Resource Preview Block */}
   <div id="resource-preview-block" class="mb-8 p-4 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-4">
-    <div id="resource-preview-img" class="w-20 h-20 rounded-lg bg-white border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-stone-200">
-    </div>
+    <div id="preview-img" class="w-20 h-20 rounded-lg bg-white border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-stone-200"></div>
     <div class="flex-grow">
       <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t.target}</p>
-      <p id="resource-preview-title" class="font-bold text-stone-800 leading-tight">Nouveau projet...</p>
+      <p id="preview-title" class="font-bold text-stone-800 leading-tight">...</p>
       <div class="flex gap-2 mt-1">
-        <span id="resource-preview-badge-cat" class="text-[9px] font-bold uppercase text-stone-400">CATÉGORIE</span>
-        <span id="resource-preview-badge-lang" class="text-[9px] font-bold uppercase text-primary">FR</span>
-        <span id="resource-preview-badge-city" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
-        <span id="resource-preview-badge-date" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
+        <span id="badge-cat" class="text-[9px] font-bold uppercase text-stone-400"></span>
+        <span id="badge-lang" class="text-[9px] font-bold uppercase text-primary"></span>
+        <span id="badge-city" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
+        <span id="badge-date" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
       </div>
     </div>
   </div>
 
-  <form 
-    id="suggestion-form" 
-    class="space-y-4"
-    data-msg-success={t.success}
-    data-msg-error={t.error}
-    data-msg-loading={t.loading}
-    data-msg-submit={t.submit}
-    data-lang={lang}
-  >
+  <form id="suggestion-form" class="space-y-4" data-lang={lang} data-t={JSON.stringify(t)}>
     <div id="standard-fields" class="space-y-4">
       <div class="form-control">
         <label class="label"><span class="label-text">{t.name}</span></label>
-        <input type="text" name="title" required placeholder="Ex: Salvia" class="input input-bordered w-full" />
+        <input type="text" name="title" required class="input input-bordered" />
       </div>
 
       <div class="form-control">
         <label class="label"><span class="label-text">{t.description}</span></label>
-        <textarea name="description" required placeholder="Brève description..." class="textarea textarea-bordered h-24"></textarea>
+        <textarea name="description" required class="textarea textarea-bordered h-24"></textarea>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="form-control">
           <label class="label"><span class="label-text">{t.category}</span></label>
-          <select name="category" id="category-select" class="select select-bordered w-full">
-            {Object.entries(CATEGORIES).map(([key, labels]) => (
-              <option value={key}>{labels[lang]}</option>
-            ))}
+          <select name="category" class="select select-bordered">
+            {Object.entries(CATEGORIES).map(([k, v]) => <option value={k}>{v[lang]}</option>)}
           </select>
         </div>
-
         <div class="form-control">
           <label class="label"><span class="label-text">{t.resourceLang}</span></label>
-          <select name="language" class="select select-bordered w-full">
-            <option value="fr">Français (FR)</option>
-            <option value="en">English (EN)</option>
+          <select name="language" class="select select-bordered">
+            <option value="fr">FR</option><option value="en">EN</option>
           </select>
         </div>
       </div>
 
-      {/* City Autocomplete (Photon API) */}
       <div id="city-container" class="form-control hidden">
         <label class="label"><span class="label-text">{t.city}</span></label>
         <div class="relative">
-          <input 
-            type="text" 
-            id="city-search" 
-            placeholder={t.cityPlaceholder} 
-            class="input input-bordered w-full" 
-            autocomplete="off"
-          />
-          <input type="hidden" name="city-value" id="city-value" />
-          <div id="city-results" class="absolute left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-lg shadow-xl z-[70] hidden max-h-48 overflow-y-auto">
-          </div>
+          <input type="text" id="city-search" placeholder={t.cityPlaceholder} class="input input-bordered w-full" autocomplete="off" />
+          <input type="hidden" name="city-value" />
+          <div id="city-results" class="absolute left-0 right-0 top-full mt-1 bg-white border rounded-lg shadow-xl z-50 hidden max-h-48 overflow-y-auto"></div>
         </div>
       </div>
 
-      {/* Publication Date (For CONTENUS) */}
       <div id="date-container" class="form-control hidden">
         <label class="label"><span class="label-text">{t.pubDate}</span></label>
-        <input type="date" name="pub-date" id="pub-date" class="input input-bordered w-full" />
+        <input type="date" name="published_at" class="input input-bordered w-full" />
       </div>
 
-      {/* Relations multi-sélecteur (Affiché conditionnellement par script) */}
       <div id="related-container" class="form-control hidden">
         <label class="label"><span class="label-text">{t.related}</span></label>
         <div class="relative">
-          <input 
-            type="text" 
-            id="related-search" 
-            placeholder={t.relatedPlaceholder} 
-            class="input input-bordered w-full" 
-            autocomplete="off"
-          />
-          <div id="related-results" class="absolute left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-lg shadow-xl z-[60] hidden max-h-48 overflow-y-auto">
-            {/* Résultats de recherche injectés ici */}
-          </div>
+          <input type="text" id="related-search" placeholder={t.relatedPlaceholder} class="input input-bordered w-full" autocomplete="off" />
+          <div id="related-results" class="absolute left-0 right-0 top-full mt-1 bg-white border rounded-lg shadow-xl z-40 hidden max-h-48 overflow-y-auto"></div>
         </div>
-        <div id="selected-related" class="flex flex-wrap gap-2 mt-2">
-          {/* Badges des entités sélectionnées */}
-        </div>
+        <div id="selected-related" class="flex flex-wrap gap-2 mt-2"></div>
       </div>
 
       <div class="form-control">
         <label class="label"><span class="label-text">{t.link}</span></label>
-        <input type="url" name="link" required placeholder="https://..." class="input input-bordered w-full" />
+        <input type="url" name="link" required class="input input-bordered" />
       </div>
 
       <div class="form-control">
         <label class="label"><span class="label-text">{t.tags}</span></label>
-        <input 
-          type="text" 
-          name="tags" 
-          placeholder="low-tech, open-source..." 
-          class="input input-bordered w-full" 
-        />
+        <input type="text" name="tags" class="input input-bordered" />
       </div>
 
-      <div class="form-control" id="image-field">
-        <label class="label"><span class="label-text font-semibold text-stone-600">{t.image}</span></label>
-        <input 
-          type="file" 
-          name="image" 
-          accept="image/*" 
-          class="file-input file-input-bordered file-input-primary w-full bg-stone-50/50 border-stone-200 text-stone-500 text-sm focus:outline-primary/30 transition-all hover:border-primary/50" 
-        />
-        <label class="label">
-          <span class="label-text-alt text-stone-400 italic">Format WebP, JPG ou PNG (max 5MB)</span>
-        </label>
+      <div class="form-control">
+        <label class="label"><span class="label-text">{t.image}</span></label>
+        <input type="file" name="image" accept="image/*" class="file-input file-input-bordered" />
       </div>
     </div>
 
     <div id="delete-fields" class="hidden space-y-4">
       <div class="form-control">
-        <label class="label"><span class="label-text font-bold text-error">{t.reason}</span></label>
-        <textarea name="reason" placeholder="Ex: Le site n'existe plus..." class="textarea textarea-bordered textarea-error h-32"></textarea>
+        <label class="label"><span class="label-text text-error font-bold">{t.reason}</span></label>
+        <textarea name="reason" class="textarea textarea-bordered textarea-error h-24"></textarea>
       </div>
     </div>
 
-    <button type="submit" class="btn btn-primary w-full mt-4 hover:bg-[#52b788] transition-colors shadow-sm">
-      {t.submit}
-    </button>
+    <button id="submit-btn" type="submit" class="btn btn-primary w-full mt-4">{t.submitCreate}</button>
   </form>
 
   <div id="toast-container" class="toast toast-top toast-center z-[100] hidden">
@@ -222,72 +173,55 @@ const t = {
 
 <script>
   import { supabase, getImageUrl } from '../lib/supabase/client';
-  import { getCategoryIcon, getCategoryLabel, ACTION_ICONS, getCategoryType, getCategoryGroup } from '../utils/categories';
+  import { getCategoryIcon, getCategoryLabel, getCategoryType, getCategoryGroup, ACTION_ICONS } from '../utils/categories';
+  import { searchCities, uploadCompressedImage, fetchEntities } from '../lib/services';
   import type { Resource, SuggestionAction } from '../lib/supabase/types';
 
   const form = document.getElementById('suggestion-form') as HTMLFormElement;
+  const t = JSON.parse(form.dataset.t!);
+  const lang = form.dataset.lang;
   const toastContainer = document.getElementById('toast-container');
   const toastMessage = document.getElementById('toast-message');
   const toastText = document.getElementById('toast-text');
-  
-  const formIconContainer = document.getElementById('form-icon-container');
-  const formTitleText = document.getElementById('form-title-text');
-  const standardFields = document.getElementById('standard-fields');
-  const deleteFields = document.getElementById('delete-fields');
-  const catSelect = document.getElementById('category-select') as HTMLSelectElement;
 
-  // City Autocomplete elements
-  const cityContainer = document.getElementById('city-container');
-  const citySearch = document.getElementById('city-search') as HTMLInputElement;
-  const cityValue = document.getElementById('city-value') as HTMLInputElement;
-  const cityResults = document.getElementById('city-results');
-
-  // Date elements
-  const dateContainer = document.getElementById('date-container');
-  const dateInput = document.getElementById('pub-date') as HTMLInputElement;
-
-  // Related selector elements
-  const relatedContainer = document.getElementById('related-container');
-  const relatedSearch = document.getElementById('related-search') as HTMLInputElement;
-  const relatedResults = document.getElementById('related-results');
-  const selectedRelatedContainer = document.getElementById('selected-related');
-
-  // Preview elements
-  const previewImg = document.getElementById('resource-preview-img');
-  const previewTitle = document.getElementById('resource-preview-title');
-  const previewCat = document.getElementById('resource-preview-badge-cat');
-  const previewLang = document.getElementById('resource-preview-badge-lang');
-  const previewCity = document.getElementById('resource-preview-badge-city');
-  const previewDate = document.getElementById('resource-preview-badge-date');
-
-  const msgSuccess = form?.dataset.msgSuccess || '';
-  const msgError = form?.dataset.msgError || '';
-  const msgLoading = form?.dataset.msgLoading || '';
-  const msgSubmit = form?.dataset.msgSubmit || '';
-  const uiLang = (form?.dataset.lang || 'fr') as 'fr' | 'en';
-
+  // Détection dynamique des paramètres (nécessaire en mode static Astro)
   const urlParams = new URLSearchParams(window.location.search);
-  const resourceId = urlParams.get('id');
   const action = (urlParams.get('action') || 'create') as SuggestionAction;
+  const rid = urlParams.get('id');
 
-  const i18n = {
-    fr: {
-      titleCreate: 'Proposer un ajout de ressource',
-      titleUpdate: 'Proposer une modification de ressource',
-      titleDelete: 'Proposer une suppression de ressource',
-      defaultTitle: 'Nouveau projet...'
-    },
-    en: {
-      titleCreate: 'Suggest a resource addition',
-      titleUpdate: 'Suggest a resource modification',
-      titleDelete: 'Suggest a resource deletion',
-      defaultTitle: 'New project...'
+  const elements = {
+    title: form.querySelector('[name="title"]') as HTMLInputElement,
+    desc: form.querySelector('[name="description"]') as HTMLTextAreaElement,
+    cat: form.querySelector('[name="category"]') as HTMLSelectElement,
+    lang: form.querySelector('[name="language"]') as HTMLSelectElement,
+    link: form.querySelector('[name="link"]') as HTMLInputElement,
+    tags: form.querySelector('[name="tags"]') as HTMLInputElement,
+    img: form.querySelector('[name="image"]') as HTMLInputElement,
+    cityVal: form.querySelector('[name="city-value"]') as HTMLInputElement,
+    citySearch: document.getElementById('city-search') as HTMLInputElement,
+    cityResults: document.getElementById('city-results'),
+    dateInput: form.querySelector('[name="published_at"]') as HTMLInputElement,
+    reason: form.querySelector('[name="reason"]') as HTMLTextAreaElement,
+    relatedSearch: document.getElementById('related-search') as HTMLInputElement,
+    relatedResults: document.getElementById('related-results'),
+    selectedRelated: document.getElementById('selected-related'),
+    submitBtn: document.getElementById('submit-btn') as HTMLButtonElement,
+    formTitle: document.getElementById('form-title-text'),
+    formIcon: document.getElementById('action-icon'),
+    formIconContainer: document.getElementById('form-icon-container'),
+    preview: {
+      title: document.getElementById('preview-title'),
+      cat: document.getElementById('badge-cat'),
+      lang: document.getElementById('badge-lang'),
+      city: document.getElementById('badge-city'),
+      date: document.getElementById('badge-date'),
+      img: document.getElementById('preview-img')
     }
-  }[uiLang];
+  };
 
+  let entities: Resource[] = [];
+  let selectedIds: string[] = [];
   let existingData: Resource | null = null;
-  let allEntities: Resource[] = [];
-  let selectedRelatedIds: string[] = [];
 
   async function showToast(message: string, type: 'success' | 'error') {
     if (!toastContainer || !toastMessage || !toastText) return;
@@ -297,7 +231,7 @@ const t = {
     
     if (type === 'success') {
       setTimeout(() => {
-        window.location.href = `/${uiLang}`;
+        window.location.href = `/${lang}`;
       }, 2000);
     } else {
       setTimeout(() => {
@@ -306,372 +240,178 @@ const t = {
     }
   }
 
-  function updatePreview() {
-    if (!previewTitle || !previewCat || !previewLang || !previewImg || !previewCity || !previewDate) return;
+  function updateUI() {
+    const type = getCategoryType(elements.cat.value);
+    const group = getCategoryGroup(elements.cat.value);
+    const isDelete = action === 'delete';
+    const isUpdate = action === 'update';
 
-    const titleInput = form.querySelector('[name="title"]') as HTMLInputElement;
-    const catInput = form.querySelector('[name="category"]') as HTMLSelectElement;
-    const langInput = form.querySelector('[name="language"]') as HTMLSelectElement;
-    const imageInput = form.querySelector('[name="image"]') as HTMLInputElement;
-
-    previewTitle.innerText = titleInput.value || existingData?.title || i18n.defaultTitle;
-    previewCat.innerText = getCategoryLabel(catInput.value || existingData?.category || 'entreprise', uiLang);
-    previewLang.innerText = (langInput.value || existingData?.language || 'fr').toUpperCase();
-
-    // Preview city
-    if (cityValue.value || existingData?.metadata?.city) {
-      previewCity.innerText = cityValue.value || existingData?.metadata?.city;
-      previewCity.classList.remove('hidden');
-    } else {
-      previewCity.classList.add('hidden');
+    // Update Header & Button based on Action
+    if (elements.formTitle) {
+      elements.formTitle.innerText = isDelete ? t.titleDelete : (isUpdate ? t.titleUpdate : t.titleCreate);
+    }
+    if (elements.submitBtn) {
+      elements.submitBtn.innerText = isDelete ? t.submitDelete : (isUpdate ? t.submitUpdate : t.submitCreate);
+    }
+    if (elements.formIcon) {
+      elements.formIcon.querySelector('path')?.setAttribute('d', ACTION_ICONS[action]);
+      elements.formIcon.classList.toggle('text-error', isDelete);
+      elements.formIcon.classList.toggle('text-primary', !isDelete);
+    }
+    if (elements.formIconContainer) {
+      elements.formIconContainer.classList.toggle('bg-red-50', isDelete);
+      elements.formIconContainer.classList.toggle('border-red-100', isDelete);
     }
 
-    // Preview date
-    if (dateInput.value || existingData?.metadata?.published_at) {
-      previewDate.innerText = dateInput.value || existingData?.metadata?.published_at;
-      previewDate.classList.remove('hidden');
-    } else {
-      previewDate.classList.add('hidden');
-    }
+    // Gestion des champs requis selon l'action
+    elements.title.required = !isDelete;
+    elements.desc.required = !isDelete;
+    elements.link.required = !isDelete;
+    elements.reason.required = isDelete;
 
-    if (imageInput?.files && imageInput.files[0]) {
+    document.getElementById('standard-fields')?.classList.toggle('hidden', isDelete);
+    document.getElementById('delete-fields')?.classList.toggle('hidden', !isDelete);
+    document.getElementById('city-container')?.classList.toggle('hidden', type !== 'entity' || isDelete);
+    document.getElementById('date-container')?.classList.toggle('hidden', group !== 'CONTENUS' || isDelete);
+    document.getElementById('related-container')?.classList.toggle('hidden', type !== 'resource' || isDelete);
+
+    // Preview
+    elements.preview.title!.innerText = elements.title.value || existingData?.title || '...';
+    elements.preview.cat!.innerText = getCategoryLabel(elements.cat.value, lang as any);
+    elements.preview.lang!.innerText = elements.lang.value.toUpperCase();
+    
+    elements.preview.city!.innerText = elements.cityVal.value || '';
+    elements.preview.city!.classList.toggle('hidden', !elements.cityVal.value);
+    
+    elements.preview.date!.innerText = elements.dateInput.value || '';
+    elements.preview.date!.classList.toggle('hidden', !elements.dateInput.value);
+
+    if (elements.img.files?.[0]) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        previewImg.innerHTML = `<img src="${e.target?.result}" class="w-full h-full object-contain p-1" />`;
-      };
-      reader.readAsDataURL(imageInput.files[0]);
-    } else if (existingData?.image_url) {
-      const url = getImageUrl(existingData.image_url);
-      previewImg.innerHTML = `<img src="${url}" class="w-full h-full object-contain p-1" />`;
+      reader.onload = (e) => elements.preview.img!.innerHTML = `<img src="${e.target?.result}" class="w-full h-full object-contain" />`;
+      reader.readAsDataURL(elements.img.files[0]);
     } else {
-      const cat = catInput.value || existingData?.category || 'entreprise';
-      previewImg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${getCategoryIcon(cat)}" /></svg>`;
-    }
-
-    // Dynamic visibility
-    const catType = getCategoryType(catInput.value);
-    const catGroup = getCategoryGroup(catInput.value);
-
-    if (action !== 'delete') {
-      // Related selector logic
-      if (catType === 'resource') {
-        relatedContainer?.classList.remove('hidden');
-      } else {
-        relatedContainer?.classList.add('hidden');
-      }
-
-      // City field logic
-      if (catType === 'entity') {
-        cityContainer?.classList.remove('hidden');
-      } else {
-        cityContainer?.classList.add('hidden');
-      }
-
-      // Date field logic
-      if (catGroup === 'CONTENUS') {
-        dateContainer?.classList.remove('hidden');
-      } else {
-        dateContainer?.classList.add('hidden');
-      }
-    } else {
-      relatedContainer?.classList.add('hidden');
-      cityContainer?.classList.add('hidden');
-      dateContainer?.classList.add('hidden');
+      const url = getImageUrl(existingData?.image_url);
+      elements.preview.img!.innerHTML = url ? `<img src="${url}" class="w-full h-full object-contain" />` : 
+        `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="${getCategoryIcon(elements.cat.value)}"/></svg>`;
     }
   }
 
-  function renderSelectedRelated() {
-    if (!selectedRelatedContainer) return;
-    selectedRelatedContainer.innerHTML = '';
+  function renderRelated() {
+    elements.selectedRelated!.innerHTML = selectedIds.map(id => {
+      const ent = entities.find(e => e.id === id);
+      return `<div class="badge badge-primary gap-2 font-bold py-3">
+        ${ent?.title} <button type="button" data-id="${id}" class="remove-rel">×</button>
+      </div>`;
+    }).join('');
     
-    selectedRelatedIds.forEach(id => {
-      const entity = allEntities.find(e => e.id === id);
-      if (!entity) return;
-      
-      const badge = document.createElement('div');
-      badge.className = 'badge badge-primary gap-2 font-bold py-3 pl-3 pr-1';
-      badge.innerHTML = `
-        <span>${entity.title}</span>
-        <button type="button" class="hover:text-red-200" data-id="${id}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
-      `;
-      
-      badge.querySelector('button')?.addEventListener('click', () => {
-        selectedRelatedIds = selectedRelatedIds.filter(rid => rid !== id);
-        renderSelectedRelated();
+    elements.selectedRelated!.querySelectorAll('.remove-rel').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedIds = selectedIds.filter(i => i !== (btn as HTMLElement).dataset.id);
+        renderRelated();
       });
-      
-      selectedRelatedContainer.appendChild(badge);
     });
   }
 
-  async function fetchEntities() {
-    if (!supabase) return;
-    const { data } = await supabase
-      .from('resources')
-      .select('id, title, category')
-      .in('category', ['entreprise', 'association', 'personne'])
-      .order('title');
-    
-    if (data) allEntities = data as Resource[];
-  }
-
-  // Photon API logic
-  let photonTimeout: any;
-  citySearch?.addEventListener('input', (e) => {
-    clearTimeout(photonTimeout);
+  // Photon
+  let photonTimer: any;
+  elements.citySearch.addEventListener('input', (e) => {
+    clearTimeout(photonTimer);
     const val = (e.target as HTMLInputElement).value;
-    if (val.length < 2) {
-      cityResults?.classList.add('hidden');
-      return;
-    }
-
-    photonTimeout = setTimeout(async () => {
-      try {
-        const response = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=10&lang=${uiLang}`);
-        const data = await response.json();
-        
-        if (data.features && data.features.length > 0 && cityResults) {
-          const filtered = data.features.filter((f: any) => 
-            f.properties.osm_key === 'place' && 
-            ['city', 'town', 'village', 'hamlet'].includes(f.properties.osm_value)
-          ).slice(0, 5);
-
-          if (filtered.length === 0) {
-            cityResults.classList.add('hidden');
-            return;
-          }
-
-          cityResults.innerHTML = filtered.map((f: any) => {
-            const name = f.properties.name;
-            const city = f.properties.city || f.properties.state || '';
-            const country = f.properties.country || '';
-            const label = [name, country].filter(Boolean).join(', ');
-            return `
-              <button type="button" class="w-full text-left px-4 py-3 hover:bg-stone-50 border-b border-stone-100 last:border-none group" data-label="${label}">
-                <p class="font-bold text-sm text-stone-800">${name}</p>
-                <p class="text-[10px] text-stone-400 uppercase">${[city, country].filter(Boolean).join(', ')}</p>
-              </button>
-            `;
-          }).join('');
-          cityResults.classList.remove('hidden');
-
-          cityResults.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const label = btn.dataset.label || '';
-              citySearch.value = label;
-              cityValue.value = label;
-              cityResults.classList.add('hidden');
-              updatePreview();
-            });
-          });
-        }
-      } catch (err) {
-        console.error('Photon API Error:', err);
-      }
+    if (val.length < 2) return elements.cityResults!.classList.add('hidden');
+    photonTimer = setTimeout(async () => {
+      const res = await searchCities(val, lang!);
+      elements.cityResults!.innerHTML = res.map(c => `
+        <button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50 border-b last:border-none" data-label="${c.label}">
+          <p class="font-bold text-sm">${c.name}</p><p class="text-[10px] text-stone-400">${c.sub}</p>
+        </button>`).join('');
+      elements.cityResults!.classList.remove('hidden');
+      elements.cityResults!.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        elements.citySearch.value = (b as HTMLElement).dataset.label!;
+        elements.cityVal.value = (b as HTMLElement).dataset.label!;
+        elements.cityResults!.classList.add('hidden');
+        updateUI();
+      }));
     }, 300);
   });
 
-  // Initialize UI
-  async function initForm() {
-    await fetchEntities();
-
-    if (formIconContainer) {
-      const iconPath = ACTION_ICONS[action];
-      formIconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${action === 'delete' ? 'text-error' : 'text-primary'}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}" /></svg>`;
-    }
-
-    if ((action === 'update' || action === 'delete') && resourceId) {
-      if (action === 'delete') {
-        if (formTitleText) formTitleText.innerText = i18n.titleDelete;
-        standardFields?.classList.add('hidden');
-        deleteFields?.classList.remove('hidden');
-        const inputs = standardFields?.querySelectorAll('input, textarea, select');
-        inputs?.forEach(input => {
-          (input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).required = false;
-        });
-        const reasonInput = deleteFields?.querySelector('textarea');
-        if (reasonInput) reasonInput.required = true;
-      } else {
-        if (formTitleText) formTitleText.innerText = i18n.titleUpdate;
-      }
-      
-      if (supabase) {
-        const { data } = await supabase
-          .from('resources')
-          .select('*')
-          .eq('id', resourceId)
-          .single();
-
-        if (data) {
-          existingData = data as Resource;
-          if (action !== 'delete') {
-            (form.querySelector('[name="title"]') as HTMLInputElement).value = data.title || '';
-            (form.querySelector('[name="description"]') as HTMLTextAreaElement).value = data.description || '';
-            (form.querySelector('[name="category"]') as HTMLSelectElement).value = data.category || '';
-            (form.querySelector('[name="language"]') as HTMLSelectElement).value = data.language || 'fr';
-            (form.querySelector('[name="link"]') as HTMLInputElement).value = data.link || '';
-            (form.querySelector('[name="tags"]') as HTMLInputElement).value = data.tags?.join(', ') || '';
-            if (data.metadata?.city) {
-              citySearch.value = data.metadata.city;
-              cityValue.value = data.metadata.city;
-            }
-            if (data.metadata?.published_at) {
-              dateInput.value = data.metadata.published_at;
-            }
-            selectedRelatedIds = data.related_ids || [];
-            renderSelectedRelated();
-          }
-          updatePreview();
+  // Init
+  async function init() {
+    entities = await fetchEntities();
+    if (rid && supabase) {
+      const { data } = await supabase.from('resources').select('*').eq('id', rid).single();
+      if (data) {
+        existingData = data as Resource;
+        if (action !== 'delete') {
+          elements.title.value = data.title;
+          elements.desc.value = data.description;
+          elements.cat.value = data.category;
+          elements.lang.value = data.language;
+          elements.link.value = data.link;
+          elements.tags.value = data.tags?.join(', ') || '';
+          elements.cityVal.value = data.metadata?.city || '';
+          elements.citySearch.value = data.metadata?.city || '';
+          elements.dateInput.value = data.metadata?.published_at || '';
+          selectedIds = data.related_ids || [];
+          renderRelated();
         }
       }
-    } else {
-      if (formTitleText) formTitleText.innerText = i18n.titleCreate;
-      updatePreview();
     }
-
-    form.querySelectorAll('input, select, textarea').forEach(input => {
-      input.addEventListener('input', updatePreview);
-    });
-
-    // Related search logic
-    relatedSearch?.addEventListener('input', (e) => {
-      const val = (e.target as HTMLInputElement).value.toLowerCase();
-      if (val.length < 1) {
-        relatedResults?.classList.add('hidden');
-        return;
-      }
-      
-      const filtered = allEntities.filter(ent => 
-        ent.title.toLowerCase().includes(val) && !selectedRelatedIds.includes(ent.id)
-      );
-      
-      if (filtered.length > 0 && relatedResults) {
-        relatedResults.innerHTML = filtered.map(ent => `
-          <button type="button" class="w-full text-left px-4 py-3 hover:bg-stone-50 border-b border-stone-100 last:border-none flex items-center justify-between group" data-id="${ent.id}">
-            <div>
-              <p class="font-bold text-sm text-stone-800">${ent.title}</p>
-              <p class="text-[10px] text-stone-400 uppercase">${ent.category}</p>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-200 group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-          </button>
-        `).join('');
-        
-        relatedResults.classList.remove('hidden');
-        
-        relatedResults.querySelectorAll('button').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            if (id && !selectedRelatedIds.includes(id)) {
-              selectedRelatedIds.push(id);
-              relatedSearch.value = '';
-              relatedResults.classList.add('hidden');
-              renderSelectedRelated();
-            }
-          });
-        });
-      } else {
-        relatedResults?.classList.add('hidden');
-      }
-    });
-
-    // Close results when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!relatedSearch?.contains(e.target as Node) && !citySearch?.contains(e.target as Node)) {
-        relatedResults?.classList.add('hidden');
-        cityResults?.classList.add('hidden');
-      }
-    });
+    updateUI();
+    form.addEventListener('input', updateUI);
   }
 
-  initForm();
+  // Related search
+  elements.relatedSearch.addEventListener('input', (e) => {
+    const val = (e.target as HTMLInputElement).value.toLowerCase();
+    if (val.length < 1) return elements.relatedResults!.classList.add('hidden');
+    const filtered = entities.filter(ent => ent.title.toLowerCase().includes(val) && !selectedIds.includes(ent.id));
+    elements.relatedResults!.innerHTML = filtered.map(ent => `<button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50" data-id="${ent.id}">${ent.title}</button>`).join('');
+    elements.relatedResults!.classList.toggle('hidden', filtered.length === 0);
+    elements.relatedResults!.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+      selectedIds.push((btn as HTMLElement).dataset.id!);
+      elements.relatedSearch.value = '';
+      elements.relatedResults!.classList.add('hidden');
+      renderRelated();
+    }));
+  });
 
-  form?.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = elements.submitBtn;
+    const isDelete = action === 'delete';
+    const isUpdate = action === 'update';
     
-    const formData = new FormData(form);
-    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-    
-    submitBtn.disabled = true;
-    submitBtn.innerText = msgLoading;
+    btn.disabled = true; btn.innerText = t.loading;
 
     try {
-      if (!supabase) throw new Error('Supabase not initialized');
-      
-      let imageUrl = existingData?.image_url || '';
+      let imageUrl = existingData?.image_url || null;
+      if (elements.img.files?.[0]) imageUrl = await uploadCompressedImage(elements.img.files[0]);
 
-      if (action !== 'delete') {
-        const imageFile = formData.get('image') as File;
-        if (imageFile && imageFile.size > 0) {
-          const imageCompression = (await import('browser-image-compression')).default;
-          const options = {
-            maxSizeMB: 0.05,
-            maxWidthOrHeight: 800,
-            useWebWorker: true,
-            fileType: 'image/webp',
-            initialQuality: 0.8
-          };
-          
-          try {
-            const compressedFile = await imageCompression(imageFile, options);
-            const fileName = `${Date.now()}-${imageFile.name.split('.')[0]}.webp`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('suggestions')
-              .upload(fileName, compressedFile);
-              
-            if (uploadError) throw uploadError;
-            if (uploadData) imageUrl = uploadData.path;
-          } catch (error) {
-            console.error('Erreur Upload/Compression:', error);
-          }
-        }
-      }
-
-      const tagsString = formData.get('tags') as string;
-      const tags = tagsString ? tagsString.split(',').map(t => t.trim()).filter(Boolean) : [];
-      
-      const metadata: any = { ...existingData?.metadata };
-      if (action !== 'delete') {
-        const city = formData.get('city-value') as string;
-        const pubDate = formData.get('pub-date') as string;
-        
-        if (city) metadata.city = city;
-        else delete metadata.city;
-        
-        if (pubDate) metadata.published_at = pubDate;
-        else delete metadata.published_at;
-      }
+      const tags = elements.tags.value.split(',').map(t => t.trim()).filter(Boolean);
+      const metadata = { ...existingData?.metadata };
+      if (elements.cityVal.value) metadata.city = elements.cityVal.value;
+      if (elements.dateInput.value) metadata.published_at = elements.dateInput.value;
 
       const payload = {
-        title: action === 'delete' ? existingData?.title : formData.get('title'),
-        description: action === 'delete' ? existingData?.description : formData.get('description'),
-        link: action === 'delete' ? existingData?.link : formData.get('link'),
-        category: action === 'delete' ? existingData?.category : formData.get('category'),
-        language: action === 'delete' ? (existingData?.language || 'fr') : formData.get('language'),
-        tags: action === 'delete' ? (existingData?.tags || []) : tags,
-        related_ids: action === 'delete' ? (existingData?.related_ids || []) : selectedRelatedIds,
-        metadata: metadata,
-        image_url: imageUrl || null,
-        status: 'pending',
-        action: action,
-        resource_id: resourceId || null,
-        reason: formData.get('reason') || null
+        title: action === 'delete' ? existingData?.title : elements.title.value,
+        description: action === 'delete' ? existingData?.description : elements.desc.value,
+        category: action === 'delete' ? existingData?.category : elements.cat.value,
+        language: action === 'delete' ? existingData?.language : elements.lang.value,
+        link: action === 'delete' ? existingData?.link : elements.link.value,
+        tags: action === 'delete' ? existingData?.tags : tags,
+        related_ids: action === 'delete' ? existingData?.related_ids : selectedIds,
+        metadata, image_url: imageUrl, action, status: 'pending', resource_id: rid || null, reason: elements.reason.value || null
       };
 
-      const { error } = await supabase
-        .from('suggestions')
-        .insert([payload]);
-
-      if (error) throw error;
-
-      showToast(msgSuccess, 'success');
-      form.reset();
+      await supabase!.from('suggestions').insert([payload]);
+      showToast(t.success, 'success');
     } catch (err) {
-      console.error('Erreur:', err);
-      showToast(msgError, 'error');
-      submitBtn.disabled = false;
-      submitBtn.innerText = msgSubmit;
+      showToast(t.error, 'error');
+      btn.disabled = false; 
+      btn.innerText = isDelete ? t.submitDelete : (isUpdate ? t.submitUpdate : t.submitCreate);
     }
   });
+
+  init();
 </script>

@@ -115,7 +115,7 @@ const getRelatedNames = (ids: string[]) => {
             <div class="relative w-full pt-[56%] bg-stone-50/30 border-b border-stone-50 flex items-center justify-center">
               {res.image_url ? (
                 <img 
-                  src={getImageUrl(res.image_url)} 
+                  src={getImageUrl(res.image_url, { width: 400, quality: 70 })} 
                   alt="" 
                   class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500 ease-out"
                   loading="lazy"
@@ -198,7 +198,22 @@ const getRelatedNames = (ids: string[]) => {
     else noResults?.classList.add('hidden');
   }
 
-  searchInput?.addEventListener('input', updateFilters);
+  // Debounce function to limit CPU usage during typing
+  function debounce(func: Function, wait: number) {
+    let timeout: any;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  const debouncedUpdate = debounce(updateFilters, 150);
+
+  searchInput?.addEventListener('input', debouncedUpdate);
   catFilter?.addEventListener('change', updateFilters);
   langFilter?.addEventListener('change', updateFilters);
 </script>

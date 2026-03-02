@@ -1,15 +1,10 @@
 ---
+export const prerender = false;
+
 import Layout from '../../layouts/Layout.astro';
 import { getCategoryLabel, getCategoryIcon, ACTION_ICONS } from '../../utils/categories';
 import { supabase, getImageUrl } from '../../lib/supabase/client';
 import type { Suggestion, SuggestionAction, Resource } from '../../lib/supabase/types';
-
-export async function getStaticPaths() {
-  return [
-    { params: { lang: 'fr' } },
-    { params: { lang: 'en' } },
-  ];
-}
 
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
