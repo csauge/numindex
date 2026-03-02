@@ -104,13 +104,15 @@ const getRelatedNames = (ids: string[]) => {
     <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       {allRessources.map((res) => {
         const relatedNames = getRelatedNames(res.related_ids || []);
+        const searchKeywords = `${res.title} ${res.description} ${res.tags?.join(' ')} ${relatedNames.join(' ')}`.toLowerCase();
+        
         return (
           <a 
             href={`/${lang}/resource/${res.id}`}
             class="resource-card group flex flex-col bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-stone-200/40 hover:border-primary/30 transition-all duration-300"
             data-category={res.category}
             data-language={res.language}
-            data-search-content={`${res.title} ${res.description} ${res.tags?.join(' ')} ${relatedNames.join(' ')}`.toLowerCase()}
+            data-keywords={searchKeywords}
           >
             <div class="relative w-full pt-[56%] bg-stone-50/30 border-b border-stone-50 flex items-center justify-center">
               {res.image_url ? (
@@ -119,6 +121,7 @@ const getRelatedNames = (ids: string[]) => {
                   alt="" 
                   class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500 ease-out"
                   loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <div class="absolute inset-0 flex items-center justify-center text-stone-100 group-hover:text-primary/10 transition-colors">
@@ -160,35 +163,54 @@ const getRelatedNames = (ids: string[]) => {
 </Layout>
 
 <script>
-  const cards = document.querySelectorAll('.resource-card');
-  const searchInput = document.getElementById('search-input');
-  const catFilter = document.getElementById('filter-category');
-  const langFilter = document.getElementById('filter-language');
+  let cards: NodeListOf<Element> = [];
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const catFilter = document.getElementById('filter-category') as HTMLSelectElement;
+  const langFilter = document.getElementById('filter-language') as HTMLSelectElement;
   const countDisplay = document.getElementById('results-count');
   const noResults = document.getElementById('no-results');
 
+  // Defer initialization to avoid blocking the main thread
+  function initSearch() {
+    cards = document.querySelectorAll('.resource-card');
+    
+    searchInput?.addEventListener('input', debouncedUpdate);
+    catFilter?.addEventListener('change', updateFilters);
+    langFilter?.addEventListener('change', updateFilters);
+  }
+
+  // Use requestIdleCallback if available, otherwise fallback to setTimeout
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(() => initSearch());
+  } else {
+    setTimeout(initSearch, 1);
+  }
+
   function updateFilters() {
-    const query = (searchInput as HTMLInputElement)?.value.toLowerCase().trim() || '';
-    const cat = (catFilter as HTMLSelectElement)?.value || 'all';
-    const lang = (langFilter as HTMLSelectElement)?.value || 'all';
+    if (!cards.length) return;
+
+    const query = searchInput.value.toLowerCase().trim();
+    const cat = catFilter.value;
+    const lang = langFilter.value;
     let visibleCount = 0;
 
-    cards.forEach(card => {
-      const content = (card as HTMLElement).dataset.searchContent || '';
-      const cardCat = (card as HTMLElement).dataset.category;
-      const cardLang = (card as HTMLElement).dataset.language;
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i] as HTMLElement;
+      const keywords = card.dataset.keywords || '';
+      const cardCat = card.dataset.category;
+      const cardLang = card.dataset.language;
       
-      const matchSearch = content.includes(query);
+      const matchSearch = !query || keywords.includes(query);
       const matchCat = cat === 'all' || cardCat === cat;
       const matchLang = lang === 'all' || cardLang === lang;
 
       if (matchSearch && matchCat && matchLang) {
-        (card as HTMLElement).style.display = 'flex';
+        card.style.display = 'flex';
         visibleCount++;
       } else {
-        (card as HTMLElement).style.display = 'none';
+        card.style.display = 'none';
       }
-    });
+    }
 
     if (countDisplay) {
       countDisplay.textContent = `${visibleCount} ressource${visibleCount > 1 ? 's' : ''}`;
@@ -198,7 +220,6 @@ const getRelatedNames = (ids: string[]) => {
     else noResults?.classList.add('hidden');
   }
 
-  // Debounce function to limit CPU usage during typing
   function debounce(func: Function, wait: number) {
     let timeout: any;
     return function executedFunction(...args: any[]) {
@@ -212,8 +233,4 @@ const getRelatedNames = (ids: string[]) => {
   }
 
   const debouncedUpdate = debounce(updateFilters, 150);
-
-  searchInput?.addEventListener('input', debouncedUpdate);
-  catFilter?.addEventListener('change', updateFilters);
-  langFilter?.addEventListener('change', updateFilters);
 </script>

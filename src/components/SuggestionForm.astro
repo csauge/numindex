@@ -20,10 +20,11 @@ const t = {
     link: 'Lien (URL)',
     category: 'Catégorie',
     resourceLang: 'Langue',
-    tags: 'Tags (virgules)',
+    tags: 'Tags (séparés par des virgules)',
     related: 'Organisations liées',
     relatedPlaceholder: 'Chercher...',
-    image: 'Image (WebP)',
+    image: 'Image',
+    imageHelp: 'Préféré : SVG, AVIF, WebP (ou PNG, JPG)',
     reason: 'Motif suppression',
     target: 'Aperçu :',
     submitCreate: 'Envoyer la proposition',
@@ -45,10 +46,11 @@ const t = {
     link: 'Link (URL)',
     category: 'Category',
     resourceLang: 'Language',
-    tags: 'Tags (commas)',
+    tags: 'Tags (comma separated)',
     related: 'Related Organizations',
     relatedPlaceholder: 'Search...',
-    image: 'Image (WebP)',
+    image: 'Image',
+    imageHelp: 'Preferred: SVG, AVIF, WebP (or PNG, JPG)',
     reason: 'Reason',
     target: 'Preview:',
     submitCreate: 'Send suggestion',
@@ -149,8 +151,9 @@ const t = {
       </div>
 
       <div class="form-control">
-        <label class="label"><span class="label-text">{t.image}</span></label>
-        <input type="file" name="image" accept="image/*" class="file-input file-input-bordered" />
+        <label class="label"><span class="label-text font-bold">{t.image}</span></label>
+        <input type="file" name="image" accept="image/svg+xml,image/avif,image/webp,image/png,image/jpeg" class="file-input file-input-bordered" />
+        <label class="label"><span class="label-text-alt italic opacity-60">{t.imageHelp}</span></label>
       </div>
     </div>
 
