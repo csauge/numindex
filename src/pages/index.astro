@@ -1,4 +1,14 @@
 ---
-// Redirection automatique vers la langue par défaut (fr)
-return Astro.redirect('/fr');
+export const prerender = true;
+// Redirection automatique vers la langue par défaut (fr) au moment du build (Static)
 ---
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0;url=/fr" />
+    <script is:inline>window.location.href = '/fr';</script>
+  </head>
+  <body>
+    <p>Redirection vers <a href="/fr">Salvia FR</a>...</p>
+  </body>
+</html>
