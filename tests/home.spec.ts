@@ -62,6 +62,11 @@ test.describe('Salvia Home Page', () => {
     // Switch to list
     await btnList.click();
     await expect(gridContainer).toHaveClass(/list-mode/);
+    
+    // Verify that description is still present in list mode (even if truncated)
+    // We check the first card's description
+    const firstDesc = page.locator('.resource-card .card-desc').first();
+    await expect(firstDesc).toBeVisible();
 
     // Reload and check persistence
     await page.reload();
