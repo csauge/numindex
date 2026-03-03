@@ -92,7 +92,12 @@ const t = {
     </main>
 
     <footer class="footer footer-center p-12 bg-white text-stone-400 border-t border-emerald-50 mt-12">
-      <p class="text-xs italic font-medium">© {new Date().getFullYear()} - Salvia — Pour un numérique joyeux, conscient et durable.</p>
+      <div class="flex flex-col gap-4">
+        <p class="text-xs italic font-medium">© {new Date().getFullYear()} - Salvia — Pour un numérique joyeux, conscient et durable.</p>
+        <nav class="flex gap-6 text-[10px] font-bold uppercase tracking-widest">
+          <a href={`/${lang}/contact`} class="hover:text-primary transition-colors">{lang === 'fr' ? 'Contact' : 'Contact'}</a>
+        </nav>
+      </div>
     </footer>
 
     <script>
