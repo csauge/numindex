@@ -5,6 +5,7 @@
 ## ✨ Caractéristiques
 
 - **Architecture Hybride (Astro 5) :** Mixte Statique (performance) et SSR (données temps-réel pour l'admin et les détails).
+- **Bascule d'affichage :** Mode **Grille** visuel ou **Liste ultra-compacte** (type tableau) avec mémorisation de la préférence.
 - **Sobriété Maximale :** Images au format **AVIF** avec miniatures redimensionnées via Supabase.
 - **Relations Dynamiques :** Liens entre "Acteurs" (entités) et "Contenus" (ressources).
 - **Localisation :** Intégration de l'API **Photon (OSM)** pour une saisie de ville simplifiée.

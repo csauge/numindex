@@ -40,9 +40,6 @@ test.describe('Salvia Home Page', () => {
     // Clear search
     await searchInput.fill('');
     await page.waitForTimeout(300);
-    
-    // If DB is empty, noResults stays visible. If not, it should hide.
-    // This part of the test is tricky with an empty DB.
   });
 
   test('should switch language', async ({ page }) => {
@@ -51,5 +48,27 @@ test.describe('Salvia Home Page', () => {
     await expect(page).toHaveURL(/\/en\/?$/);
     const header = page.locator('#main-title');
     await expect(header).toContainText("Sustainable Digital Directory");
+  });
+
+  test('should toggle between grid and list view and persist preference', async ({ page }) => {
+    await page.goto('/fr');
+    const gridContainer = page.locator('#resources-grid');
+    const btnList = page.locator('#btn-list');
+    const btnGrid = page.locator('#btn-grid');
+
+    // Default should be grid
+    await expect(gridContainer).not.toHaveClass(/list-mode/);
+
+    // Switch to list
+    await btnList.click();
+    await expect(gridContainer).toHaveClass(/list-mode/);
+
+    // Reload and check persistence
+    await page.reload();
+    await expect(gridContainer).toHaveClass(/list-mode/);
+
+    // Switch back to grid
+    await btnGrid.click();
+    await expect(gridContainer).not.toHaveClass(/list-mode/);
   });
 });
