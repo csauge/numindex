@@ -21,7 +21,7 @@ if (supabase) {
   const { data: resData } = await supabase
     .from('resources')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('updated_at', { ascending: false });
   
   if (resData) allRessources = resData as Resource[];
 
