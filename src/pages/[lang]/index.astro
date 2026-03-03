@@ -155,7 +155,7 @@ const getRelatedNames = (ids: string[]) => {
       })}
     </div>
 
-    <div id="no-results" class="hidden py-32 text-center text-stone-300 italic">
+    <div id="no-results" class={`${allRessources.length === 0 ? '' : 'hidden'} py-32 text-center text-stone-300 italic`}>
       <p class="text-4xl mb-4 opacity-20">🏜️</p>
       <p>Aucune ressource trouvée.</p>
     </div>

@@ -30,14 +30,29 @@
     npm install
     ```
 3.  **Configurer l'environnement :**
-    Copiez `.env.example` vers `.env` et remplissez vos clés Supabase.
+    Copiez `.env.example` vers `.env` pour la production et créez un `.env.test` pour le local.
     ```bash
     cp .env.example .env
     ```
-4.  **Lancer le serveur de dev :**
+
+### 💻 Développement Local (Supabase CLI)
+
+Le projet utilise le CLI Supabase pour un développement isolé et robuste.
+
+1.  **Lancer Supabase (Docker requis) :**
+    ```bash
+    npx supabase start
+    ```
+2.  **Appliquer le schéma et les données de test :**
+    ```bash
+    npx supabase db reset
+    ```
+3.  **Lancer le serveur de dev :**
     ```bash
     npm run dev
     ```
+
+Accédez au dashboard local (Studio) via : [http://127.0.0.1:54323](http://127.0.0.1:54323)
 
 ## 🏗 Structure de la Base de Données
 

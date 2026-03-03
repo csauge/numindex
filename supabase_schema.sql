@@ -1,7 +1,7 @@
--- SQL Schema for Salvia 🌿
+-- SQL Schema for Salvia 🌿 (Synchronized with remote schema)
 
--- 0. Helper function for updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+-- 0. Helper function for updated_at (Secure search_path)
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER 
 LANGUAGE plpgsql
 SET search_path = ''
@@ -12,95 +12,80 @@ BEGIN
 END;
 $$;
 
--- 1. Resources Table (Public Catalog)
-CREATE TABLE resources (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT,
-  link TEXT,
-  -- Categories aligned with src/utils/categories.ts
-  category TEXT NOT NULL CHECK (category IN (
-    'entreprise', 'association', 'cooperative', 'public', 'personne', 
-    'article', 'livre', 'podcast', 'video', 'infographie', 
-    'referentiel', 'logiciel', 'jeu', 'formation', 'evenement', 'autre'
-  )),
-  language TEXT NOT NULL CHECK (language IN ('fr', 'en')),
-  image_url TEXT,
-  tags TEXT[] DEFAULT '{}',
-  related_ids UUID[] DEFAULT '{}', -- UUIDs of related entities (co-authors, partners, etc.)
-  metadata JSONB DEFAULT '{}'::jsonb, -- Flexible storage for category-specific data
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+-- 1. Resources Table
+CREATE TABLE IF NOT EXISTS public.resources (
+    id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+    title text NOT NULL,
+    description text,
+    link text,
+    category text NOT NULL,
+    language text NOT NULL,
+    image_url text,
+    metadata jsonb DEFAULT '{"tags": []}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    tags text[] DEFAULT '{}'::text[],
+    related_ids uuid[] DEFAULT '{}'::uuid[],
+    CONSTRAINT resources_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'autre'::text])),
+    CONSTRAINT resources_language_check CHECK (language = ANY (ARRAY['fr'::text, 'en'::text]))
 );
 
--- Trigger for resources
+-- 2. Suggestions Table
+CREATE TABLE IF NOT EXISTS public.suggestions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+    title text NOT NULL,
+    description text,
+    link text,
+    category text NOT NULL,
+    language text NOT NULL,
+    image_url text,
+    metadata jsonb DEFAULT '{"tags": []}'::jsonb,
+    status text DEFAULT 'pending'::text,
+    submitted_by uuid REFERENCES auth.users(id),
+    created_at timestamp with time zone DEFAULT now(),
+    resource_id uuid REFERENCES public.resources(id) ON DELETE SET NULL,
+    action text DEFAULT 'create'::text,
+    reason text,
+    tags text[] DEFAULT '{}'::text[],
+    related_ids uuid[] DEFAULT '{}'::uuid[],
+    CONSTRAINT suggestions_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'autre'::text])),
+    CONSTRAINT suggestions_status_check CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]))
+);
+
+-- Indexes
+CREATE INDEX idx_resources_related_ids ON public.resources USING gin (related_ids);
+CREATE INDEX idx_resources_tags ON public.resources USING gin (tags);
+CREATE INDEX idx_suggestions_action ON public.suggestions USING btree (action);
+CREATE INDEX idx_suggestions_resource_id ON public.suggestions USING btree (resource_id);
+
+-- Triggers
 CREATE TRIGGER update_resources_updated_at 
-BEFORE UPDATE ON resources 
-FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+BEFORE UPDATE ON public.resources 
+FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
 
--- 2. Suggestions Table (Moderation Queue)
-CREATE TABLE suggestions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  -- Resource data
-  title TEXT,
-  description TEXT,
-  link TEXT,
-  category TEXT CHECK (category IN (
-    'entreprise', 'association', 'cooperative', 'public', 'personne', 
-    'article', 'livre', 'podcast', 'video', 'infographie', 
-    'referentiel', 'logiciel', 'jeu', 'formation', 'evenement', 'autre'
-  )),
-  language TEXT CHECK (language IN ('fr', 'en')),
-  image_url TEXT,
-  tags TEXT[] DEFAULT '{}',
-  related_ids UUID[] DEFAULT '{}',
-  metadata JSONB DEFAULT '{}'::jsonb,
-  
-  -- Workflow data
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
-  action TEXT DEFAULT 'create' CHECK (action IN ('create', 'update', 'delete')),
-  resource_id UUID REFERENCES resources(id) ON DELETE SET NULL,
-  reason TEXT, -- Reason for deletion or modification
-  
-  submitted_by UUID REFERENCES auth.users(id),
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+-- Webhook for Cloudflare Deploy (Auto-rebuild on data change)
+-- Note: Replace with your actual deploy hook if different
+CREATE OR REPLACE TRIGGER rebuild_on_resource_change 
+AFTER INSERT OR DELETE OR UPDATE ON public.resources 
+FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/f9335bc5-aaaf-47af-b9c5-ccf75715af4c', 'POST', '{"Content-type":"application/json"}', '{}', '5000');
 
--- Indexes for performance
-CREATE INDEX idx_resources_tags ON resources USING GIN (tags);
-CREATE INDEX idx_resources_related_ids ON resources USING GIN (related_ids);
-CREATE INDEX idx_suggestions_resource_id ON suggestions(resource_id);
-CREATE INDEX idx_suggestions_status ON suggestions(status);
-CREATE INDEX idx_suggestions_action ON suggestions(action);
+-- RLS Enable
+ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.suggestions ENABLE ROW LEVEL SECURITY;
 
--- Enable RLS
-ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
-ALTER TABLE suggestions ENABLE ROW LEVEL SECURITY;
+-- Policies for Resources
+CREATE POLICY "Anyone can read resources" ON public.resources FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert resources" ON public.resources FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update resources" ON public.resources FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Anyone can delete resources" ON public.resources FOR DELETE USING (true);
 
--- 3. RLS Policies for Resources
--- Anyone can see approved resources
-CREATE POLICY "Anyone can read resources" ON resources 
-FOR SELECT USING (true);
+-- Policies for Suggestions
+CREATE POLICY "Anyone can select suggestions" ON public.suggestions FOR SELECT USING (true);
+CREATE POLICY "Anyone can submit suggestions" ON public.suggestions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update suggestions" ON public.suggestions FOR UPDATE USING (true);
+CREATE POLICY "Users can see their own suggestions" ON public.suggestions FOR SELECT USING (auth.uid() = submitted_by);
 
--- Admin (or Anon Key in this simple setup) can manage resources
-CREATE POLICY "Anyone can insert resources" ON resources 
-FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Anyone can update resources" ON resources 
-FOR UPDATE USING (true) WITH CHECK (true);
-
-CREATE POLICY "Anyone can delete resources" ON resources 
-FOR DELETE USING (true);
-
--- 4. RLS Policies for Suggestions
--- Anyone can submit a suggestion
-CREATE POLICY "Anyone can submit suggestions" ON suggestions 
-FOR INSERT WITH CHECK (true);
-
--- Anyone can see suggestions (needed for the admin moderation list)
-CREATE POLICY "Anyone can select suggestions" ON suggestions 
-FOR SELECT USING (true);
-
--- Admin can update status (pending -> approved/rejected)
-CREATE POLICY "Anyone can update suggestions" ON suggestions 
-FOR UPDATE USING (true);
+-- Storage Policies (for 'suggestions' bucket)
+-- Note: Bucket must be created manually or via CLI
+CREATE POLICY "Public Upload" ON storage.objects AS PERMISSIVE FOR INSERT TO public WITH CHECK (bucket_id = 'suggestions'::text);
+CREATE POLICY "Public View" ON storage.objects AS PERMISSIVE FOR SELECT TO public USING (bucket_id = 'suggestions'::text);

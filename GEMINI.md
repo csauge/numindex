@@ -35,5 +35,5 @@ Toute ressource est stockée dans la table `resources` avec :
 Avant de livrer ou pusher du code, les étapes suivantes sont **obligatoires** :
 - **Documentation :** Mettre à jour `README.md` et `GEMINI.md` pour refléter les changements fonctionnels ou architecturaux.
 - **Base de données :** Mettre à jour `supabase_schema.sql` si le schéma de la base de données a été modifié.
-- **Tests :** L'exécution de `npm run test:e2e` doit être un succès total (zéro échec).
+- **Tests :** L'exécution de `npm run test:e2e` doit être un succès total (zéro échec). Les tests doivent impérativement pointer vers l'instance locale Supabase (`.env.test`).
 - **Validation :** Vérifier que les principes d'écoconception et d'accessibilité sont respectés.
