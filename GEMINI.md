@@ -11,7 +11,9 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 - **Performance :** Polices système uniquement. Score Lighthouse > 95 sur tous les axes.
 
 ## 2. Stack Technique (Astro 5 Hybrid)
-- **Frontend :** Astro en mode **Static** par défaut, avec pages de détails et admin en **SSR** (`export const prerender = false`) pour une mise à jour instantanée des données.
+- **Frontend :** Astro en mode **Hybride**.
+  - Pages de contenu fixe (A propos, etc.) : **Static**.
+  - Accueil, détails des ressources et admin : **SSR** (`export const prerender = false`) pour une mise à jour instantanée des données sans rebuild.
 - **Hébergement :** Cloudflare Pages (Adaptateur Cloudflare avec `imageService: 'compile'`).
 - **Style :** Tailwind CSS 3 + DaisyUI 4 (Thème unique : `garden` personnalisé).
 - **Base de Données :** Supabase (PostgreSQL).

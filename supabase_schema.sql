@@ -63,11 +63,7 @@ CREATE TRIGGER update_resources_updated_at
 BEFORE UPDATE ON public.resources 
 FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
 
--- Webhook for Cloudflare Deploy (Auto-rebuild on data change)
--- Note: Replace with your actual deploy hook if different
-CREATE OR REPLACE TRIGGER rebuild_on_resource_change 
-AFTER INSERT OR DELETE OR UPDATE ON public.resources 
-FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/f9335bc5-aaaf-47af-b9c5-ccf75715af4c', 'POST', '{"Content-type":"application/json"}', '{}', '5000');
+-- Webhook for Cloudflare Deploy removed (Using SSR for real-time updates)
 
 -- RLS Enable
 ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
