@@ -51,6 +51,19 @@ Le schéma est disponible dans `supabase_schema.sql`. Il inclut un trigger autom
   npm run optimize-images
   ```
 
+## 🧪 Tests
+
+Le projet utilise **Playwright** pour assurer la qualité et la non-régression de l'annuaire et du workflow de modération.
+
+- **Exécuter tous les tests :**
+  ```bash
+  npm run test:e2e
+  ```
+- **Tests couverts :**
+  - Navigation et redirection de langue.
+  - Recherche et filtrage dynamique.
+  - Cycle de vie complet des ressources (Proposition -> Modération -> Publication -> Suppression).
+
 ---
 
 *Ce projet est sous licence [MIT](LICENSE). 🌱 Pour un numérique plus conscient.*

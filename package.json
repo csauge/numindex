@@ -11,7 +11,8 @@
     "add-ressource": "node scripts/add-ressource.mjs",
     "postbuild": "pagefind --site dist",
     "cleanup-images": "node scripts/cleanup-images.mjs",
-    "optimize-images": "node scripts/optimize-images.mjs"
+    "optimize-images": "node scripts/optimize-images.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.12",
@@ -25,6 +26,7 @@
     "typescript": "^5.7.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "autoprefixer": "^10.4.24",
     "pagefind": "^1.4.0",
     "postcss": "^8.5.6",

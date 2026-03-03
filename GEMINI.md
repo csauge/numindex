@@ -31,8 +31,9 @@ Toute ressource est stockée dans la table `resources` avec :
 - `metadata` (JSONB) : `city`, `published_at`, etc.
 - `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'un article).
 
-## 5. Logique i18n
-- Interface bilingue via `/[lang]/`.
-- Contenu global : ressources triées par date de création avec badge de langue.
-- Recherche multi-critères : Texte, Catégorie, Langue.
----
+## 6. Checklist de Livraison (Avant tout Push/Déploiement)
+Avant de livrer ou pusher du code, les étapes suivantes sont **obligatoires** :
+- **Documentation :** Mettre à jour `README.md` et `GEMINI.md` pour refléter les changements fonctionnels ou architecturaux.
+- **Base de données :** Mettre à jour `supabase_schema.sql` si le schéma de la base de données a été modifié.
+- **Tests :** L'exécution de `npm run test:e2e` doit être un succès total (zéro échec).
+- **Validation :** Vérifier que les principes d'écoconception et d'accessibilité sont respectés.

@@ -11,6 +11,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Playwright Tests
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright-log.txt
+/playwright/.cache/
+
 # Environment
 .env
 .env.production
@@ -19,3 +26,8 @@ pnpm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Workspace (local files)
+.wrangler/
+playwright-report/
+test-results/
