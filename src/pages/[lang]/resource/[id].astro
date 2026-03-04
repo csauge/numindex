@@ -22,13 +22,13 @@ let relatedResources: Resource[] = [];
 if (getCategoryType(res.category) === 'entity') {
   const { data } = await supabase
     .from('resources')
-    .select('id, title, category, language')
+    .select('id, title, category')
     .contains('related_ids', [id]);
   if (data) relatedResources = data as Resource[];
 } else if (res.related_ids?.length > 0) {
   const { data } = await supabase
     .from('resources')
-    .select('id, title, category, language')
+    .select('id, title, category')
     .in('id', res.related_ids);
   if (data) relatedResources = data as Resource[];
 }
@@ -117,9 +117,6 @@ const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day
             <span class="badge badge-outline text-[10px] font-black uppercase tracking-wider h-6 border-stone-200 text-stone-400">
               {getCategoryLabel(res.category, lang as 'fr' | 'en')}
             </span>
-            <span class="badge badge-ghost text-[10px] font-black uppercase tracking-wider h-6 bg-stone-100 text-stone-500 border-none">
-              {res.language}
-            </span>
             {res.metadata?.city && (
               <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-100">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -162,7 +159,7 @@ const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day
             <h2 class="text-xs font-black uppercase tracking-widest text-stone-300">{t.relations}</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {relatedResources.map((rel) => (
-                <a href={`/${rel.language}/resource/${rel.id}`} class="flex items-center gap-3 p-3 bg-white border border-stone-100 rounded-2xl hover:border-primary/20 hover:shadow-md transition-all group">
+                <a href={`/${lang}/resource/${rel.id}`} class="flex items-center gap-3 p-3 bg-white border border-stone-100 rounded-2xl hover:border-primary/20 hover:shadow-md transition-all group">
                   <div class="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center text-stone-300 group-hover:text-primary transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(rel.category)} />
