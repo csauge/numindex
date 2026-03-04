@@ -57,3 +57,27 @@ export async function fetchEntities() {
     .order('title');
   return (data || []) as Resource[];
 }
+
+/**
+ * Récupère toutes les ressources pour l'annuaire
+ */
+export async function fetchAllResources() {
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from('resources')
+    .select('*')
+    .order('updated_at', { ascending: false });
+  return (data || []) as Resource[];
+}
+
+/**
+ * Récupère les entités pour le mapping des noms
+ */
+export async function fetchEntitiesForMapping() {
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from('resources')
+    .select('id, title')
+    .in('category', ['entreprise', 'association', 'personne']);
+  return (data || []) as Resource[];
+}

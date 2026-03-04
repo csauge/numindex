@@ -19,7 +19,6 @@ const t = {
     description: 'Description',
     link: 'Lien (URL)',
     category: 'Catégorie',
-    resourceLang: 'Langue',
     tags: 'Tags (séparés par des virgules)',
     related: 'Organisations / Personnes liées',
     relatedPlaceholder: 'Chercher...',
@@ -46,7 +45,6 @@ const t = {
     description: 'Description',
     link: 'Link (URL)',
     category: 'Category',
-    resourceLang: 'Language',
     tags: 'Tags (comma separated)',
     related: 'Related Organizations / People',
     relatedPlaceholder: 'Search...',
@@ -85,7 +83,6 @@ const t = {
       <p id="preview-title" class="font-bold text-stone-800 leading-tight">...</p>
       <div class="flex gap-2 mt-1 flex-wrap">
         <span id="badge-cat" class="text-[9px] font-bold uppercase text-stone-400"></span>
-        <span id="badge-lang" class="text-[9px] font-bold uppercase text-primary"></span>
         <span id="badge-city" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
         <span id="badge-date" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
         <span id="badge-next-date" class="text-[9px] font-bold uppercase text-emerald-600 hidden"></span>
@@ -110,12 +107,6 @@ const t = {
           <label class="label"><span class="label-text">{t.category}</span></label>
           <select name="category" class="select select-bordered">
             {Object.entries(CATEGORIES).map(([k, v]) => <option value={k}>{v[lang]}</option>)}
-          </select>
-        </div>
-        <div class="form-control">
-          <label class="label"><span class="label-text">{t.resourceLang}</span></label>
-          <select name="language" class="select select-bordered">
-            <option value="fr">FR</option><option value="en">EN</option>
           </select>
         </div>
       </div>
@@ -204,7 +195,6 @@ const t = {
     title: form.querySelector('[name="title"]') as HTMLInputElement,
     desc: form.querySelector('[name="description"]') as HTMLTextAreaElement,
     cat: form.querySelector('[name="category"]') as HTMLSelectElement,
-    lang: form.querySelector('[name="language"]') as HTMLSelectElement,
     link: form.querySelector('[name="link"]') as HTMLInputElement,
     tags: form.querySelector('[name="tags"]') as HTMLInputElement,
     img: form.querySelector('[name="image"]') as HTMLInputElement,
@@ -224,7 +214,6 @@ const t = {
     preview: {
       title: document.getElementById('preview-title'),
       cat: document.getElementById('badge-cat'),
-      lang: document.getElementById('badge-lang'),
       city: document.getElementById('badge-city'),
       date: document.getElementById('badge-date'),
       nextDate: document.getElementById('badge-next-date'),
@@ -300,7 +289,6 @@ const t = {
     // Preview
     elements.preview.title!.innerText = elements.title.value || existingData?.title || '...';
     elements.preview.cat!.innerText = getCategoryLabel(elements.cat.value, lang as any);
-    elements.preview.lang!.innerText = elements.lang.value.toUpperCase();
     
     elements.preview.city!.innerText = elements.cityVal.value || '';
     elements.preview.city!.classList.toggle('hidden', !elements.cityVal.value);
@@ -371,7 +359,6 @@ const t = {
           elements.title.value = data.title;
           elements.desc.value = data.description;
           elements.cat.value = data.category;
-          elements.lang.value = data.language;
           elements.link.value = data.link;
           elements.tags.value = data.tags?.join(', ') || '';
           elements.cityVal.value = data.metadata?.city || '';
@@ -424,7 +411,6 @@ const t = {
         title: action === 'delete' ? existingData?.title : elements.title.value,
         description: action === 'delete' ? existingData?.description : elements.desc.value,
         category: action === 'delete' ? existingData?.category : elements.cat.value,
-        language: action === 'delete' ? existingData?.language : elements.lang.value,
         link: action === 'delete' ? existingData?.link : elements.link.value,
         tags: action === 'delete' ? existingData?.tags : tags,
         related_ids: action === 'delete' ? existingData?.related_ids : selectedIds,

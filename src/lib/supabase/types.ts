@@ -4,8 +4,7 @@ export interface Resource {
   description: string;
   link: string;
   category: string;
-  language: 'fr' | 'en';
-  image_url?: string | null;
+  image_url?: string;
   tags: string[];
   related_ids: string[]; // UUIDs of related entities (co-authors, partners, etc.)
   metadata: Record<string, any>;

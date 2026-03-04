@@ -1,75 +1,75 @@
 ---
 export const prerender = false;
 
-import Layout from '../../layouts/Layout.astro';
-import { getCategoryLabel, getCategoryIcon, getCategoryType } from '../../utils/categories';
-import { supabase, getImageUrl } from '../../lib/supabase/client';
-import type { Resource } from '../../lib/supabase/types';
+import Layout from "../../layouts/Layout.astro";
+import { getCategoryLabel, getCategoryIcon } from "../../utils/categories";
+import { getImageUrl } from "../../lib/supabase/client";
+import { fetchAllResources, fetchEntitiesForMapping } from "../../lib/services";
 
 export async function getStaticPaths() {
   return [
-    { params: { lang: 'fr' } },
-    { params: { lang: 'en' } },
+    { params: { lang: "fr" } },
+    { params: { lang: "en" } },
   ];
 }
 
-const { lang } = Astro.params as { lang: 'fr' | 'en' };
+const { lang } = Astro.params;
 
-// Fetch resources and entities
-let allRessources: Resource[] = [];
-let entities: Resource[] = [];
+// Data fetching
+const allRessources = await fetchAllResources();
+const entitiesForMapping = await fetchEntitiesForMapping();
 
-if (supabase) {
-  const { data: resData } = await supabase
-    .from('resources')
-    .select('*')
-    .order('updated_at', { ascending: false });
-  
-  if (resData) allRessources = resData as Resource[];
+const activeCategoryKeys = [...new Set(allRessources.map(function(r) { return r.category; }))].sort();
 
-  const { data: entData } = await supabase
-    .from('resources')
-    .select('id, title')
-    .in('category', ['entreprise', 'association', 'personne']);
-  
-  if (entData) entities = entData as Resource[];
-}
-
-const activeCategoryKeys = [...new Set(allRessources.map(res => res.category))].sort();
-
-const t = {
+const translations = {
   fr: {
     title: "L'annuaire du numérique responsable",
     desc: "Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
     searchPlaceholder: "Rechercher un outil, une entreprise, un article...",
     filterCat: "Catégories",
-    filterLang: "Langues"
+    filterSort: "Trier par",
+    sortNewest: "Plus récents",
+    sortName: "Nom A-Z",
+    sortCat: "Catégorie",
+    exportLabel: "Exporter CSV",
+    results: "ressources"
   },
   en: {
     title: "Sustainable Digital Directory",
     desc: "Explore initiatives committed to a more sober, ethical, and accessible digital future.",
     searchPlaceholder: "Search for a tool, company, article...",
     filterCat: "Categories",
-    filterLang: "Languages"
+    filterSort: "Sort by",
+    sortNewest: "Newest",
+    sortName: "Name A-Z",
+    sortCat: "Category",
+    exportLabel: "Export CSV",
+    results: "resources"
   }
-}[lang];
-
-const getRelatedNames = (ids: string[]) => {
-  return ids
-    .map(id => entities.find(e => e.id === id)?.title)
-    .filter(Boolean);
 };
+
+const t = lang === "en" ? translations.en : translations.fr;
+
+function getRelatedNames(ids) {
+  if (!ids) return [];
+  return ids
+    .map(function(id) {
+      const found = entitiesForMapping.find(function(e) { return e.id === id; });
+      return found ? found.title : null;
+    })
+    .filter(Boolean);
+}
 ---
 
-<Layout title={t.title} lang={lang}>
+<Layout title={t.title} lang={lang as string}>
   <section>
     <header class="mb-12 text-center md:text-left w-full max-w-2xl">
       <h1 id="main-title" class="text-3xl md:text-4xl font-black mb-4 text-stone-800 tracking-tight leading-tight">{t.title}</h1>
       <p class="text-stone-600 leading-relaxed italic text-sm">{t.desc}</p>
     </header>
 
-    {/* Search & Filters Compact */}
-    <div class="sticky top-20 z-30 mb-12 p-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-2">
+    {/* Search & Filters Toolbar */}
+    <div class="sticky top-20 z-30 mb-8 p-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-2">
       <div class="flex-grow relative group min-w-0">
         <label for="search-input" class="sr-only">{t.searchPlaceholder}</label>
         <input 
@@ -83,17 +83,17 @@ const getRelatedNames = (ids: string[]) => {
 
       <div class="flex items-center gap-2 p-0.5 overflow-x-auto no-scrollbar">
         <div class="flex gap-2 shrink-0">
+          <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 text-[10px] font-black uppercase tracking-wider">
+            <option value="updated_at">{t.sortNewest}</option>
+            <option value="title">{t.sortName}</option>
+            <option value="category">{t.sortCat}</option>
+          </select>
+
           <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
             <option value="all">{t.filterCat}</option>
             {activeCategoryKeys.map(key => (
-              <option value={key}>{getCategoryLabel(key, lang)}</option>
+              <option value={key}>{getCategoryLabel(key, lang as any)}</option>
             ))}
-          </select>
-
-          <select id="filter-language" class="select select-ghost bg-stone-50/50 rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
-            <option value="all">{t.filterLang}</option>
-            <option value="fr">FR</option>
-            <option value="en">EN</option>
           </select>
         </div>
 
@@ -112,23 +112,35 @@ const getRelatedNames = (ids: string[]) => {
       </div>
     </div>
 
-    <div class="mb-6 flex justify-between items-center px-2 text-[10px] font-black uppercase tracking-widest text-stone-400">
-      <span id="results-count" aria-live="polite">
-        {allRessources.length} ressources
-      </span>
+    <div class="mb-6 flex justify-between items-center px-2">
+      <div class="text-[10px] font-black uppercase tracking-widest text-stone-400">
+        <span id="results-count" aria-live="polite">{allRessources.length}</span> {t.results}
+      </div>
+      <button id="btn-export" class="btn btn-ghost btn-xs text-[9px] font-black uppercase tracking-tighter text-stone-400 hover:text-primary gap-1.5 h-7 min-h-0 px-2 rounded-lg border border-stone-100 bg-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+        {t.exportLabel}
+      </button>
     </div>
     
     <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all duration-300">
       {allRessources.map((res) => {
         const relatedNames = getRelatedNames(res.related_ids || []);
-        const searchKeywords = `${res.title} ${res.description} ${res.tags?.join(' ')} ${relatedNames.join(' ')}`.toLowerCase();
+        const searchKeywords = (res.title + " " + (res.description || "") + " " + (res.tags ? res.tags.join(" ") : "") + " " + relatedNames.join(" ")).toLowerCase();
         
         return (
           <a 
             href={`/${lang}/resource/${res.id}`}
             class="resource-card group flex flex-col bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-stone-200/40 hover:border-primary/30 transition-all duration-300"
+            data-id={res.id}
             data-category={res.category}
-            data-language={res.language}
+            data-title={res.title.toLowerCase()}
+            data-link={res.link || ""}
+            data-tags={res.tags?.join(', ') || ""}
+            data-related={relatedNames.join(', ')}
+            data-created_at={res.created_at}
+            data-updated_at={res.updated_at}
+            data-city={res.metadata?.city || ""}
+            data-next_date={res.metadata?.next_date || ""}
             data-keywords={searchKeywords}
           >
             <div class="card-img-container relative w-full pt-[56%] bg-stone-50/30 border-b border-stone-50 flex items-center justify-center">
@@ -147,46 +159,30 @@ const getRelatedNames = (ids: string[]) => {
                   </svg>
                 </div>
               )}
-              <div class="absolute top-2 right-2 flex gap-1">
-                <span class="px-1.5 py-0.5 bg-white/90 backdrop-blur text-[8px] font-black uppercase rounded border border-stone-100 text-stone-500 group-hover:text-primary transition-colors">
-                  {res.language}
-                </span>
-              </div>
             </div>
             
             <div class="card-body-content p-4 flex flex-col flex-grow">
               {/* Icône Liste (cachée en grille) */}
-              <div class="card-list-icon-box hidden shrink-0 text-stone-400 group-hover:text-primary/60 transition-colors">
+              <div class="card-list-icon-box hidden shrink-0 text-stone-400 group-hover:text-primary/60 transition-colors" style="grid-area: icon;">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getCategoryIcon(res.category)} />
                 </svg>
               </div>
 
               <div class="card-content-main flex-grow min-w-0">
-                <span class="card-category-label text-[8px] font-black uppercase tracking-widest text-stone-400 mb-1 block">
-                  {getCategoryLabel(res.category, lang)}
+                <span class="card-category-label text-[8px] font-black uppercase tracking-widest text-stone-400 mb-1 block" style="grid-area: cat;">
+                  {getCategoryLabel(res.category, lang as any)}
                 </span>
                 
-                <div class="card-title-tags-container flex items-baseline gap-3">
+                <div class="card-title-tags-container flex items-baseline gap-3 overflow-hidden" style="grid-area: title;">
                   <h2 class="text-[13px] font-bold text-stone-800 leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
                     {res.title}
                   </h2>
-                  {res.tags && res.tags.length > 0 && (
-                    <div class="card-list-tags hidden gap-1 overflow-hidden">
-                      {res.tags.slice(0, 2).map(tag => (
-                        <span class="text-[9px] text-stone-400 font-bold lowercase">#{tag}</span>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 
-                <p class="card-desc text-[11px] text-stone-600 line-clamp-2 leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
+                <p class="card-desc text-[11px] text-stone-600 leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity line-clamp-2" style="grid-area: desc;">
                   {res.description}
                 </p>
-              </div>
-
-              <div class="card-list-lang hidden text-[8px] font-black text-stone-500 group-hover:text-primary px-1.5 py-0.5 bg-stone-50 border border-stone-100 rounded uppercase transition-colors shrink-0">
-                {res.language}
               </div>
             </div>
           </a>
@@ -195,85 +191,85 @@ const getRelatedNames = (ids: string[]) => {
     </div>
 
     <style is:global>
-      /* Mode Liste Ultra Compact (Tableau) */
+      /* Unified Grid System for Data Table Rows */
+      .resource-card-grid {
+        display: grid;
+        gap: 1.5rem;
+        align-items: center;
+        grid-template-areas: "icon title desc cat";
+        grid-template-columns: 2rem 1fr 1.5fr 120px;
+      }
+
+      /* Mode Liste */
       #resources-grid.list-mode {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
       }
       #resources-grid.list-mode .resource-card {
-        flex-direction: row;
+        display: grid;
         border-radius: 0.5rem;
         padding: 0.5rem 1.25rem;
+        height: 3.5rem;
+        gap: 1.5rem;
         align-items: center;
-        height: 3rem; /* Hauteur fixe pour uniformité */
+        grid-template-areas: "icon title desc cat";
+        grid-template-columns: 2rem 1fr 1.5fr 120px;
       }
       #resources-grid.list-mode .card-img-container {
         display: none;
       }
       #resources-grid.list-mode .card-body-content {
-        padding: 0;
-        flex-direction: row;
-        align-items: center;
-        gap: 1.25rem;
-        width: 100%;
+        display: contents;
       }
       #resources-grid.list-mode .card-list-icon-box {
-        display: block;
-      }
-      #resources-grid.list-mode .card-content-main {
         display: flex;
         align-items: center;
-        gap: 1.25rem;
-        flex-grow: 1;
+        justify-content: center;
       }
-      #resources-grid.list-mode .card-category-label {
-        order: 3;
-        margin-bottom: 0;
-        width: 100px;
-        text-align: right;
-        flex-shrink: 0;
-      }
-      #resources-grid.list-mode .card-title-tags-container {
-        order: 1;
-        flex-shrink: 0;
-        width: 250px;
+      #resources-grid.list-mode .card-content-main {
+        display: contents;
       }
       #resources-grid.list-mode .card-desc {
-        order: 2;
         display: block;
+        margin: 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        font-size: 10px;
-        opacity: 0.6;
-        width: 100%;
-        margin-top: 2px;
+        -webkit-line-clamp: 1;
+        line-height: 1.4;
+        margin-top: 3px;
+      }
+      #resources-grid.list-mode .card-category-label {
+        display: block;
+        margin-bottom: 0;
       }
       #resources-grid.list-mode h2 {
-        margin-bottom: 0;
-        line-height: 1.2;
+        margin: 0;
+        -webkit-line-clamp: 1;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-      #resources-grid.list-mode .card-list-lang {
-        display: inline-block;
-        width: 30px;
-        text-align: center;
-      }
-      #resources-grid.list-mode .card-list-tags {
-        display: flex;
+        line-height: 1.4;
+        margin-top: 3px;
       }
 
-      /* Adaptations selon la largeur en mode liste */
+      /* Adaptations Responsives */
       @media (max-width: 1024px) {
+        #resources-grid.list-mode .resource-card {
+          grid-template-areas: "icon title cat";
+          grid-template-columns: 2rem 1fr 120px;
+        }
         #resources-grid.list-mode .card-desc { display: none; }
-        #resources-grid.list-mode .card-title-tags-container { width: 300px; }
       }
       @media (max-width: 640px) {
+        #resources-grid.list-mode .resource-card {
+          grid-template-areas: "icon title";
+          grid-template-columns: 2rem 1fr;
+          gap: 0.75rem;
+          padding: 0.5rem 0.75rem;
+        }
         #resources-grid.list-mode .card-category-label { display: none; }
-        #resources-grid.list-mode .card-title-tags-container { width: auto; flex-grow: 1; }
       }
     </style>
 
@@ -288,11 +284,12 @@ const getRelatedNames = (ids: string[]) => {
   let cards: NodeListOf<Element> = [];
   const searchInput = document.getElementById('search-input') as HTMLInputElement;
   const catFilter = document.getElementById('filter-category') as HTMLSelectElement;
-  const langFilter = document.getElementById('filter-language') as HTMLSelectElement;
+  const sortFilter = document.getElementById('filter-sort') as HTMLSelectElement;
   const countDisplay = document.getElementById('results-count');
   const noResults = document.getElementById('no-results');
+  const btnExport = document.getElementById('btn-export');
   
-  // Toggle View
+  // View Toggle
   const grid = document.getElementById('resources-grid');
   const btnGrid = document.getElementById('btn-grid');
   const btnList = document.getElementById('btn-list');
@@ -302,14 +299,35 @@ const getRelatedNames = (ids: string[]) => {
     
     searchInput?.addEventListener('input', debouncedUpdate);
     catFilter?.addEventListener('change', updateFilters);
-    langFilter?.addEventListener('change', updateFilters);
+    sortFilter?.addEventListener('change', sortData);
 
-    // View Toggle Logic
+    // View Toggle
     const savedView = localStorage.getItem('salvia-view') || 'grid';
     if (savedView === 'list') setListView();
 
     btnGrid?.addEventListener('click', setGridView);
     btnList?.addEventListener('click', setListView);
+
+    // Export
+    btnExport?.addEventListener('click', exportCSV);
+  }
+
+  function sortData() {
+    const parent = grid!;
+    const cardsArray = Array.from(cards);
+    const sortBy = sortFilter.value;
+    
+    cardsArray.sort((a, b) => {
+      const valA = (a as HTMLElement).dataset[sortBy] || '';
+      const valB = (b as HTMLElement).dataset[sortBy] || '';
+      
+      if (sortBy === 'updated_at') {
+        return valB.localeCompare(valA);
+      }
+      return valA.localeCompare(valB);
+    });
+
+    cardsArray.forEach(card => parent.appendChild(card));
   }
 
   function setGridView() {
@@ -319,6 +337,7 @@ const getRelatedNames = (ids: string[]) => {
     btnList?.classList.remove('text-primary');
     btnList?.classList.add('text-stone-400');
     localStorage.setItem('salvia-view', 'grid');
+    updateFilters();
   }
 
   function setListView() {
@@ -328,6 +347,57 @@ const getRelatedNames = (ids: string[]) => {
     btnGrid?.classList.remove('text-primary');
     btnGrid?.classList.add('text-stone-400');
     localStorage.setItem('salvia-view', 'list');
+    updateFilters();
+  }
+
+  function exportCSV() {
+    const visibleCards = Array.from(cards).filter(c => (c as HTMLElement).style.display !== 'none');
+    
+    // Header row with interesting columns
+    const headers = [
+      'ID', 
+      'Title', 
+      'Category', 
+      'Link', 
+      'Description', 
+      'Tags', 
+      'Related Entities',
+      'City',
+      'Next Date',
+      'Created At',
+      'Updated At'
+    ];
+    
+    const rows = [headers.join(',')];
+
+    visibleCards.forEach(card => {
+      const h = card as HTMLElement;
+      
+      const rowData = [
+        h.dataset.id || '',
+        card.querySelector('h2')?.textContent?.trim() || '',
+        h.dataset.category || '',
+        h.dataset.link || '',
+        card.querySelector('.card-desc')?.textContent?.trim() || '',
+        h.dataset.tags || '',
+        h.dataset.related || '',
+        h.dataset.city || '',
+        h.dataset.next_date || '',
+        h.dataset.created_at || '',
+        h.dataset.updated_at || ''
+      ].map(val => `"${val.replace(/"/g, '""')}"`); // Escape quotes and wrap in quotes
+
+      rows.push(rowData.join(','));
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8,\ufeff" + rows.join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `salvia_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   if ('requestIdleCallback' in window) {
@@ -341,21 +411,19 @@ const getRelatedNames = (ids: string[]) => {
 
     const query = searchInput.value.toLowerCase().trim();
     const cat = catFilter.value;
-    const lang = langFilter.value;
+    const isListMode = grid?.classList.contains('list-mode');
     let visibleCount = 0;
 
     for (let i = 0; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
       const keywords = card.dataset.keywords || '';
       const cardCat = card.dataset.category;
-      const cardLang = card.dataset.language;
       
       const matchSearch = !query || keywords.includes(query);
       const matchCat = cat === 'all' || cardCat === cat;
-      const matchLang = lang === 'all' || cardLang === lang;
 
-      if (matchSearch && matchCat && matchLang) {
-        card.style.display = 'flex';
+      if (matchSearch && matchCat) {
+        card.style.display = isListMode ? 'grid' : 'flex';
         visibleCount++;
       } else {
         card.style.display = 'none';
@@ -363,7 +431,7 @@ const getRelatedNames = (ids: string[]) => {
     }
 
     if (countDisplay) {
-      countDisplay.textContent = `${visibleCount} ressource${visibleCount > 1 ? 's' : ''}`;
+      countDisplay.textContent = visibleCount.toString();
     }
     
     if (visibleCount === 0) noResults?.classList.remove('hidden');

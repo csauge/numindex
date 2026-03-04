@@ -13,7 +13,6 @@ test.describe('Moderation Lifecycle', () => {
     await page.fill('input[name="title"]', resourceTitle);
     await page.fill('textarea[name="description"]', 'Une description de test pour cette ressource.');
     await page.selectOption('select[name="category"]', 'logiciel');
-    await page.selectOption('select[name="language"]', 'fr');
     await page.fill('input[name="link"]', 'https://example.com/test-resource');
     
     await page.click('#submit-btn');
