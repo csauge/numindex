@@ -91,6 +91,62 @@ test.describe('Moderation Lifecycle', () => {
     await expect(page.locator('.resource-card').filter({ hasText: updatedTitle })).not.toBeVisible();
   });
 
+  test('should display bidirectional relations correctly on detail pages', async ({ page }) => {
+    const entityTitle = `Entity ${Math.floor(Math.random() * 10000)}`;
+    const linkedResourceTitle = `Article by Entity ${Math.floor(Math.random() * 10000)}`;
+
+    // 1. Propose an Entity
+    await page.goto('/fr/propose');
+    await page.fill('input[name="title"]', entityTitle);
+    await page.fill('textarea[name="description"]', 'A testing entity');
+    await page.selectOption('select[name="category"]', 'entreprise');
+    await page.fill('input[name="link"]', 'https://entity.example.com');
+    await page.click('#submit-btn');
+    await page.waitForURL(/\/fr\/?$/);
+
+    // 2. Approve Entity
+    await page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    const entityCard = page.locator('.suggestion-card').filter({ hasText: entityTitle });
+    await expect(entityCard).toBeVisible();
+    await entityCard.locator('.approve-btn').click();
+    await expect(entityCard).not.toBeVisible();
+
+    // 3. Propose a Resource linked to that Entity
+    await page.goto('/fr/propose');
+    await page.fill('input[name="title"]', linkedResourceTitle);
+    await page.fill('textarea[name="description"]', 'An article linked to our entity');
+    await page.selectOption('select[name="category"]', 'article');
+    await page.fill('input[name="link"]', 'https://article.example.com');
+    
+    // Link the entity
+    await page.fill('#related-search', entityTitle);
+    const resultButton = page.locator(`#related-results button:has-text("${entityTitle}")`);
+    await expect(resultButton).toBeVisible();
+    await resultButton.click();
+    
+    await page.click('#submit-btn');
+    await page.waitForURL(/\/fr\/?$/);
+
+    // 4. Approve linked resource
+    await page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    const resourceCard = page.locator('.suggestion-card').filter({ hasText: linkedResourceTitle });
+    await expect(resourceCard).toBeVisible();
+    await resourceCard.locator('.approve-btn').click();
+    await expect(resourceCard).not.toBeVisible();
+
+    // 5. Verify mentions on Resource page (Proposé par)
+    await page.goto('/fr');
+    await page.locator('.resource-card').filter({ hasText: linkedResourceTitle }).click();
+    await expect(page.locator('h2:has-text("Proposé par :")')).toBeVisible();
+    await expect(page.locator('a:has-text("' + entityTitle + '")')).toBeVisible();
+
+    // 6. Verify mentions on Entity page (Ressources proposées)
+    await page.goto('/fr');
+    await page.locator('.resource-card').filter({ hasText: entityTitle }).click();
+    await expect(page.locator('h2:has-text("Ressources proposées :")')).toBeVisible();
+    await expect(page.locator('a:has-text("' + linkedResourceTitle + '")')).toBeVisible();
+  });
+
   test('should be able to reject a suggestion', async ({ page }) => {
     test.setTimeout(60000);
     const rejectedTitle = `To Be Rejected ${Math.floor(Math.random() * 10000)}`;

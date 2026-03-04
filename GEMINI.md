@@ -29,8 +29,8 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 
 ## 4. Structure des Données
 Toute ressource est stockée dans la table `resources` avec :
-- `title`, `description`, `link`, `category`, `language`, `image_url`.
-- `metadata` (JSONB) : `city`, `published_at`, etc.
+- `title`, `description`, `link`, `category`, `image_url`.
+- `metadata` (JSONB) : `city`, `published_at`, `next_date`, etc.
 - `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'un article).
 
 ## 6. Checklist de Livraison (Avant tout Push/Déploiement)
