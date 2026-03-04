@@ -45,7 +45,8 @@ const t = {
     updated: "Mis à jour le",
     edit: "Modifier",
     report: "Supprimer",
-    published: "Publié le"
+    published: "Publié le",
+    nextEvent: "Prochain événement"
   },
   en: {
     back: "Back to directory",
@@ -58,7 +59,8 @@ const t = {
     updated: "Updated on",
     edit: "Edit",
     report: "Delete",
-    published: "Published on"
+    published: "Published on",
+    nextEvent: "Next event"
   }
 }[lang as 'fr' | 'en'];
 
@@ -128,6 +130,12 @@ const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day
               <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-100">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 {t.published} {formatDate(res.metadata.published_at)}
+              </span>
+            )}
+            {res.metadata?.next_date && (
+              <span class="flex items-center gap-1 text-[10px] font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-1 rounded border border-emerald-100 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                {t.nextEvent} : {formatDate(res.metadata.next_date)}
               </span>
             )}
           </div>
