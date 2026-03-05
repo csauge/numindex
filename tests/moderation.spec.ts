@@ -91,6 +91,39 @@ test.describe('Moderation Lifecycle', () => {
     await expect(page.locator('.resource-card').filter({ hasText: updatedTitle })).not.toBeVisible();
   });
 
+  test('should handle metadata fields (City, Dates) for specific categories', async ({ page }) => {
+    // 1. Check Event fields (City and Next Date)
+    await page.goto('/fr/propose');
+    await page.selectOption('select[name="category"]', 'evenement');
+    
+    await expect(page.locator('#city-container')).toBeVisible();
+    await expect(page.locator('#next-date-container')).toBeVisible();
+    await expect(page.locator('#date-container')).toBeHidden(); // No publication date for events by default (group is ACTEURS)
+
+    // Fill City with search mock (or just manual if search is complex)
+    await page.fill('#city-search', 'Lyon');
+    await page.waitForTimeout(500); // debounce
+    // Even if Photon isn't mocked, it might work if network is allowed, 
+    // but better to just fill and verify it updates the hidden field or preview.
+    await page.click('#city-results button:first-child'); 
+    await expect(page.locator('#badge-city')).toContainText('Lyon');
+
+    // Fill Next Date
+    const nextDate = '2026-12-31';
+    await page.fill('input[name="next_date"]', nextDate);
+    await expect(page.locator('#badge-next-date')).toContainText(nextDate);
+
+    // 2. Check Content fields (Publication Date)
+    await page.selectOption('select[name="category"]', 'article');
+    await expect(page.locator('#city-container')).toBeHidden();
+    await expect(page.locator('#next-date-container')).toBeHidden();
+    await expect(page.locator('#date-container')).toBeVisible();
+
+    const pubDate = '2026-01-01';
+    await page.fill('input[name="published_at"]', pubDate);
+    await expect(page.locator('#badge-date')).toContainText(pubDate);
+  });
+
   test('should display bidirectional relations correctly on detail pages', async ({ page }) => {
     const entityTitle = `Entity ${Math.floor(Math.random() * 10000)}`;
     const linkedResourceTitle = `Article by Entity ${Math.floor(Math.random() * 10000)}`;

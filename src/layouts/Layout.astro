@@ -102,19 +102,21 @@ const t = {
 
     <script>
       function updateLangLinks() {
-        const path = window.location.pathname;
-        const search = window.location.search;
         const btnFr = document.getElementById('lang-fr');
         const btnEn = document.getElementById('lang-en');
 
         if (btnFr) {
           btnFr.onclick = () => {
+            const path = window.location.pathname;
+            const search = window.location.search;
             const newPath = path.replace(/^\/(fr|en)/, '/fr');
             window.location.href = newPath + search;
           };
         }
         if (btnEn) {
           btnEn.onclick = () => {
+            const path = window.location.pathname;
+            const search = window.location.search;
             const newPath = path.replace(/^\/(fr|en)/, '/en');
             window.location.href = newPath + search;
           };

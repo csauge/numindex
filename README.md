@@ -10,7 +10,7 @@
 - **Bascule d'affichage :** Mode **Grille** visuel ou **Liste ultra-compacte** (type tableau) avec mémorisation de la préférence.
 - **Sobriété Maximale :** Images au format **AVIF** avec miniatures redimensionnées via Supabase.
 - **Relations Dynamiques :** Liens entre "Acteurs" (entités) et "Contenus" (ressources).
-- **Localisation :** Intégration de l'API **Photon (OSM)** pour une saisie de ville simplifiée.
+- **Métadonnées Contextuelles :** Gestion des villes (via API Photon OSM), dates de parution et prochaines dates d'événements.
 - **Internationalisation :** Entièrement bilingue (Français 🇫🇷 / Anglais 🇬🇧).
 - **Zéro Dépendance Lourde :** Utilisation de Vanilla JS pour l'interactivité.
 
@@ -19,6 +19,7 @@
 - **Frontend :** [Astro](https://astro.build/) (Hybrid mode).
 - **Style :** [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/).
 - **Base de Données :** [Supabase](https://supabase.com/) (PostgreSQL).
+- **Communications :** [Brevo API](https://www.brevo.com/) pour le formulaire de contact.
 - **Hébergement :** [Cloudflare Pages](https://pages.cloudflare.com/).
 
 ## 🚀 Installation & Développement
@@ -81,6 +82,8 @@ Le projet utilise **Playwright** pour assurer la qualité et la non-régression 
   - Navigation et redirection de langue.
   - Recherche et filtrage dynamique.
   - Cycle de vie complet des ressources (Proposition -> Modération -> Publication -> Suppression).
+  - Métadonnées (Villes et Dates).
+  - Formulaire de Contact (Mock API).
 
 ---
 

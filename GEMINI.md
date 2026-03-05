@@ -19,6 +19,7 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 - **Base de Données :** Supabase (PostgreSQL).
   - Utilisation de `JSONB` (`metadata`) pour les données flexibles (ville, dates spécifiques).
   - Trigger SQL pour la gestion automatique de `updated_at`.
+- **Communications :** Brevo API pour l'envoi des messages via le formulaire de contact (`/api/contact`).
 
 ## 3. Standards d'Ingénierie (Clean Code & Maintainability)
 - **Deduplication & Modularité :** Extraire la logique métier complexe du DOM (ex: `src/lib/services.ts`).
@@ -30,7 +31,7 @@ Ce document définit les règles immuables pour le développement de l'annuaire 
 ## 4. Structure des Données
 Toute ressource est stockée dans la table `resources` avec :
 - `title`, `description`, `link`, `category`, `image_url`.
-- `metadata` (JSONB) : `city`, `published_at`, `next_date`, etc.
+- `metadata` (JSONB) : `city` (ville), `published_at` (date de parution), `next_date` (prochaine date événement).
 - `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'un article).
 
 ## 6. Checklist de Livraison (Avant tout Push/Déploiement)

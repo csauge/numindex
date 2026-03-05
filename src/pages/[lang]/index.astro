@@ -31,6 +31,14 @@ const translations = {
     sortNewest: "Plus récents",
     sortName: "Nom A-Z",
     sortCat: "Catégorie",
+    sortDate: "Prochaine date",
+    groupToday: "Aujourd'hui",
+    groupYesterday: "Hier",
+    groupThisWeek: "Cette semaine",
+    groupThisMonth: "Ce mois-ci",
+    groupOlder: "Plus ancien",
+    groupNoDate: "Événements sans date",
+    groupPast: "Événements passés",
     exportLabel: "Exporter CSV",
     results: "ressources"
   },
@@ -43,6 +51,14 @@ const translations = {
     sortNewest: "Newest",
     sortName: "Name A-Z",
     sortCat: "Category",
+    sortDate: "Next date",
+    groupToday: "Today",
+    groupYesterday: "Yesterday",
+    groupThisWeek: "This week",
+    groupThisMonth: "This month",
+    groupOlder: "Older",
+    groupNoDate: "Events without date",
+    groupPast: "Past events",
     exportLabel: "Export CSV",
     results: "resources"
   }
@@ -86,6 +102,7 @@ function getRelatedNames(ids) {
           <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 text-[10px] font-black uppercase tracking-wider">
             <option value="updated_at">{t.sortNewest}</option>
             <option value="title">{t.sortName}</option>
+            <option value="next_date" id="opt-next-date">{t.sortDate}</option>
             <option value="category">{t.sortCat}</option>
           </select>
 
@@ -100,7 +117,7 @@ function getRelatedNames(ids) {
         <div class="flex border-l border-stone-100 pl-2 gap-1 shrink-0">
           <button id="btn-grid" class="btn btn-ghost btn-xs h-9 w-9 p-0 rounded-lg text-primary" title="Grille">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z" />
             </svg>
           </button>
           <button id="btn-list" class="btn btn-ghost btn-xs h-9 w-9 p-0 rounded-lg text-stone-400" title="Liste">
@@ -127,6 +144,19 @@ function getRelatedNames(ids) {
         const relatedNames = getRelatedNames(res.related_ids || []);
         const searchKeywords = (res.title + " " + (res.description || "") + " " + (res.tags ? res.tags.join(" ") : "") + " " + relatedNames.join(" ")).toLowerCase();
         
+        let sortTitle = res.title.toLowerCase();
+        let letter = res.title.charAt(0).toUpperCase();
+        
+        if (res.category === 'personne') {
+          const parts = res.title.trim().split(/\s+/);
+          if (parts.length > 1) {
+            const lastName = parts[parts.length - 1];
+            const firstNames = parts.slice(0, -1).join(' ');
+            sortTitle = (lastName + " " + firstNames).toLowerCase();
+            letter = lastName.charAt(0).toUpperCase();
+          }
+        }
+        
         return (
           <a 
             href={`/${lang}/resource/${res.id}`}
@@ -134,6 +164,8 @@ function getRelatedNames(ids) {
             data-id={res.id}
             data-category={res.category}
             data-title={res.title.toLowerCase()}
+            data-sort-title={sortTitle}
+            data-letter={letter}
             data-link={res.link || ""}
             data-tags={res.tags?.join(', ') || ""}
             data-related={relatedNames.join(', ')}
@@ -162,7 +194,6 @@ function getRelatedNames(ids) {
             </div>
             
             <div class="card-body-content p-4 flex flex-col flex-grow">
-              {/* Icône Liste (cachée en grille) */}
               <div class="card-list-icon-box hidden shrink-0 text-stone-400 group-hover:text-primary/60 transition-colors" style="grid-area: icon;">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getCategoryIcon(res.category)} />
@@ -191,6 +222,28 @@ function getRelatedNames(ids) {
     </div>
 
     <style is:global>
+      .alphabet-divider {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem 0.5rem 1rem 0.5rem;
+        pointer-events: none;
+      }
+      .alphabet-divider span {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #10b981;
+        opacity: 0.3;
+        text-transform: capitalize;
+      }
+      .alphabet-divider::after {
+        content: '';
+        flex-grow: 1;
+        height: 1px;
+        background: #f5f5f4;
+      }
+
       /* Unified Grid System for Data Table Rows */
       .resource-card-grid {
         display: grid;
@@ -200,7 +253,6 @@ function getRelatedNames(ids) {
         grid-template-columns: 2rem 1fr 1.5fr 120px;
       }
 
-      /* Mode Liste */
       #resources-grid.list-mode {
         display: flex;
         flex-direction: column;
@@ -216,20 +268,10 @@ function getRelatedNames(ids) {
         grid-template-areas: "icon title desc cat";
         grid-template-columns: 2rem 1fr 1.5fr 120px;
       }
-      #resources-grid.list-mode .card-img-container {
-        display: none;
-      }
-      #resources-grid.list-mode .card-body-content {
-        display: contents;
-      }
-      #resources-grid.list-mode .card-list-icon-box {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      #resources-grid.list-mode .card-content-main {
-        display: contents;
-      }
+      #resources-grid.list-mode .card-img-container { display: none; }
+      #resources-grid.list-mode .card-body-content { display: contents; }
+      #resources-grid.list-mode .card-list-icon-box { display: flex; align-items: center; justify-content: center; }
+      #resources-grid.list-mode .card-content-main { display: contents; }
       #resources-grid.list-mode .card-desc {
         display: block;
         margin: 0;
@@ -240,10 +282,7 @@ function getRelatedNames(ids) {
         line-height: 1.4;
         margin-top: 3px;
       }
-      #resources-grid.list-mode .card-category-label {
-        display: block;
-        margin-bottom: 0;
-      }
+      #resources-grid.list-mode .card-category-label { display: block; margin-bottom: 0; }
       #resources-grid.list-mode h2 {
         margin: 0;
         -webkit-line-clamp: 1;
@@ -254,7 +293,6 @@ function getRelatedNames(ids) {
         margin-top: 3px;
       }
 
-      /* Adaptations Responsives */
       @media (max-width: 1024px) {
         #resources-grid.list-mode .resource-card {
           grid-template-areas: "icon title cat";
@@ -281,174 +319,261 @@ function getRelatedNames(ids) {
 </Layout>
 
 <script>
-  let cards: NodeListOf<Element> = [];
-  const searchInput = document.getElementById('search-input') as HTMLInputElement;
-  const catFilter = document.getElementById('filter-category') as HTMLSelectElement;
-  const sortFilter = document.getElementById('filter-sort') as HTMLSelectElement;
-  const countDisplay = document.getElementById('results-count');
-  const noResults = document.getElementById('no-results');
-  const btnExport = document.getElementById('btn-export');
-  
-  // View Toggle
-  const grid = document.getElementById('resources-grid');
-  const btnGrid = document.getElementById('btn-grid');
-  const btnList = document.getElementById('btn-list');
+  /**
+   * CONFIGURATION & STATE
+   */
+  let cards: HTMLElement[] = [];
+  const elements = {
+    searchInput: document.getElementById('search-input') as HTMLInputElement,
+    catFilter: document.getElementById('filter-category') as HTMLSelectElement,
+    sortFilter: document.getElementById('filter-sort') as HTMLSelectElement,
+    countDisplay: document.getElementById('results-count'),
+    noResults: document.getElementById('no-results'),
+    grid: document.getElementById('resources-grid'),
+    btnGrid: document.getElementById('btn-grid'),
+    btnList: document.getElementById('btn-list'),
+    btnExport: document.getElementById('btn-export'),
+    optNextDate: document.getElementById('opt-next-date')
+  };
 
-  function initSearch() {
-    cards = document.querySelectorAll('.resource-card');
+  const currentLang = document.documentElement.lang || 'fr';
+  const labels = {
+    fr: {
+      noDate: "Événements sans date",
+      pastDate: "Événements passés",
+      today: "Aujourd'hui",
+      yesterday: "Hier",
+      thisWeek: "Cette semaine",
+      thisMonth: "Ce mois-ci",
+      older: "Plus ancien"
+    },
+    en: {
+      noDate: "Events without date",
+      pastDate: "Past events",
+      today: "Today",
+      yesterday: "Yesterday",
+      thisWeek: "This week",
+      thisMonth: "This month",
+      older: "Older"
+    }
+  }[currentLang as 'fr'|'en'] || {};
+
+  /**
+   * INITIALIZATION
+   */
+  function init() {
+    cards = Array.from(document.querySelectorAll('.resource-card')) as HTMLElement[];
     
-    searchInput?.addEventListener('input', debouncedUpdate);
-    catFilter?.addEventListener('change', updateFilters);
-    sortFilter?.addEventListener('change', sortData);
-
-    // View Toggle
-    const savedView = localStorage.getItem('salvia-view') || 'grid';
-    if (savedView === 'list') setListView();
-
-    btnGrid?.addEventListener('click', setGridView);
-    btnList?.addEventListener('click', setListView);
-
-    // Export
-    btnExport?.addEventListener('click', exportCSV);
-  }
-
-  function sortData() {
-    const parent = grid!;
-    const cardsArray = Array.from(cards);
-    const sortBy = sortFilter.value;
+    // 1. Lire les filtres (URL en priorité, sinon sessionStorage)
+    const params = new URLSearchParams(window.location.search);
+    const hasUrlParams = params.has('q') || params.has('cat') || params.has('sort');
     
-    cardsArray.sort((a, b) => {
-      const valA = (a as HTMLElement).dataset[sortBy] || '';
-      const valB = (b as HTMLElement).dataset[sortBy] || '';
-      
-      if (sortBy === 'updated_at') {
-        return valB.localeCompare(valA);
-      }
-      return valA.localeCompare(valB);
+    if (hasUrlParams) {
+      if (params.has('q')) elements.searchInput.value = params.get('q')!;
+      if (params.has('cat')) elements.catFilter.value = params.get('cat')!;
+      if (params.has('sort')) elements.sortFilter.value = params.get('sort')!;
+    } else {
+      const sessionData = JSON.parse(sessionStorage.getItem('salvia-filters') || '{}');
+      if (sessionData.q) elements.searchInput.value = sessionData.q;
+      if (sessionData.cat) elements.catFilter.value = sessionData.cat;
+      if (sessionData.sort) elements.sortFilter.value = sessionData.sort;
+    }
+
+    // Event Listeners
+    elements.searchInput?.addEventListener('input', debouncedUpdate);
+    
+    elements.catFilter?.addEventListener('change', () => {
+      const cat = elements.catFilter.value;
+      if (cat === 'evenement') elements.sortFilter.value = 'next_date';
+      else if (cat === 'all') elements.sortFilter.value = 'updated_at';
+      else elements.sortFilter.value = 'title';
+      updateUI();
     });
 
-    cardsArray.forEach(card => parent.appendChild(card));
+    elements.sortFilter?.addEventListener('change', updateUI);
+    
+    elements.btnGrid?.addEventListener('click', () => setView('grid'));
+    elements.btnList?.addEventListener('click', () => setView('list'));
+    elements.btnExport?.addEventListener('click', exportCSV);
+
+    const savedView = localStorage.getItem('salvia-view') || 'grid';
+    setView(savedView as 'grid' | 'list');
+
+    updateUI();
   }
 
-  function setGridView() {
-    grid?.classList.remove('list-mode');
-    btnGrid?.classList.add('text-primary');
-    btnGrid?.classList.remove('text-stone-400');
-    btnList?.classList.remove('text-primary');
-    btnList?.classList.add('text-stone-400');
-    localStorage.setItem('salvia-view', 'grid');
-    updateFilters();
+  /**
+   * CORE LOGIC: FILTER, SORT & RENDER
+   */
+  function updateUI() {
+    const query = elements.searchInput.value.toLowerCase().trim();
+    const cat = elements.catFilter.value;
+    let sort = elements.sortFilter.value;
+    const isListMode = elements.grid?.classList.contains('list-mode');
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Visibility logic for Next Date option
+    const supportsNextDate = cat === 'evenement';
+    elements.optNextDate?.classList.toggle('hidden', !supportsNextDate);
+    
+    // Auto-fallback if sort option is hidden
+    if (sort === 'next_date' && !supportsNextDate) {
+      sort = cat === 'all' ? 'updated_at' : 'title';
+      elements.sortFilter.value = sort;
+    }
+
+    // 1. Filter
+    const filtered = cards.filter(card => {
+      const matchSearch = !query || card.dataset.keywords?.includes(query);
+      const matchCat = cat === 'all' || card.dataset.category === cat;
+      return matchSearch && matchCat;
+    });
+
+    // 2. Sort
+    filtered.sort((a, b) => {
+      if (sort === 'next_date') {
+        const dA = a.dataset.next_date || '';
+        const dB = b.dataset.next_date || '';
+        if (!dA && !dB) return 0;
+        if (!dA) return 1;
+        if (!dB) return -1;
+        const isPastA = dA < todayStr;
+        const isPastB = dB < todayStr;
+        if (!isPastA && isPastB) return -1;
+        if (isPastA && !isPastB) return 1;
+        if (isPastA && isPastB) return dB.localeCompare(dA);
+        return dA.localeCompare(dB);
+      } 
+      
+      if (sort === 'title') {
+        return (a.dataset.sortTitle || '').localeCompare(b.dataset.sortTitle || '');
+      }
+
+      if (sort === 'category') {
+        const catA = a.dataset.category || '';
+        const catB = b.dataset.category || '';
+        if (catA !== catB) return catA.localeCompare(catB);
+        return (a.dataset.sortTitle || '').localeCompare(b.dataset.sortTitle || '');
+      }
+
+      return (b.dataset.updated_at || '').localeCompare(a.dataset.updated_at || '');
+    });
+
+    // 3. Grouping & Rendering
+    elements.grid!.innerHTML = '';
+    document.querySelectorAll('.alphabet-divider').forEach(el => el.remove());
+
+    let currentGroup = '';
+    filtered.forEach(card => {
+      let groupKey = '';
+
+      if (sort === 'title') {
+        groupKey = (card.dataset.letter || '').toUpperCase();
+      } else if (sort === 'category') {
+        groupKey = card.querySelector('.card-category-label')?.textContent?.trim() || card.dataset.category || '';
+      } else if (sort === 'next_date') {
+        const d = card.dataset.next_date;
+        if (!d) groupKey = labels.noDate;
+        else if (d < todayStr) groupKey = labels.pastDate;
+        else groupKey = new Date(d).toLocaleDateString(currentLang, { month: 'long', year: 'numeric' });
+      } else if (sort === 'updated_at') {
+        const d = card.dataset.updated_at?.split('T')[0] || '';
+        if (d === todayStr) groupKey = labels.today;
+        else if (d === getDayOffset(-1)) groupKey = labels.yesterday;
+        else if (d >= getDayOffset(-7)) groupKey = labels.thisWeek;
+        else if (d >= getDayOffset(-30)) groupKey = labels.thisMonth;
+        else groupKey = labels.older;
+      }
+
+      if (groupKey && groupKey !== currentGroup) {
+        currentGroup = groupKey;
+        const divider = document.createElement('div');
+        divider.className = 'alphabet-divider';
+        divider.innerHTML = `<span>${currentGroup}</span>`;
+        elements.grid?.appendChild(divider);
+      }
+
+      card.style.display = isListMode ? 'grid' : 'flex';
+      elements.grid?.appendChild(card);
+    });
+
+    if (elements.countDisplay) elements.countDisplay.textContent = filtered.length.toString();
+    elements.noResults?.classList.toggle('hidden', filtered.length > 0);
+    syncUrl();
   }
 
-  function setListView() {
-    grid?.classList.add('list-mode');
-    btnList?.classList.add('text-primary');
-    btnList?.classList.remove('text-stone-400');
-    btnGrid?.classList.remove('text-primary');
-    btnGrid?.classList.add('text-stone-400');
-    localStorage.setItem('salvia-view', 'list');
-    updateFilters();
+  function getDayOffset(days: number) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split('T')[0];
   }
+
+  function syncUrl() {
+    const params = new URLSearchParams();
+    const q = elements.searchInput.value;
+    const cat = elements.catFilter.value;
+    const sort = elements.sortFilter.value;
+    if (q) params.set('q', q);
+    if (cat !== 'all') params.set('cat', cat);
+    if (sort !== 'updated_at') params.set('sort', sort);
+    
+    // Sauvegarde en session pour le retour arrière
+    sessionStorage.setItem('salvia-filters', JSON.stringify({ q, cat, sort }));
+
+    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, '', newUrl);
+  }
+
+  function setView(view: 'grid' | 'list') {
+    elements.grid?.classList.toggle('list-mode', view === 'list');
+    elements.btnGrid?.classList.toggle('text-primary', view === 'grid');
+    elements.btnGrid?.classList.toggle('text-stone-400', view !== 'grid');
+    elements.btnList?.classList.toggle('text-primary', view === 'list');
+    elements.btnList?.classList.toggle('text-stone-400', view !== 'list');
+    localStorage.setItem('salvia-view', view);
+    updateUI();
+  }
+
+  function debounce(func: Function, wait: number) {
+    let timeout: any;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        func(...args);
+        syncUrl();
+      }, wait);
+    };
+  }
+
+  const debouncedUpdate = debounce(updateUI, 150);
 
   function exportCSV() {
-    const visibleCards = Array.from(cards).filter(c => (c as HTMLElement).style.display !== 'none');
-    
-    // Header row with interesting columns
-    const headers = [
-      'ID', 
-      'Title', 
-      'Category', 
-      'Link', 
-      'Description', 
-      'Tags', 
-      'Related Entities',
-      'City',
-      'Next Date',
-      'Created At',
-      'Updated At'
-    ];
-    
+    const visibleCards = cards.filter(c => c.parentElement === elements.grid);
+    const headers = ['ID', 'Title', 'Category', 'Link', 'Description', 'Tags', 'City', 'Next Date', 'Updated At'];
     const rows = [headers.join(',')];
-
     visibleCards.forEach(card => {
-      const h = card as HTMLElement;
-      
-      const rowData = [
-        h.dataset.id || '',
+      const row = [
+        card.dataset.id || '',
         card.querySelector('h2')?.textContent?.trim() || '',
-        h.dataset.category || '',
-        h.dataset.link || '',
+        card.dataset.category || '',
+        card.dataset.link || '',
         card.querySelector('.card-desc')?.textContent?.trim() || '',
-        h.dataset.tags || '',
-        h.dataset.related || '',
-        h.dataset.city || '',
-        h.dataset.next_date || '',
-        h.dataset.created_at || '',
-        h.dataset.updated_at || ''
-      ].map(val => `"${val.replace(/"/g, '""')}"`); // Escape quotes and wrap in quotes
-
-      rows.push(rowData.join(','));
+        card.dataset.tags || '',
+        card.dataset.city || '',
+        card.dataset.next_date || '',
+        card.dataset.updated_at || ''
+      ].map(v => `"${v.replace(/"/g, '""')}"`);
+      rows.push(row.join(','));
     });
-
-    const csvContent = "data:text/csv;charset=utf-8,\ufeff" + rows.join("\n");
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob(["\ufeff" + rows.join("\n")], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.href = URL.createObjectURL(blob);
     link.setAttribute("download", `salvia_export_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
 
-  if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => initSearch());
-  } else {
-    setTimeout(initSearch, 1);
-  }
-
-  function updateFilters() {
-    if (!cards.length) return;
-
-    const query = searchInput.value.toLowerCase().trim();
-    const cat = catFilter.value;
-    const isListMode = grid?.classList.contains('list-mode');
-    let visibleCount = 0;
-
-    for (let i = 0; i < cards.length; i++) {
-      const card = cards[i] as HTMLElement;
-      const keywords = card.dataset.keywords || '';
-      const cardCat = card.dataset.category;
-      
-      const matchSearch = !query || keywords.includes(query);
-      const matchCat = cat === 'all' || cardCat === cat;
-
-      if (matchSearch && matchCat) {
-        card.style.display = isListMode ? 'grid' : 'flex';
-        visibleCount++;
-      } else {
-        card.style.display = 'none';
-      }
-    }
-
-    if (countDisplay) {
-      countDisplay.textContent = visibleCount.toString();
-    }
-    
-    if (visibleCount === 0) noResults?.classList.remove('hidden');
-    else noResults?.classList.add('hidden');
-  }
-
-  function debounce(func: Function, wait: number) {
-    let timeout: any;
-    return function executedFunction(...args: any[]) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
-
-  const debouncedUpdate = debounce(updateFilters, 150);
+  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(init);
+  else setTimeout(init, 1);
 </script>
