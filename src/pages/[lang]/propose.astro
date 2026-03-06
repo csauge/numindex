@@ -16,7 +16,7 @@ const { lang } = Astro.params as { lang: 'fr' | 'en' };
 const action = (Astro.url.searchParams.get('action') || 'create') as SuggestionAction;
 const resourceId = Astro.url.searchParams.get('id');
 
-const t = {
+const translations = {
   fr: {
     title: action === 'delete' ? "Supprimer une ressource" : (action === 'update' ? "Modifier une ressource" : "Proposer une ressource"),
     back: "Retour à l'accueil"
@@ -25,7 +25,8 @@ const t = {
     title: action === 'delete' ? "Delete resource" : (action === 'update' ? "Update resource" : "Suggest a resource"),
     back: "Back to home"
   }
-}[lang];
+};
+const t = translations[lang as keyof typeof translations] || translations.fr;
 ---
 
 <Layout title={t.title} lang={lang}>

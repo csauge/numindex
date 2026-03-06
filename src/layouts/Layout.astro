@@ -7,10 +7,11 @@ interface Props {
 }
 const { title, lang = 'fr' } = Astro.props;
 
-const t = {
+const translations = {
   fr: { propose: "Ajouter", skip: "Passer au contenu", admin: "Modérer" },
   en: { propose: "Add", skip: "Skip to content", admin: "Moderate" }
-}[lang];
+};
+const t = translations[lang as keyof typeof translations] || translations.fr;
 ---
 
 <!doctype html>
@@ -79,11 +80,18 @@ const t = {
           <span class="hidden md:inline">{t.propose}</span>
         </a>
 
-        {/* Sélecteur de langue */}
-        <nav class="flex items-center gap-1 ml-2 bg-emerald-50/50 p-1 rounded-full" aria-label={lang === 'fr' ? 'Changer de langue' : 'Change language'}>
-          <button id="lang-fr" class={`h-7 flex items-center px-3 rounded-full text-xs transition-all ${lang === 'fr' ? 'bg-white text-emerald-800 shadow-sm font-black' : 'text-emerald-700/60 hover:text-emerald-800'}`} aria-current={lang === 'fr' ? 'page' : undefined}>FR</button>
-          <button id="lang-en" class={`h-7 flex items-center px-3 rounded-full text-xs transition-all ${lang === 'en' ? 'bg-white text-emerald-800 shadow-sm font-black' : 'text-emerald-700/60 hover:text-emerald-800'}`} aria-current={lang === 'en' ? 'page' : undefined}>EN</button>
-        </nav>
+        {/* Sélecteur de langue (Swap) */}
+        <div class="ml-2">
+          <label class="swap swap-rotate btn btn-ghost btn-sm h-9 w-12 p-0 rounded-full bg-emerald-50/50 text-emerald-800 border-none font-black text-xs hover:bg-emerald-100 transition-all" aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en Français'}>
+            <input type="checkbox" id="lang-toggle" checked={lang === 'en'} />
+            
+            {/* Langue active: EN (visible quand coché) */}
+            <div class="swap-on">EN</div>
+            
+            {/* Langue active: FR (visible quand décoché) */}
+            <div class="swap-off">FR</div>
+          </label>
+        </div>
       </div>
     </header>
 
@@ -101,28 +109,19 @@ const t = {
     </footer>
 
     <script>
-      function updateLangLinks() {
-        const btnFr = document.getElementById('lang-fr');
-        const btnEn = document.getElementById('lang-en');
+      function initLangToggle() {
+        const toggle = document.getElementById('lang-toggle') as HTMLInputElement;
+        if (!toggle) return;
 
-        if (btnFr) {
-          btnFr.onclick = () => {
-            const path = window.location.pathname;
-            const search = window.location.search;
-            const newPath = path.replace(/^\/(fr|en)/, '/fr');
-            window.location.href = newPath + search;
-          };
-        }
-        if (btnEn) {
-          btnEn.onclick = () => {
-            const path = window.location.pathname;
-            const search = window.location.search;
-            const newPath = path.replace(/^\/(fr|en)/, '/en');
-            window.location.href = newPath + search;
-          };
-        }
+        toggle.onchange = () => {
+          const path = window.location.pathname;
+          const search = window.location.search;
+          const targetLang = toggle.checked ? 'en' : 'fr';
+          const newPath = path.replace(/^\/(fr|en)/, `/${targetLang}`);
+          window.location.href = newPath + search;
+        };
       }
-      updateLangLinks();
+      initLangToggle();
     </script>
   </body>
 </html>

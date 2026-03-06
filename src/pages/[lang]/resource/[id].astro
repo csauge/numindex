@@ -32,8 +32,7 @@ if (getCategoryType(res.category) === 'entity') {
     .in('id', res.related_ids);
   if (data) relatedResources = data as Resource[];
 }
-
-const t = {
+const translations = {
   fr: {
     back: "Retour à l'annuaire",
     visit: "Visiter le site officiel",
@@ -52,7 +51,7 @@ const t = {
     back: "Back to directory",
     visit: "Visit official website",
     details: "Details",
-    tags: "Tags",
+    tags: "Keywords",
     relations: getCategoryType(res.category) === 'entity' ? "Proposed resources:" : "Proposed by:",
     meta: "Information",
     created: "Added on",
@@ -62,7 +61,8 @@ const t = {
     published: "Published on",
     nextEvent: "Next event"
   }
-}[lang as 'fr' | 'en'];
+};
+const t = translations[lang as keyof typeof translations] || translations.fr;
 
 const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }) => {
   return new Date(dateStr).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', options);

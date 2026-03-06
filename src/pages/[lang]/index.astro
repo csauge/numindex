@@ -105,17 +105,20 @@ function getRelatedNames(ids) {
           </select>
         </div>
 
-        <div class="flex border-l border-stone-100 pl-2 gap-1 shrink-0">
-          <button id="btn-grid" class="btn btn-ghost btn-xs h-9 w-9 p-0 rounded-lg text-primary" title="Grille">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z" />
-            </svg>
-          </button>
-          <button id="btn-list" class="btn btn-ghost btn-xs h-9 w-9 p-0 rounded-lg text-stone-400" title="Liste">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="flex border-l border-stone-100 pl-2 shrink-0">
+          <label class="swap swap-rotate btn btn-ghost btn-sm h-9 w-9 p-0 rounded-xl text-stone-400 hover:text-primary transition-all bg-stone-50/50 border-none" title="Changer de vue">
+            <input type="checkbox" id="view-toggle" aria-label="Toggle Grid/List view" />
+            
+            <!-- List Icon (visible when checked) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="swap-on h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          </button>
+            
+            <!-- Grid Icon (visible when unchecked) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="swap-off h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </label>
         </div>
       </div>
     </div>
@@ -321,8 +324,7 @@ function getRelatedNames(ids) {
     countDisplay: document.getElementById('results-count'),
     noResults: document.getElementById('no-results'),
     grid: document.getElementById('resources-grid'),
-    btnGrid: document.getElementById('btn-grid'),
-    btnList: document.getElementById('btn-list'),
+    viewToggle: document.getElementById('view-toggle') as HTMLInputElement,
     btnExport: document.getElementById('btn-export'),
     optNextDate: document.getElementById('opt-next-date')
   };
@@ -381,11 +383,14 @@ function getRelatedNames(ids) {
 
     elements.sortFilter?.addEventListener('change', updateUI);
     
-    elements.btnGrid?.addEventListener('click', () => setView('grid'));
-    elements.btnList?.addEventListener('click', () => setView('list'));
+    elements.viewToggle?.addEventListener('change', () => {
+      setView(elements.viewToggle.checked ? 'list' : 'grid');
+    });
+
     elements.btnExport?.addEventListener('click', exportCSV);
 
     const savedView = localStorage.getItem('salvia-view') || 'grid';
+    if (elements.viewToggle) elements.viewToggle.checked = savedView === 'list';
     setView(savedView as 'grid' | 'list');
 
     updateUI();
@@ -514,10 +519,6 @@ function getRelatedNames(ids) {
 
   function setView(view: 'grid' | 'list') {
     elements.grid?.classList.toggle('list-mode', view === 'list');
-    elements.btnGrid?.classList.toggle('text-primary', view === 'grid');
-    elements.btnGrid?.classList.toggle('text-stone-400', view !== 'grid');
-    elements.btnList?.classList.toggle('text-primary', view === 'list');
-    elements.btnList?.classList.toggle('text-stone-400', view !== 'list');
     localStorage.setItem('salvia-view', view);
     updateUI();
   }

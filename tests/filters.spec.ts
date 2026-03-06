@@ -92,7 +92,7 @@ test.describe('Filters, Sorting and Grouping', () => {
     await page.waitForTimeout(300);
 
     // Switch to English
-    await page.click('#lang-en');
+    await page.click('label.swap:has(#lang-toggle)');
     
     // Verify URL and filters
     await expect(page).toHaveURL(/\/en/);

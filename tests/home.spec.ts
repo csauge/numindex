@@ -44,7 +44,8 @@ test.describe('Salvia Home Page', () => {
 
   test('should switch language', async ({ page }) => {
     await page.goto('/fr');
-    await page.click('#lang-en');
+    // Click the label for the language toggle (the input might be hidden/not stable)
+    await page.click('label.swap:has(#lang-toggle)');
     await expect(page).toHaveURL(/\/en\/?$/);
     const header = page.locator('#main-title');
     await expect(header).toContainText("Sustainable Digital Directory");
@@ -53,27 +54,30 @@ test.describe('Salvia Home Page', () => {
   test('should toggle between grid and list view and persist preference', async ({ page }) => {
     await page.goto('/fr');
     const gridContainer = page.locator('#resources-grid');
-    const btnList = page.locator('#btn-list');
-    const btnGrid = page.locator('#btn-grid');
+    const viewToggleInput = page.locator('#view-toggle');
+    const viewToggleLabel = page.locator('label.swap:has(#view-toggle)');
 
-    // Default should be grid
+    // Default should be grid (unchecked)
     await expect(gridContainer).not.toHaveClass(/list-mode/);
+    await expect(viewToggleInput).not.toBeChecked();
 
-    // Switch to list
-    await btnList.click();
+    // Switch to list (Click the label since input might be hidden)
+    await viewToggleLabel.click();
     await expect(gridContainer).toHaveClass(/list-mode/);
+    await expect(viewToggleInput).toBeChecked();
     
     // Verify that description is still present in list mode (even if truncated)
-    // We check the first card's description
     const firstDesc = page.locator('.resource-card .card-desc').first();
     await expect(firstDesc).toBeVisible();
 
     // Reload and check persistence
     await page.reload();
     await expect(gridContainer).toHaveClass(/list-mode/);
+    await expect(viewToggleInput).toBeChecked();
 
     // Switch back to grid
-    await btnGrid.click();
+    await viewToggleLabel.click();
     await expect(gridContainer).not.toHaveClass(/list-mode/);
+    await expect(viewToggleInput).not.toBeChecked();
   });
 });
