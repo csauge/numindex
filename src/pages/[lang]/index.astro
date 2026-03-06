@@ -81,18 +81,18 @@ function getRelatedNames(ids) {
     <div class="sticky top-20 z-30 mb-8 p-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-2 overflow-visible">
       <div class="flex-grow relative flex items-center min-w-0">
         <label for="search-input" class="sr-only">{t.searchPlaceholder}</label>
-        <div class="absolute left-3.5 z-10 pointer-events-none opacity-30">
+        <div class="absolute left-3.5 z-20 pointer-events-none opacity-30">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
         <input 
           type="text" 
           id="search-input" 
           placeholder={t.searchPlaceholder} 
-          class="input input-ghost w-full pl-10 pr-10 h-10 bg-stone-50/50 focus:bg-white transition-all rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm z-0"
+          class="input input-ghost w-full pl-10 pr-10 h-10 bg-stone-50/50 focus:bg-white transition-all rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm z-10"
         />
         <button 
           id="clear-search" 
-          class="absolute right-2 h-7 w-7 flex items-center justify-center rounded-lg hover:bg-stone-200 text-stone-400 transition-all opacity-0 pointer-events-none z-10"
+          class="absolute right-2 h-7 w-7 flex items-center justify-center rounded-lg hover:bg-stone-200 text-stone-400 transition-all opacity-0 pointer-events-none z-20"
           aria-label="Effacer la recherche"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -103,19 +103,35 @@ function getRelatedNames(ids) {
         {/* Scrollable Selects Area - flex-grow to take available space */}
         <div class="flex-grow overflow-x-auto no-scrollbar p-1.5 -m-1 min-w-0">
           <div class="flex gap-2">
-            <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
-              <option value="updated_at">{t.sortNewest}</option>
-              <option value="title">{t.sortName}</option>
-              <option value="next_date" id="opt-next-date">{t.sortDate}</option>
-              <option value="category">{t.sortCat}</option>
-            </select>
+            {/* Sort Selector */}
+            <div class="relative flex items-center shrink-0">
+              <div class="absolute left-2.5 z-10 pointer-events-none opacity-40 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                </svg>
+              </div>
+              <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 pl-8 pr-7 text-[11px] font-bold uppercase tracking-wider focus:bg-emerald-100/50 transition-colors">
+                <option value="updated_at">{t.sortNewest}</option>
+                <option value="title">{t.sortName}</option>
+                <option value="next_date" id="opt-next-date">{t.sortDate}</option>
+                <option value="category">{t.sortCat}</option>
+              </select>
+            </div>
 
-            <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
-              <option value="all">{t.filterCat}</option>
-              {activeCategoryKeys.map(key => (
-                <option value={key}>{getCategoryLabel(key, lang as any)}</option>
-              ))}
-            </select>
+            {/* Category Selector */}
+            <div class="relative flex items-center shrink-0">
+              <div class="absolute left-2.5 z-10 pointer-events-none opacity-40 text-stone-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </div>
+              <select id="filter-category" class="select select-ghost bg-stone-50/50 text-stone-600 border-none rounded-lg h-9 min-h-0 pl-8 pr-8 text-[11px] font-bold uppercase tracking-wider focus:bg-stone-100 transition-colors">
+                <option value="all">{t.filterCat}</option>
+                {activeCategoryKeys.map(key => (
+                  <option value={key}>{getCategoryLabel(key, lang as any)}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -376,7 +392,6 @@ function getRelatedNames(ids) {
    * INITIALIZATION
    */
   function init() {
-    console.log("🌱 Salvia: Initializing UI...");
     
     // Select elements after DOM is ready
     elements = {
@@ -441,14 +456,12 @@ function getRelatedNames(ids) {
     if (elements.btnExportCSV) {
       elements.btnExportCSV.onclick = (e: MouseEvent) => {
         e.preventDefault();
-        console.log("📊 Exporting CSV...");
         exportCSV();
       };
     }
     if (elements.btnExportBookmarks) {
       elements.btnExportBookmarks.onclick = (e: MouseEvent) => {
         e.preventDefault();
-        console.log("🔖 Exporting Bookmarks...");
         exportBookmarks();
       };
     }
@@ -619,7 +632,6 @@ function getRelatedNames(ids) {
 
   function exportCSV() {
     const visibleCards = getVisibleCards();
-    console.log(`CSV: Processing ${visibleCards.length} cards`);
     const headers = ['ID', 'Title', 'Category', 'Link', 'Description', 'Tags', 'City', 'Next Date', 'Related IDs', 'Updated At'];
     const rows = [headers.join(',')];
     visibleCards.forEach(card => {
@@ -642,7 +654,6 @@ function getRelatedNames(ids) {
 
   function exportBookmarks() {
     const visibleCards = getVisibleCards();
-    console.log(`Bookmarks: Processing ${visibleCards.length} cards`);
     const now = Math.floor(Date.now() / 1000);
     let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <!-- This is an automatically generated file.
@@ -681,7 +692,6 @@ function getRelatedNames(ids) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      console.log(`✅ File ${filename} triggered for download.`);
     } catch (err) {
       console.error("❌ Failed to trigger download:", err);
     }
