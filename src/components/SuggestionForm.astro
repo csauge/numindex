@@ -414,10 +414,17 @@ const t = {
         link: action === 'delete' ? existingData?.link : elements.link.value,
         tags: action === 'delete' ? existingData?.tags : tags,
         related_ids: action === 'delete' ? existingData?.related_ids : selectedIds,
-        metadata, image_url: imageUrl, action, status: 'pending', resource_id: rid || null, reason: elements.reason.value || null
+        metadata,
+        image_url: imageUrl,
+        action,
+        status: 'pending',
+        resource_id: rid || null,
+        reason: elements.reason.value || null
       };
 
-      await supabase!.from('suggestions').insert([payload]);
+      const { error: insertError } = await supabase!.from('suggestions').insert([payload]);
+      if (insertError) throw insertError;
+      
       showToast(t.success, 'success');
     } catch (err) {
       showToast(t.error, 'error');

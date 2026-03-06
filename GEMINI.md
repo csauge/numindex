@@ -34,9 +34,22 @@ Toute ressource est stockée dans la table `resources` avec :
 - `metadata` (JSONB) : `city` (ville), `published_at` (date de parution), `next_date` (prochaine date événement).
 - `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'un article).
 
-## 6. Checklist de Livraison (Avant tout Push/Déploiement)
-Avant de livrer ou pusher du code, les étapes suivantes sont **obligatoires** :
-- **Documentation :** Mettre à jour `README.md` et `GEMINI.md` pour refléter les changements fonctionnels ou architecturaux.
-- **Base de données :** Mettre à jour `supabase_schema.sql` si le schéma de la base de données a été modifié.
-- **Tests :** L'exécution de `npm run test:e2e` doit être un succès total (zéro échec). Les tests doivent impérativement pointer vers l'instance locale Supabase (`.env.test`).
-- **Validation :** Vérifier que les principes d'écoconception et d'accessibilité sont respectés.
+## 5. Checklist de Livraison Finale (Commande "Checklist")
+Avant toute livraison (Push), le développeur ou l'agent doit impérativement valider ces étapes :
+
+1.  **Audit Qualitatif (Clean Code) :**
+    - Supprimer les `console.log`, commentaires inutiles, code mort ou orphelin.
+    - Vérifier la factorisation de la logique métier (extraction dans `services.ts`).
+2.  **Audit Sobriété & Performance :**
+    - Lancer `npm run verify-sobriety` (Images AVIF < 50 Ko).
+    - Vérifier l'accessibilité RGAA (ARIA, sémantique HTML).
+3.  **Validation Technique :**
+    - Lancer `npm run build` pour vérifier les types et les imports.
+    - Lancer `npm run test:e2e` (Playwright) sur l'instance locale (`.env.test`).
+4.  **Mise à jour Documentation & Schéma :**
+    - Mettre à jour `README.md` (nouvelles fonctionnalités, commandes, tests).
+    - Mettre à jour `GEMINI.md` (nouveaux mandats, checklist, stack).
+    - Mettre à jour `supabase_schema.sql` si le schéma SQL a changé.
+5.  **Revue Git :**
+    - Faire un `git status` et `git diff` pour une dernière revue humaine.
+    - Proposer un message de commit normé.

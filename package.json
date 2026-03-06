@@ -12,7 +12,9 @@
     "postbuild": "pagefind --site dist",
     "cleanup-images": "node scripts/cleanup-images.mjs",
     "optimize-images": "node scripts/optimize-images.mjs",
-    "test:e2e": "playwright test"
+    "verify-sobriety": "node scripts/verify-sobriety.mjs",
+    "test:e2e": "playwright test",
+    "verify": "npm run verify-sobriety && npm run build && npm run test:e2e"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.12",
@@ -21,13 +23,13 @@
     "astro": "^5.4.1",
     "browser-image-compression": "^2.0.2",
     "daisyui": "^4.12.24",
-    "dotenv": "^17.3.1",
     "sharp": "^0.34.5",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "autoprefixer": "^10.4.24",
+    "dotenv": "^17.3.1",
     "pagefind": "^1.4.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17"

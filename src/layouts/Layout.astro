@@ -3,9 +3,9 @@ import { ACTION_ICONS } from '../utils/categories';
 
 interface Props {
   title: string;
-  lang: string;
+  lang?: string;
 }
-const { title, lang } = Astro.props;
+const { title, lang = 'fr' } = Astro.props;
 
 const t = {
   fr: { propose: "Ajouter", skip: "Passer au contenu", admin: "Modérer" },

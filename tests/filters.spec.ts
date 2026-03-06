@@ -113,7 +113,8 @@ test.describe('Filters, Sorting and Grouping', () => {
       const text = await divider.first().innerText();
       
       // Should match one of the relative time labels
-      const validLabels = ["Aujourd'hui", "Hier", "Cette semaine", "Ce mois-ci", "Plus ancien", "Today", "Yesterday", "This week", "This month", "Older"];
+      // Note: CSS text-transform: capitalize makes "Cette semaine" -> "Cette Semaine"
+      const validLabels = ["Aujourd'hui", "Hier", "Cette Semaine", "Ce Mois-ci", "Plus Ancien", "Today", "Yesterday", "This Week", "This Month", "Older"];
       expect(validLabels).toContain(text);
     }
   });

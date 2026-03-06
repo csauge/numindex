@@ -6,13 +6,6 @@ import { getCategoryLabel, getCategoryIcon } from "../../utils/categories";
 import { getImageUrl } from "../../lib/supabase/client";
 import { fetchAllResources, fetchEntitiesForMapping } from "../../lib/services";
 
-export async function getStaticPaths() {
-  return [
-    { params: { lang: "fr" } },
-    { params: { lang: "en" } },
-  ];
-}
-
 const { lang } = Astro.params;
 
 // Data fetching
