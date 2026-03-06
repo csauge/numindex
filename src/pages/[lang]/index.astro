@@ -21,14 +21,13 @@ const translations = {
     searchPlaceholder: "Rechercher un outil, une entreprise, un article...",
     filterCat: "Catégories",
     filterSort: "Trier par",
-    sortNewest: "Plus récents",
+    sortNewest: "Mise à jour",
     sortName: "Nom A-Z",
     sortCat: "Catégorie",
     sortDate: "Prochaine date",
-    groupToday: "Aujourd'hui",
-    groupYesterday: "Hier",
     groupThisWeek: "Cette semaine",
     groupThisMonth: "Ce mois-ci",
+    groupThisYear: "Cette année",
     groupOlder: "Plus ancien",
     groupNoDate: "Événements sans date",
     groupPast: "Événements passés",
@@ -41,14 +40,13 @@ const translations = {
     searchPlaceholder: "Search for a tool, company, article...",
     filterCat: "Categories",
     filterSort: "Sort by",
-    sortNewest: "Newest",
+    sortNewest: "Updated",
     sortName: "Name A-Z",
     sortCat: "Category",
     sortDate: "Next date",
-    groupToday: "Today",
-    groupYesterday: "Yesterday",
     groupThisWeek: "This week",
     groupThisMonth: "This month",
+    groupThisYear: "This year",
     groupOlder: "Older",
     groupNoDate: "Events without date",
     groupPast: "Past events",
@@ -334,19 +332,17 @@ function getRelatedNames(ids) {
     fr: {
       noDate: "Événements sans date",
       pastDate: "Événements passés",
-      today: "Aujourd'hui",
-      yesterday: "Hier",
       thisWeek: "Cette semaine",
       thisMonth: "Ce mois-ci",
+      thisYear: "Cette année",
       older: "Plus ancien"
     },
     en: {
       noDate: "Events without date",
       pastDate: "Past events",
-      today: "Today",
-      yesterday: "Yesterday",
       thisWeek: "This week",
       thisMonth: "This month",
+      thisYear: "This year",
       older: "Older"
     }
   }[currentLang as 'fr'|'en'] || {};
@@ -471,10 +467,9 @@ function getRelatedNames(ids) {
         else groupKey = new Date(d).toLocaleDateString(currentLang, { month: 'long', year: 'numeric' });
       } else if (sort === 'updated_at') {
         const d = card.dataset.updated_at?.split('T')[0] || '';
-        if (d === todayStr) groupKey = labels.today;
-        else if (d === getDayOffset(-1)) groupKey = labels.yesterday;
-        else if (d >= getDayOffset(-7)) groupKey = labels.thisWeek;
+        if (d >= getDayOffset(-7)) groupKey = labels.thisWeek;
         else if (d >= getDayOffset(-30)) groupKey = labels.thisMonth;
+        else if (d >= getDayOffset(-365)) groupKey = labels.thisYear;
         else groupKey = labels.older;
       }
 

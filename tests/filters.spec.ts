@@ -114,7 +114,7 @@ test.describe('Filters, Sorting and Grouping', () => {
       
       // Should match one of the relative time labels
       // Note: CSS text-transform: capitalize makes "Cette semaine" -> "Cette Semaine"
-      const validLabels = ["Aujourd'hui", "Hier", "Cette Semaine", "Ce Mois-ci", "Plus Ancien", "Today", "Yesterday", "This Week", "This Month", "Older"];
+      const validLabels = ["Cette Semaine", "Ce Mois-ci", "Cette Année", "Plus Ancien", "This Week", "This Month", "This Year", "Older"];
       expect(validLabels).toContain(text);
     }
   });

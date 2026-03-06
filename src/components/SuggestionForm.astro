@@ -166,9 +166,11 @@ const t = {
     <button id="submit-btn" type="submit" class="btn btn-primary w-full mt-4">{t.submitCreate}</button>
   </form>
 
-  <div id="toast-container" class="toast toast-top toast-center z-[100] hidden">
-    <div id="toast-message" class="alert shadow-lg border-none text-white font-bold px-8 py-4 rounded-2xl">
-      <span id="toast-text"></span>
+  <div id="toast-container" class="toast toast-middle toast-center z-[100] hidden">
+    <div id="toast-message" class="alert shadow-2xl border-none text-white font-black px-12 py-8 rounded-3xl scale-110 transition-transform duration-300">
+      <div class="flex flex-col items-center gap-4 text-center">
+        <span id="toast-text" class="text-lg"></span>
+      </div>
     </div>
   </div>
 </div>
@@ -227,14 +229,15 @@ const t = {
 
   async function showToast(message: string, type: 'success' | 'error') {
     if (!toastContainer || !toastMessage || !toastText) return;
+
     toastText.innerText = message;
-    toastMessage.className = `alert shadow-lg border-none text-white font-bold px-8 py-4 rounded-2xl ${type === 'success' ? 'bg-primary' : 'bg-error'}`;
+    toastMessage.className = `alert shadow-2xl border-none text-white font-black px-12 py-8 rounded-3xl scale-110 transition-all duration-300 ${type === 'success' ? 'bg-primary' : 'bg-error'}`;
     toastContainer.classList.remove('hidden');
     
     if (type === 'success') {
       setTimeout(() => {
         window.location.href = `/${lang}`;
-      }, 2000);
+      }, 2500);
     } else {
       setTimeout(() => {
         toastContainer.classList.add('hidden');

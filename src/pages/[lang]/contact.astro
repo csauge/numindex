@@ -19,8 +19,8 @@ const t = {
     message: "Message",
     submit: "Envoyer le message",
     sending: "Envoi en cours...",
-    success: "Message envoyé avec succès ! Nous vous répondrons dès que possible.",
-    error: "Une erreur est survenue lors de l'envoi. Veuillez réessayer."
+    success: "Message envoyé ! Nous vous répondrons dès que possible.",
+    error: "Une erreur est survenue."
   },
   en: {
     title: "Contact",
@@ -30,57 +30,87 @@ const t = {
     message: "Message",
     submit: "Send message",
     sending: "Sending...",
-    success: "Message sent successfully! We will get back to you as soon as possible.",
-    error: "An error occurred while sending. Please try again."
+    success: "Message sent! We will get back to you as soon as possible.",
+    error: "An error occurred."
   }
 }[lang];
 ---
 
 <Layout title={t.title} lang={lang}>
-  <div class="max-w-xl mx-auto py-12">
+  <div class="max-w-xl mx-auto py-12 px-4">
     <header class="text-center mb-12">
-      <h1 class="text-4xl font-black text-stone-800 mb-4">{t.title}</h1>
-      <p class="text-stone-500 italic">{t.subtitle}</p>
+      <h1 class="text-4xl font-black text-stone-800 mb-4 tracking-tight">{t.title}</h1>
+      <p class="text-stone-500 italic text-sm">{t.subtitle}</p>
     </header>
 
-    <div class="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm">
+    <div class="bg-white p-8 rounded-3xl border border-stone-100 shadow-sm">
       <form id="contact-form" class="space-y-6">
         <div class="form-control">
-          <label for="name" class="label"><span class="label-text font-bold text-stone-600">{t.name}</span></label>
-          <input type="text" id="name" name="name" required class="input input-bordered bg-stone-50/50 focus:bg-white transition-all border-stone-200" />
+          <label for="name" class="label"><span class="label-text font-black text-[10px] uppercase tracking-widest text-stone-400">{t.name}</span></label>
+          <input type="text" id="name" name="name" required class="input input-bordered bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl" />
         </div>
 
         <div class="form-control">
-          <label for="email" class="label"><span class="label-text font-bold text-stone-600">{t.email}</span></label>
-          <input type="email" id="email" name="email" required class="input input-bordered bg-stone-50/50 focus:bg-white transition-all border-stone-200" />
+          <label for="email" class="label"><span class="label-text font-black text-[10px] uppercase tracking-widest text-stone-400">{t.email}</span></label>
+          <input type="email" id="email" name="email" required class="input input-bordered bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl" />
         </div>
 
         <div class="form-control">
-          <label for="message" class="label"><span class="label-text font-bold text-stone-600">{t.message}</span></label>
-          <textarea id="message" name="message" required class="textarea textarea-bordered h-32 bg-stone-50/50 focus:bg-white transition-all border-stone-200"></textarea>
+          <label for="message" class="label"><span class="label-text font-black text-[10px] uppercase tracking-widest text-stone-400">{t.message}</span></label>
+          <textarea id="message" name="message" required class="textarea textarea-bordered h-32 bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl"></textarea>
         </div>
 
-        <button type="submit" id="submit-btn" class="btn btn-primary w-full shadow-md shadow-emerald-100 border-none">
+        <button type="submit" id="submit-btn" class="btn btn-primary w-full shadow-lg shadow-emerald-100 border-none h-12 rounded-xl font-bold">
           {t.submit}
         </button>
       </form>
+    </div>
+  </div>
 
-      <div id="status-message" class="mt-6 hidden p-4 rounded-xl text-sm font-bold text-center"></div>
+  {/* Success/Error Popup (Toast with Backdrop-like feel) */}
+  <div id="toast-container" class="toast toast-middle toast-center z-[100] hidden">
+    <div id="toast-message" class="alert shadow-2xl border-none text-white font-black px-12 py-8 rounded-3xl scale-110 transition-transform duration-300">
+      <div class="flex flex-col items-center gap-4 text-center">
+        <span id="toast-text" class="text-lg"></span>
+      </div>
     </div>
   </div>
 </Layout>
 
-<script define:vars={{ t }}>
+<script define:vars={{ t, lang }}>
   const form = document.getElementById('contact-form');
   const btn = document.getElementById('submit-btn');
-  const status = document.getElementById('status-message');
+  const toastContainer = document.getElementById('toast-container');
+  const toastMessage = document.getElementById('toast-message');
+  const toastText = document.getElementById('toast-text');
+
+  function showToast(message, type) {
+    if (!toastContainer || !toastMessage || !toastText) return;
+    
+    toastText.innerText = message;
+    
+    toastMessage.className = `alert shadow-2xl border-none text-white font-black px-12 py-8 rounded-3xl scale-110 transition-all duration-300 ${type === 'success' ? 'bg-primary' : 'bg-error'}`;
+    
+    toastContainer.classList.remove('hidden');
+    
+    if (type === 'success') {
+      // Pour un effet "popup", on peut ajouter un léger délai avant redirection
+      setTimeout(() => {
+        window.location.href = `/${lang}`;
+      }, 2500);
+    } else {
+      setTimeout(() => {
+        toastContainer.classList.add('hidden');
+      }, 5000);
+    }
+  }
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const originalText = btn.innerText;
     btn.disabled = true;
     btn.innerText = t.sending;
-    status.classList.add('hidden');
 
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
@@ -93,18 +123,15 @@ const t = {
       });
 
       if (response.ok) {
-        status.innerText = t.success;
-        status.className = "mt-6 p-4 rounded-xl text-sm font-bold text-center bg-emerald-50 text-emerald-700 block";
+        showToast(t.success, 'success');
         form.reset();
       } else {
         throw new Error();
       }
     } catch (err) {
-      status.innerText = t.error;
-      status.className = "mt-6 p-4 rounded-xl text-sm font-bold text-center bg-red-50 text-red-700 block";
-    } finally {
+      showToast(t.error, 'error');
       btn.disabled = false;
-      btn.innerText = t.submit;
+      btn.innerText = originalText;
     }
   });
 </script>

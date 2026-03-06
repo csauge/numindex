@@ -19,9 +19,9 @@ test.describe('Contact Form', () => {
 
     await page.click('#submit-btn');
 
-    const statusMessage = page.locator('#status-message');
+    const statusMessage = page.locator('#toast-container');
     await expect(statusMessage).toBeVisible();
-    await expect(statusMessage).toContainText('Message envoyé avec succès');
+    await expect(statusMessage).toContainText('Message envoyé');
     await expect(page.locator('input[name="name"]')).toHaveValue('');
   });
 
@@ -43,7 +43,7 @@ test.describe('Contact Form', () => {
 
     await page.click('#submit-btn');
 
-    const statusMessage = page.locator('#status-message');
+    const statusMessage = page.locator('#toast-container');
     await expect(statusMessage).toBeVisible();
     await expect(statusMessage).toContainText('Une erreur est survenue');
   });
@@ -54,7 +54,7 @@ test.describe('Contact Form', () => {
     await page.click('#submit-btn');
 
     // HTML5 validation should prevent submission, status message should stay hidden
-    const statusMessage = page.locator('#status-message');
+    const statusMessage = page.locator('#toast-container');
     await expect(statusMessage).toBeHidden();
     
     // Check if name field is invalid
