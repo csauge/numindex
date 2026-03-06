@@ -31,7 +31,8 @@ const translations = {
     groupOlder: "Plus ancien",
     groupNoDate: "Événements sans date",
     groupPast: "Événements passés",
-    exportLabel: "Exporter CSV",
+    exportCSV: "CSV",
+    exportBookmarks: "Favoris Navigateur",
     results: "ressources"
   },
   en: {
@@ -50,7 +51,8 @@ const translations = {
     groupOlder: "Older",
     groupNoDate: "Events without date",
     groupPast: "Past events",
-    exportLabel: "Export CSV",
+    exportCSV: "CSV",
+    exportBookmarks: "Browser Bookmarks",
     results: "resources"
   }
 };
@@ -76,7 +78,7 @@ function getRelatedNames(ids) {
     </header>
 
     {/* Search & Filters Toolbar */}
-    <div class="sticky top-20 z-30 mb-8 p-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-2">
+    <div class="sticky top-20 z-30 mb-8 p-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-2 overflow-visible">
       <div class="flex-grow relative group min-w-0">
         <label for="search-input" class="sr-only">{t.searchPlaceholder}</label>
         <input 
@@ -88,34 +90,59 @@ function getRelatedNames(ids) {
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3.5 top-3 opacity-30 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
       </div>
 
-      <div class="flex items-center gap-2 p-0.5 overflow-x-auto no-scrollbar">
-        <div class="flex gap-2 shrink-0">
-          <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 text-[10px] font-black uppercase tracking-wider">
-            <option value="updated_at">{t.sortNewest}</option>
-            <option value="title">{t.sortName}</option>
-            <option value="next_date" id="opt-next-date">{t.sortDate}</option>
-            <option value="category">{t.sortCat}</option>
-          </select>
+      <div class="flex items-center gap-2 overflow-visible">
+        {/* Scrollable Selects Area */}
+        <div class="flex-grow overflow-x-auto no-scrollbar p-0.5 max-w-[200px] md:max-w-none">
+          <div class="flex gap-2">
+            <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 text-[10px] font-black uppercase tracking-wider">
+              <option value="updated_at">{t.sortNewest}</option>
+              <option value="title">{t.sortName}</option>
+              <option value="next_date" id="opt-next-date">{t.sortDate}</option>
+              <option value="category">{t.sortCat}</option>
+            </select>
 
-          <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
-            <option value="all">{t.filterCat}</option>
-            {activeCategoryKeys.map(key => (
-              <option value={key}>{getCategoryLabel(key, lang as any)}</option>
-            ))}
-          </select>
+            <select id="filter-category" class="select select-ghost bg-stone-50/50 rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
+              <option value="all">{t.filterCat}</option>
+              {activeCategoryKeys.map(key => (
+                <option value={key}>{getCategoryLabel(key, lang as any)}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div class="flex border-l border-stone-100 pl-2 shrink-0">
+        {/* Fixed Controls Area */}
+        <div class="flex items-center border-l border-stone-100 pl-2 gap-2 shrink-0 overflow-visible relative">
+          {/* Export Dropdown */}
+          <div class="dropdown dropdown-end dropdown-bottom overflow-visible">
+            <label tabindex="0" class="btn btn-ghost btn-sm h-9 w-9 p-0 rounded-xl text-stone-400 hover:text-primary transition-all bg-stone-50/50 border-none cursor-pointer focus:bg-primary/10 focus:text-primary" title="Exporter">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            </label>
+            <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-white border border-stone-100 rounded-xl w-52 mt-2">
+              <li>
+                <button id="btn-export-csv" class="text-xs font-bold text-stone-700 hover:text-primary active:bg-primary/10 flex items-center gap-2 px-3 py-2.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  <span>{t.exportCSV}</span>
+                </button>
+              </li>
+              <li>
+                <button id="btn-export-bookmarks" class="text-xs font-bold text-stone-700 hover:text-primary active:bg-primary/10 flex items-center gap-2 px-3 py-2.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                  <span>{t.exportBookmarks}</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
           <label class="swap swap-rotate btn btn-ghost btn-sm h-9 w-9 p-0 rounded-xl text-stone-400 hover:text-primary transition-all bg-stone-50/50 border-none" title="Changer de vue">
             <input type="checkbox" id="view-toggle" aria-label="Toggle Grid/List view" />
             
             <!-- List Icon (visible when checked) -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="swap-on h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="swap-on h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
             
             <!-- Grid Icon (visible when unchecked) -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="swap-off h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="swap-off h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
           </label>
@@ -127,10 +154,6 @@ function getRelatedNames(ids) {
       <div class="text-[10px] font-black uppercase tracking-widest text-stone-400">
         <span id="results-count" aria-live="polite">{allRessources.length}</span> {t.results}
       </div>
-      <button id="btn-export" class="btn btn-ghost btn-xs text-[9px] font-black uppercase tracking-tighter text-stone-400 hover:text-primary gap-1.5 h-7 min-h-0 px-2 rounded-lg border border-stone-100 bg-white">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-        {t.exportLabel}
-      </button>
     </div>
     
     <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all duration-300">
@@ -163,6 +186,7 @@ function getRelatedNames(ids) {
             data-link={res.link || ""}
             data-tags={res.tags?.join(', ') || ""}
             data-related={relatedNames.join(', ')}
+            data-related-ids={res.related_ids?.join(', ') || ""}
             data-created_at={res.created_at}
             data-updated_at={res.updated_at}
             data-city={res.metadata?.city || ""}
@@ -317,17 +341,7 @@ function getRelatedNames(ids) {
    * CONFIGURATION & STATE
    */
   let cards: HTMLElement[] = [];
-  const elements = {
-    searchInput: document.getElementById('search-input') as HTMLInputElement,
-    catFilter: document.getElementById('filter-category') as HTMLSelectElement,
-    sortFilter: document.getElementById('filter-sort') as HTMLSelectElement,
-    countDisplay: document.getElementById('results-count'),
-    noResults: document.getElementById('no-results'),
-    grid: document.getElementById('resources-grid'),
-    viewToggle: document.getElementById('view-toggle') as HTMLInputElement,
-    btnExport: document.getElementById('btn-export'),
-    optNextDate: document.getElementById('opt-next-date')
-  };
+  let elements: any = {};
 
   const currentLang = document.documentElement.lang || 'fr';
   const labels = {
@@ -353,6 +367,22 @@ function getRelatedNames(ids) {
    * INITIALIZATION
    */
   function init() {
+    console.log("🌱 Salvia: Initializing UI...");
+    
+    // Select elements after DOM is ready
+    elements = {
+      searchInput: document.getElementById('search-input') as HTMLInputElement,
+      catFilter: document.getElementById('filter-category') as HTMLSelectElement,
+      sortFilter: document.getElementById('filter-sort') as HTMLSelectElement,
+      countDisplay: document.getElementById('results-count'),
+      noResults: document.getElementById('no-results'),
+      grid: document.getElementById('resources-grid'),
+      viewToggle: document.getElementById('view-toggle') as HTMLInputElement,
+      btnExportCSV: document.getElementById('btn-export-csv'),
+      btnExportBookmarks: document.getElementById('btn-export-bookmarks'),
+      optNextDate: document.getElementById('opt-next-date')
+    };
+
     cards = Array.from(document.querySelectorAll('.resource-card')) as HTMLElement[];
     
     // 1. Lire les filtres (URL en priorité, sinon sessionStorage)
@@ -387,7 +417,21 @@ function getRelatedNames(ids) {
       setView(elements.viewToggle.checked ? 'list' : 'grid');
     });
 
-    elements.btnExport?.addEventListener('click', exportCSV);
+    // Binding robust for exports
+    if (elements.btnExportCSV) {
+      elements.btnExportCSV.onclick = (e: MouseEvent) => {
+        e.preventDefault();
+        console.log("📊 Exporting CSV...");
+        exportCSV();
+      };
+    }
+    if (elements.btnExportBookmarks) {
+      elements.btnExportBookmarks.onclick = (e: MouseEvent) => {
+        e.preventDefault();
+        console.log("🔖 Exporting Bookmarks...");
+        exportBookmarks();
+      };
+    }
 
     const savedView = localStorage.getItem('salvia-view') || 'grid';
     if (elements.viewToggle) elements.viewToggle.checked = savedView === 'list';
@@ -454,41 +498,43 @@ function getRelatedNames(ids) {
     });
 
     // 3. Grouping & Rendering
-    elements.grid!.innerHTML = '';
-    document.querySelectorAll('.alphabet-divider').forEach(el => el.remove());
+    if (elements.grid) {
+      elements.grid.innerHTML = '';
+      document.querySelectorAll('.alphabet-divider').forEach(el => el.remove());
 
-    let currentGroup = '';
-    filtered.forEach(card => {
-      let groupKey = '';
+      let currentGroup = '';
+      filtered.forEach(card => {
+        let groupKey = '';
 
-      if (sort === 'title') {
-        groupKey = (card.dataset.letter || '').toUpperCase();
-      } else if (sort === 'category') {
-        groupKey = card.querySelector('.card-category-label')?.textContent?.trim() || card.dataset.category || '';
-      } else if (sort === 'next_date') {
-        const d = card.dataset.next_date;
-        if (!d) groupKey = labels.noDate;
-        else if (d < todayStr) groupKey = labels.pastDate;
-        else groupKey = new Date(d).toLocaleDateString(currentLang, { month: 'long', year: 'numeric' });
-      } else if (sort === 'updated_at') {
-        const d = card.dataset.updated_at?.split('T')[0] || '';
-        if (d >= getDayOffset(-7)) groupKey = labels.thisWeek;
-        else if (d >= getDayOffset(-30)) groupKey = labels.thisMonth;
-        else if (d >= getDayOffset(-365)) groupKey = labels.thisYear;
-        else groupKey = labels.older;
-      }
+        if (sort === 'title') {
+          groupKey = (card.dataset.letter || '').toUpperCase();
+        } else if (sort === 'category') {
+          groupKey = card.querySelector('.card-category-label')?.textContent?.trim() || card.dataset.category || '';
+        } else if (sort === 'next_date') {
+          const d = card.dataset.next_date;
+          if (!d) groupKey = labels.noDate;
+          else if (d < todayStr) groupKey = labels.pastDate;
+          else groupKey = new Date(d).toLocaleDateString(currentLang, { month: 'long', year: 'numeric' });
+        } else if (sort === 'updated_at') {
+          const d = card.dataset.updated_at?.split('T')[0] || '';
+          if (d >= getDayOffset(-7)) groupKey = labels.thisWeek;
+          else if (d >= getDayOffset(-30)) groupKey = labels.thisMonth;
+          else if (d >= getDayOffset(-365)) groupKey = labels.thisYear;
+          else groupKey = labels.older;
+        }
 
-      if (groupKey && groupKey !== currentGroup) {
-        currentGroup = groupKey;
-        const divider = document.createElement('div');
-        divider.className = 'alphabet-divider';
-        divider.innerHTML = `<span>${currentGroup}</span>`;
-        elements.grid?.appendChild(divider);
-      }
+        if (groupKey && groupKey !== currentGroup) {
+          currentGroup = groupKey;
+          const divider = document.createElement('div');
+          divider.className = 'alphabet-divider';
+          divider.innerHTML = `<span>${currentGroup}</span>`;
+          elements.grid?.appendChild(divider);
+        }
 
-      card.style.display = isListMode ? 'grid' : 'flex';
-      elements.grid?.appendChild(card);
-    });
+        card.style.display = isListMode ? 'grid' : 'flex';
+        elements.grid?.appendChild(card);
+      });
+    }
 
     if (elements.countDisplay) elements.countDisplay.textContent = filtered.length.toString();
     elements.noResults?.classList.toggle('hidden', filtered.length > 0);
@@ -536,9 +582,14 @@ function getRelatedNames(ids) {
 
   const debouncedUpdate = debounce(updateUI, 150);
 
+  function getVisibleCards() {
+    return cards.filter(c => c.parentElement === elements.grid);
+  }
+
   function exportCSV() {
-    const visibleCards = cards.filter(c => c.parentElement === elements.grid);
-    const headers = ['ID', 'Title', 'Category', 'Link', 'Description', 'Tags', 'City', 'Next Date', 'Updated At'];
+    const visibleCards = getVisibleCards();
+    console.log(`CSV: Processing ${visibleCards.length} cards`);
+    const headers = ['ID', 'Title', 'Category', 'Link', 'Description', 'Tags', 'City', 'Next Date', 'Related IDs', 'Updated At'];
     const rows = [headers.join(',')];
     visibleCards.forEach(card => {
       const row = [
@@ -550,19 +601,65 @@ function getRelatedNames(ids) {
         card.dataset.tags || '',
         card.dataset.city || '',
         card.dataset.next_date || '',
+        card.dataset.relatedIds || '',
         card.dataset.updated_at || ''
       ].map(v => `"${v.replace(/"/g, '""')}"`);
       rows.push(row.join(','));
     });
-    const blob = new Blob(["\ufeff" + rows.join("\n")], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `salvia_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadFile(rows.join("\n"), `salvia_export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
   }
 
-  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(init);
-  else setTimeout(init, 1);
+  function exportBookmarks() {
+    const visibleCards = getVisibleCards();
+    console.log(`Bookmarks: Processing ${visibleCards.length} cards`);
+    const now = Math.floor(Date.now() / 1000);
+    let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<!-- This is an automatically generated file.
+     It will be read and classified if you import it. -->
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">Salvia Export (${new Date().toLocaleDateString()})</H3>
+    <DL><p>
+`;
+
+    visibleCards.forEach(card => {
+      const title = card.querySelector('h2')?.textContent?.trim() || 'Untitled';
+      const link = card.dataset.link || '#';
+      const desc = card.querySelector('.card-desc')?.textContent?.trim() || '';
+      const tags = card.dataset.tags || '';
+      
+      html += `        <DT><A HREF="${link}" ADD_DATE="${now}" ICON="" TAGS="${tags}">${title}</A>
+        <DD>${desc}
+`;
+    });
+
+    html += `    </DL><p>
+</DL><p>`;
+
+    downloadFile(html, `salvia_bookmarks_${new Date().toISOString().split('T')[0]}.html`, 'text/html;charset=utf-8;');
+  }
+
+  function downloadFile(content: string, filename: string, type: string) {
+    try {
+      const blob = new Blob(["\ufeff" + content], { type });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      console.log(`✅ File ${filename} triggered for download.`);
+    } catch (err) {
+      console.error("❌ Failed to trigger download:", err);
+    }
+  }
+
+  // Execution immediate
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 </script>
