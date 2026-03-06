@@ -19,7 +19,7 @@ const translations = {
     title: "L'annuaire du numérique responsable",
     desc: "Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
     searchPlaceholder: "Rechercher un outil, une entreprise, un article...",
-    filterCat: "Catégories",
+    filterCat: "Toutes catégories",
     filterSort: "Trier par",
     sortNewest: "Mise à jour",
     sortName: "Nom A-Z",
@@ -39,7 +39,7 @@ const translations = {
     title: "Sustainable Digital Directory",
     desc: "Explore initiatives committed to a more sober, ethical, and accessible digital future.",
     searchPlaceholder: "Search for a tool, company, article...",
-    filterCat: "Categories",
+    filterCat: "All categories",
     filterSort: "Sort by",
     sortNewest: "Updated",
     sortName: "Name A-Z",
@@ -92,9 +92,9 @@ function getRelatedNames(ids) {
 
       <div class="flex items-center gap-2 overflow-visible">
         {/* Scrollable Selects Area */}
-        <div class="flex-grow overflow-x-auto no-scrollbar p-0.5 max-w-[200px] md:max-w-none">
+        <div class="flex-grow overflow-x-auto no-scrollbar p-1.5 -m-1 max-w-[200px] md:max-w-none">
           <div class="flex gap-2">
-            <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 text-[10px] font-black uppercase tracking-wider">
+            <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 text-[11px] font-bold uppercase tracking-wider">
               <option value="updated_at">{t.sortNewest}</option>
               <option value="title">{t.sortName}</option>
               <option value="next_date" id="opt-next-date">{t.sortDate}</option>
