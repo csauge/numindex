@@ -103,6 +103,27 @@ test.describe('Filters, Sorting and Grouping', () => {
     await expect(catFilter).toHaveValue('entreprise');
   });
 
+  test('should clear search input when clear button is clicked', async ({ page }) => {
+    const searchInput = page.locator('#search-input');
+    const clearBtn = page.locator('#clear-search');
+
+    // Initially hidden
+    await expect(clearBtn).toHaveClass(/opacity-0/);
+
+    // Type something
+    await searchInput.fill('test');
+    await expect(clearBtn).not.toHaveClass(/opacity-0/);
+    await expect(clearBtn).toBeVisible();
+
+    // Click clear
+    await clearBtn.click();
+
+    // Should be empty and hidden again
+    await expect(searchInput).toHaveValue('');
+    await expect(clearBtn).toHaveClass(/opacity-0/);
+    await expect(searchInput).toBeFocused();
+  });
+
   test('should display relative time dividers for all categories view', async ({ page }) => {
     // Default view is "All Categories" and "Newest" sort
     const divider = page.locator('.alphabet-divider');
