@@ -71,6 +71,22 @@ export async function fetchAllResources() {
 }
 
 /**
+ * Récupère les événements à venir
+ */
+export async function fetchUpcomingEvents() {
+  if (!supabase) return [];
+  const today = new Date().toISOString().split('T')[0];
+  const { data } = await supabase
+    .from('resources')
+    .select('*')
+    .eq('category', 'evenement')
+    .not('metadata->next_date', 'is', null)
+    .order('metadata->next_date', { ascending: true });
+    
+  return (data || []) as Resource[];
+}
+
+/**
  * Récupère les entités pour le mapping des noms
  */
 export async function fetchEntitiesForMapping() {
