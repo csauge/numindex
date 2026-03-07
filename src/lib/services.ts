@@ -71,20 +71,17 @@ export async function fetchAllResources() {
 }
 
 /**
- * Récupère les événements à venir
+ * Récupère tous les événements (passés et futurs)
  */
-export async function fetchUpcomingEvents() {
+export async function fetchAllEvents() {
   if (!supabase) return [];
-  const today = new Date().toISOString().split('T')[0];
   const { data } = await supabase
     .from('resources')
     .select('*')
-    .eq('category', 'evenement')
     // Correct way to check for null in JSONB field via PostgREST
-    .neq('metadata->next_date', null as any)
-    .gte('metadata->next_date', today)
-    .order('metadata->next_date', { ascending: true })
-    .limit(100);
+    .not('metadata->next_date', 'is', null)
+    .order('metadata->next_date', { ascending: false })
+    .limit(500);
     
   return (data || []) as Resource[];
 }

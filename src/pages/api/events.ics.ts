@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { fetchUpcomingEvents } from '../../lib/services';
+import { fetchAllEvents } from '../../lib/services';
 
 export const GET: APIRoute = async ({ request }) => {
-  const events = await fetchUpcomingEvents();
+  const events = await fetchAllEvents();
   const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const url = new URL(request.url);
   
@@ -24,16 +24,16 @@ export const GET: APIRoute = async ({ request }) => {
   ];
 
   events.forEach(event => {
-    const dateStr = event.metadata?.next_date; // Expected YYYY-MM-DD
-    if (!dateStr) return;
+    const nextDate = event.metadata?.next_date; // Expected YYYY-MM-DD
+    if (!nextDate || !/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) return;
 
     // ICS dates for all-day events are YYYYMMDD
-    const date = dateStr.replace(/-/g, '');
+    const dateStart = nextDate.replace(/-/g, '');
     
     // DTEND is exclusive (next day)
-    const endDateObj = new Date(dateStr);
+    const endDateObj = new Date(nextDate);
     endDateObj.setDate(endDateObj.getDate() + 1);
-    const endDate = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
+    const dateEnd = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
 
     const uid = `${event.id}@${host}`;
     const summary = escapeText(event.title);
@@ -49,11 +49,17 @@ export const GET: APIRoute = async ({ request }) => {
     if (eventUrl) desc += `\\n\\nLien : ${eventUrl}`;
     const description = escapeText(desc);
 
+    // Timestamps for created/modified
+    const created = event.created_at ? formatTimestamp(event.created_at) : now;
+    const modified = event.updated_at ? formatTimestamp(event.updated_at) : now;
+
     ics.push('BEGIN:VEVENT');
     ics.push(`UID:${uid}`);
-    ics.push(`DTSTAMP:${now}`);
-    ics.push(`DTSTART;VALUE=DATE:${date}`);
-    ics.push(`DTEND;VALUE=DATE:${endDate}`);
+    ics.push(`DTSTAMP:${modified}`); // DTSTAMP should be when the instance was last updated
+    ics.push(`CREATED:${created}`);
+    ics.push(`LAST-MODIFIED:${modified}`);
+    ics.push(`DTSTART;VALUE=DATE:${dateStart}`);
+    ics.push(`DTEND;VALUE=DATE:${dateEnd}`);
     ics.push(`SUMMARY:${summary}`);
     ics.push(`DESCRIPTION:${description}`);
     ics.push(`LOCATION:${location}`);
@@ -72,7 +78,16 @@ export const GET: APIRoute = async ({ request }) => {
   });
 };
 
+function formatTimestamp(iso: string): string {
+  try {
+    return new Date(iso).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  } catch {
+    return new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  }
+}
+
 function escapeText(str: string): string {
+  if (!str) return '';
   return str
     .replace(/\\/g, '\\\\')
     .replace(/,/g, '\\,')
