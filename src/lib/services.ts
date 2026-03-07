@@ -80,8 +80,11 @@ export async function fetchUpcomingEvents() {
     .from('resources')
     .select('*')
     .eq('category', 'evenement')
-    .not('metadata->next_date', 'is', null)
-    .order('metadata->next_date', { ascending: true });
+    // Correct way to check for null in JSONB field via PostgREST
+    .neq('metadata->next_date', null as any)
+    .gte('metadata->next_date', today)
+    .order('metadata->next_date', { ascending: true })
+    .limit(100);
     
   return (data || []) as Resource[];
 }
