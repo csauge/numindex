@@ -62,11 +62,11 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         {/* Bouton Modérer (Admin) */}
         <a 
           href={`/${lang}/admin`} 
-          class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-3 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all relative"
+          class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-4 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all hover:scale-105 active:scale-95 relative gap-1.5"
           aria-label={lang === 'fr' ? 'Accéder à la modération' : 'Access moderation'}
         >
           <div class="relative">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.moderate} />
             </svg>
             {pendingCount > 0 && (
@@ -78,16 +78,16 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
               </span>
             )}
           </div>
-          <span class="hidden md:inline ml-1">{t.admin}</span>
+          <span class="hidden md:inline">{t.admin}</span>
         </a>
 
         {/* Bouton Ajouter */}
         <a 
           href={`/${lang}/propose`} 
-          class="btn btn-primary btn-sm font-bold min-h-0 h-9 px-4 rounded-full border-none shadow-md shadow-emerald-200/50 hover:bg-[#52b788] hover:scale-105 active:scale-95 transition-all"
+          class="btn btn-primary btn-sm font-bold min-h-0 h-9 px-4 rounded-full border-none shadow-md shadow-emerald-200/50 hover:bg-[#52b788] hover:scale-105 active:scale-95 transition-all gap-1.5"
           aria-label={lang === 'fr' ? 'Proposer une nouvelle ressource' : 'Propose a new resource'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.create} />
           </svg>
           <span class="hidden md:inline">{t.propose}</span>
