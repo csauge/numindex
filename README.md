@@ -7,6 +7,7 @@
 - **Architecture Hybride (Astro 5) :** Mixte Statique (performance) et SSR (données temps-réel pour l'admin et les détails).
 - **Filtrage & Tri Avancé :** Recherche temps-réel, filtrage par catégorie et tri dynamique (Nom, Date, Catégorie).
 - **Export de Données :** Possibilité d'exporter les ressources filtrées au format **CSV**.
+- **Flux Calendrier (ICS) :** Abonnement aux prochains événements via un lien `.ics` compatible (Google Calendar, Apple Calendar, Outlook).
 - **Bascule d'affichage :** Mode **Grille** visuel ou **Liste ultra-compacte** (type tableau) avec mémorisation de la préférence.
 - **Sobriété Maximale :** Images au format **AVIF** avec miniatures redimensionnées via Supabase.
 - **Relations Dynamiques :** Liens entre "Acteurs" (entités) et "Contenus" (ressources).
