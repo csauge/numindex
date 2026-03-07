@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { fetchAllEvents } from '../../lib/services';
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ request }) => {
   const events = await fetchAllEvents();
   const now = formatTimestamp(new Date().toISOString());
