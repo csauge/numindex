@@ -1,26 +1,35 @@
 ---
 import { CATEGORIES, ACTION_ICONS, getCategoryType, getCategoryGroup } from '../utils/categories';
-import { fetchResourceById } from '../lib/services';
-import type { SuggestionAction, Resource } from '../lib/supabase/types';
+import { fetchResourceById, fetchSuggestionById } from '../lib/services';
+import type { SuggestionAction, Resource, Suggestion } from '../lib/supabase/types';
 
 interface Props {
   lang: 'fr' | 'en';
   resourceId?: string | null;
+  suggestionId?: string | null;
   action?: SuggestionAction;
+  isModeration?: boolean;
 }
 
-const { lang, resourceId, action = 'create' } = Astro.props;
+const { lang, resourceId, suggestionId, action: propAction, isModeration = false } = Astro.props;
 
-// Fetch existing data server-side if editing or deleting
-let existingData: Resource | null = null;
-if (resourceId) {
+// Fetch data server-side
+let existingData: Resource | Suggestion | null = null;
+let action = propAction || 'create';
+
+if (suggestionId) {
+  existingData = await fetchSuggestionById(suggestionId);
+  if (existingData) {
+    action = (existingData as Suggestion).action;
+  }
+} else if (resourceId) {
   existingData = await fetchResourceById(resourceId);
 }
 
 const t = {
   fr: {
-    titleCreate: 'Proposer un ajout',
-    titleUpdate: 'Proposer une modification',
+    titleCreate: isModeration ? 'Corriger la proposition' : 'Proposer un ajout',
+    titleUpdate: isModeration ? 'Corriger la modification' : 'Proposer une modification',
     titleDelete: 'Proposer une suppression',
     name: 'Nom de la ressource',
     description: 'Description',
@@ -33,11 +42,11 @@ const t = {
     imageHelp: 'Préféré : SVG, AVIF, WebP (ou PNG, JPG)',
     reason: 'Motif suppression',
     target: 'Aperçu :',
-    submitCreate: 'Envoyer la proposition',
-    submitUpdate: 'Envoyer la modification',
+    submitCreate: isModeration ? 'Enregistrer les corrections' : 'Envoyer la proposition',
+    submitUpdate: isModeration ? 'Enregistrer les corrections' : 'Envoyer la modification',
     submitDelete: 'Confirmer la suppression',
     loading: 'Envoi...',
-    success: 'Suggestion envoyée !',
+    success: isModeration ? 'Corrections enregistrées !' : 'Suggestion envoyée !',
     error: 'Erreur technique.',
     city: 'Ville',
     cityPlaceholder: 'Rechercher...',
@@ -45,8 +54,8 @@ const t = {
     nextDate: 'Prochaine date',
   },
   en: {
-    titleCreate: 'Suggest addition',
-    titleUpdate: 'Suggest modification',
+    titleCreate: isModeration ? 'Correct proposal' : 'Suggest addition',
+    titleUpdate: isModeration ? 'Correct modification' : 'Suggest modification',
     titleDelete: 'Suggest deletion',
     name: 'Resource name',
     description: 'Description',
@@ -59,11 +68,11 @@ const t = {
     imageHelp: 'Preferred: SVG, AVIF, WebP (or PNG, JPG)',
     reason: 'Reason',
     target: 'Preview:',
-    submitCreate: 'Send suggestion',
-    submitUpdate: 'Send modification',
+    submitCreate: isModeration ? 'Save corrections' : 'Send suggestion',
+    submitUpdate: isModeration ? 'Save corrections' : 'Send modification',
     submitDelete: 'Confirm deletion',
     loading: 'Sending...',
-    success: 'Suggestion sent!',
+    success: isModeration ? 'Corrections saved!' : 'Suggestion sent!',
     error: 'Error occurred.',
     city: 'City',
     cityPlaceholder: 'Search...',
@@ -114,7 +123,7 @@ const initial = {
     </div>
   </div>
 
-  <form id="suggestion-form" class="space-y-4" data-lang={lang} data-t={JSON.stringify(t)} data-existing={JSON.stringify(existingData)}>
+  <form id="suggestion-form" class="space-y-4" data-lang={lang} data-t={JSON.stringify(t)} data-existing={JSON.stringify(existingData)} data-moderation={isModeration.toString()}>
     <div id="standard-fields" class={isDelete ? 'hidden' : 'space-y-4'}>
       <div class="form-control">
         <label class="label"><span class="label-text">{t.name}</span></label>
@@ -183,7 +192,7 @@ const initial = {
     <div id="delete-fields" class={!isDelete ? 'hidden' : 'space-y-4'}>
       <div class="form-control">
         <label class="label"><span class="label-text text-error font-bold">{t.reason}</span></label>
-        <textarea name="reason" required={isDelete} class="textarea textarea-bordered textarea-error h-24"></textarea>
+        <textarea name="reason" required={isDelete} class="textarea textarea-bordered textarea-error h-24">{(existingData as Suggestion)?.reason || ''}</textarea>
       </div>
     </div>
 
@@ -202,21 +211,23 @@ const initial = {
 <script>
   import { supabase, getImageUrl } from '../lib/supabase/client';
   import { getCategoryIcon, getCategoryLabel, getCategoryType, getCategoryGroup, ACTION_ICONS } from '../utils/categories';
-  import { searchCities, uploadCompressedImage, fetchEntities, fetchResourceById } from '../lib/services';
-  import type { Resource, SuggestionAction } from '../lib/supabase/types';
+  import { searchCities, uploadCompressedImage, fetchEntities, fetchResourceById, fetchSuggestionById } from '../lib/services';
+  import type { Resource, SuggestionAction, Suggestion } from '../lib/supabase/types';
 
   const form = document.getElementById('suggestion-form') as HTMLFormElement;
   const t = JSON.parse(form.dataset.t!);
   const lang = form.dataset.lang;
-  let existingData = JSON.parse(form.dataset.existing || 'null') as Resource | null;
+  const isModeration = form.dataset.moderation === 'true';
+  let existingData = JSON.parse(form.dataset.existing || 'null') as Resource | Suggestion | null;
   const toastContainer = document.getElementById('toast-container');
   const toastMessage = document.getElementById('toast-message');
   const toastText = document.getElementById('toast-text');
 
   // Détection dynamique des paramètres
   const urlParams = new URLSearchParams(window.location.search);
+  const sid = urlParams.get('sid'); // Suggestion ID
+  const rid = urlParams.get('id');  // Resource ID
   const action = (urlParams.get('action') || 'create') as SuggestionAction;
-  const rid = urlParams.get('id');
 
   const elements = {
     title: form.querySelector('[name="title"]') as HTMLInputElement,
@@ -260,7 +271,7 @@ const initial = {
     
     if (type === 'success') {
       setTimeout(() => {
-        window.location.href = `/${lang}`;
+        window.location.href = isModeration ? `/${lang}/admin` : `/${lang}`;
       }, 2500);
     } else {
       setTimeout(() => {
@@ -272,7 +283,8 @@ const initial = {
   function updateUI() {
     const type = getCategoryType(elements.cat.value);
     const group = getCategoryGroup(elements.cat.value);
-    const isDelete = action === 'delete';
+    const currentAction = sid ? (existingData as Suggestion)?.action : action;
+    const isDelete = currentAction === 'delete';
     const isEvent = elements.cat.value === 'evenement';
 
     // Preview
@@ -360,20 +372,30 @@ const initial = {
   async function init() {
     entities = await fetchEntities();
 
-    // Fallback: If SSR didn't fetch existingData (e.g. env vars missing during execution), fetch it client-side
-    if (!existingData && rid) {
-      existingData = await fetchResourceById(rid);
-      if (existingData && action !== 'delete') {
-        elements.title.value = existingData.title;
-        elements.desc.value = existingData.description;
-        elements.cat.value = existingData.category;
-        elements.link.value = existingData.link;
-        elements.tags.value = existingData.tags?.join(', ') || '';
-        elements.cityVal.value = existingData.metadata?.city || '';
-        elements.citySearch.value = existingData.metadata?.city || '';
-        elements.dateInput.value = existingData.metadata?.published_at || '';
-        elements.nextDateInput.value = existingData.metadata?.next_date || '';
-        selectedIds = existingData.related_ids || [];
+    // Fallback: If SSR didn't fetch existingData
+    if (!existingData) {
+      if (sid) {
+        existingData = await fetchSuggestionById(sid);
+      } else if (rid) {
+        existingData = await fetchResourceById(rid);
+      }
+
+      if (existingData) {
+        const currentAction = sid ? (existingData as Suggestion).action : action;
+        if (currentAction !== 'delete') {
+          elements.title.value = existingData.title;
+          elements.desc.value = existingData.description;
+          elements.cat.value = existingData.category;
+          elements.link.value = existingData.link;
+          elements.tags.value = existingData.tags?.join(', ') || '';
+          elements.cityVal.value = existingData.metadata?.city || '';
+          elements.citySearch.value = existingData.metadata?.city || '';
+          elements.dateInput.value = existingData.metadata?.published_at || '';
+          elements.nextDateInput.value = existingData.metadata?.next_date || '';
+          selectedIds = existingData.related_ids || [];
+        } else {
+          elements.reason.value = (existingData as Suggestion).reason || '';
+        }
       }
     }
 
@@ -398,8 +420,8 @@ const initial = {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = elements.submitBtn;
-    const isDeleteSubmit = action === 'delete';
-    const isUpdateSubmit = action === 'update';
+    const currentAction = sid ? (existingData as Suggestion)?.action : action;
+    const isDeleteSubmit = currentAction === 'delete';
     
     btn.disabled = true; btn.innerText = t.loading;
 
@@ -413,7 +435,7 @@ const initial = {
       if (elements.dateInput.value) metadata.published_at = elements.dateInput.value;
       if (elements.nextDateInput.value) metadata.next_date = elements.nextDateInput.value;
 
-      const payload = {
+      const payload: any = {
         title: isDeleteSubmit ? existingData?.title : elements.title.value,
         description: isDeleteSubmit ? existingData?.description : elements.desc.value,
         category: isDeleteSubmit ? existingData?.category : elements.cat.value,
@@ -422,20 +444,27 @@ const initial = {
         related_ids: isDeleteSubmit ? existingData?.related_ids : selectedIds,
         metadata,
         image_url: imageUrl,
-        action,
+        action: currentAction,
         status: 'pending',
-        resource_id: rid || null,
+        resource_id: sid ? (existingData as Suggestion).resource_id : (rid || null),
         reason: elements.reason.value || null
       };
 
-      const { error: insertError } = await supabase!.from('suggestions').insert([payload]);
-      if (insertError) throw insertError;
+      if (sid) {
+        // Update existing suggestion (Moderator correction)
+        const { error: updateError } = await supabase!.from('suggestions').update(payload).eq('id', sid);
+        if (updateError) throw updateError;
+      } else {
+        // New suggestion
+        const { error: insertError } = await supabase!.from('suggestions').insert([payload]);
+        if (insertError) throw insertError;
+      }
       
       showToast(t.success, 'success');
     } catch (err) {
       showToast(t.error, 'error');
       btn.disabled = false; 
-      btn.innerText = isDeleteSubmit ? t.submitDelete : (isUpdateSubmit ? t.submitUpdate : t.submitCreate);
+      btn.innerText = isDeleteSubmit ? t.submitDelete : t.submitCreate;
     }
   });
 

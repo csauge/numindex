@@ -10,15 +10,17 @@ const { lang } = Astro.params as { lang: 'fr' | 'en' };
 // Récupération des paramètres d'URL (SSR)
 const action = (Astro.url.searchParams.get('action') || 'create') as SuggestionAction;
 const resourceId = Astro.url.searchParams.get('id');
+const suggestionId = Astro.url.searchParams.get('sid');
+const isModeration = Astro.url.searchParams.get('moderation') === 'true';
 
 const translations = {
   fr: {
-    title: action === 'delete' ? "Supprimer une ressource" : (action === 'update' ? "Modifier une ressource" : "Proposer une ressource"),
-    back: "Retour à l'accueil"
+    title: isModeration ? "Corriger la suggestion" : (action === 'delete' ? "Supprimer une ressource" : (action === 'update' ? "Modifier une ressource" : "Proposer une ressource")),
+    back: isModeration ? "Retour à la modération" : "Retour à l'accueil"
   },
   en: {
-    title: action === 'delete' ? "Delete resource" : (action === 'update' ? "Update resource" : "Suggest a resource"),
-    back: "Back to home"
+    title: isModeration ? "Correct suggestion" : (action === 'delete' ? "Delete resource" : (action === 'update' ? "Update resource" : "Suggest a resource")),
+    back: isModeration ? "Back to moderation" : "Back to home"
   }
 };
 const t = translations[lang as keyof typeof translations] || translations.fr;
@@ -26,11 +28,11 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 
 <Layout title={t.title} lang={lang}>
   <div class="mb-8">
-    <a href={`/${lang}`} class="text-sm font-medium text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition-colors">
+    <a href={isModeration ? `/${lang}/admin` : `/${lang}`} class="text-sm font-medium text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
       {t.back}
     </a>
   </div>
 
-  <SuggestionForm lang={lang} action={action} resourceId={resourceId} />
+  <SuggestionForm lang={lang} action={action} resourceId={resourceId} suggestionId={suggestionId} isModeration={isModeration} />
 </Layout>

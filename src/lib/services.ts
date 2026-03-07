@@ -1,5 +1,5 @@
 import { supabase } from './supabase/client';
-import type { Resource } from './supabase/types';
+import type { Resource, Suggestion } from './supabase/types';
 
 /**
  * Recherche de villes via l'API Photon
@@ -119,6 +119,24 @@ export async function fetchResourceById(id: string) {
     return null;
   }
   return data as Resource;
+}
+
+/**
+ * Récupère une suggestion par son ID
+ */
+export async function fetchSuggestionById(id: string) {
+  if (!supabase || !id) return null;
+  const { data, error } = await supabase
+    .from('suggestions')
+    .select('*')
+    .eq('id', id)
+    .single();
+    
+  if (error) {
+    console.error('Error fetching suggestion:', error);
+    return null;
+  }
+  return data as Suggestion;
 }
 
 /**

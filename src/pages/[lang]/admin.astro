@@ -8,9 +8,9 @@ import type { Suggestion, SuggestionAction, Resource } from '../../lib/supabase/
 
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
-// Récupérer les suggestions et toutes les ressources pour résoudre les noms
+// Récupérer les suggestions et toutes les ressources pour résoudre les noms et faire le diff
 let suggestions: Suggestion[] = [];
-let allResources: Resource[] = [];
+let allResourcesFull: Resource[] = [];
 
 if (supabase) {
   const { data: sugData } = await supabase
@@ -22,8 +22,8 @@ if (supabase) {
 
   const { data: resData } = await supabase
     .from('resources')
-    .select('id, title');
-  if (resData) allResources = resData as Resource[];
+    .select('*');
+  if (resData) allResourcesFull = resData as Resource[];
 }
 
 const translations = {
@@ -31,6 +31,7 @@ const translations = {
     title: "Modération", 
     noPending: "Aucune suggestion en attente.", 
     approve: "Approuver", 
+    correct: "Corriger",
     reject: "Rejeter",
     action_create: "Nouveau",
     action_update: "Modification",
@@ -38,12 +39,14 @@ const translations = {
     reason_label: "Motif de suppression :",
     target_id: "ID cible :",
     back: "Retour à l'accueil",
-    by: "Par"
+    by: "Par",
+    diff_notice: "Champs modifiés entourés en rouge."
   },
   en: { 
     title: "Moderation", 
     noPending: "No pending suggestions.", 
     approve: "Approve", 
+    correct: "Correct",
     reject: "Reject",
     action_create: "New",
     action_update: "Update",
@@ -51,7 +54,8 @@ const translations = {
     reason_label: "Deletion reason:",
     target_id: "Target ID:",
     back: "Back to home",
-    by: "By"
+    by: "By",
+    diff_notice: "Modified fields highlighted in red."
   }
 };
 const t = translations[lang as keyof typeof translations] || translations.fr;
@@ -67,18 +71,46 @@ const getActionClass = (action: SuggestionAction) => {
 
 const getRelatedNames = (ids: string[] = []) => {
   return ids
-    .map(id => allResources.find(r => r.id === id)?.title)
+    .map(id => allResourcesFull.find(r => r.id === id)?.title)
     .filter(Boolean);
 };
+
+// Diff logic helper
+function isModified(suggestion: Suggestion, field: keyof Resource | string) {
+  if (suggestion.action !== 'update' || !suggestion.resource_id) return false;
+  const original = allResourcesFull.find(r => r.id === suggestion.resource_id);
+  if (!original) return false;
+
+  if (field === 'city' || field === 'published_at' || field === 'next_date') {
+    return suggestion.metadata?.[field] !== original.metadata?.[field];
+  }
+
+  if (field === 'tags') {
+    return JSON.stringify(suggestion.tags?.sort()) !== JSON.stringify(original.tags?.sort());
+  }
+
+  if (field === 'related_ids') {
+    return JSON.stringify(suggestion.related_ids?.sort()) !== JSON.stringify(original.related_ids?.sort());
+  }
+
+  return (suggestion as any)[field] !== (original as any)[field];
+}
+
+const diffClass = "ring-2 ring-red-500 ring-offset-2 rounded-sm";
 ---
 
 <Layout title={t.title} lang={lang}>
   <div class="max-w-4xl mx-auto">
-    <div class="mb-8">
+    <div class="mb-8 flex justify-between items-center">
       <a href={`/${lang}`} class="text-sm font-medium text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
         {t.back}
       </a>
+      {suggestions.some(s => s.action === 'update') && (
+        <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest bg-red-50 px-3 py-1 rounded-full border border-red-100">
+          ⚠️ {t.diff_notice}
+        </span>
+      )}
     </div>
 
     <h1 class="text-3xl font-black mb-8">{t.title}</h1>
@@ -98,7 +130,7 @@ const getRelatedNames = (ids: string[] = []) => {
         return (
           <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden">
             
-            <div class="w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative flex items-center justify-center text-stone-200">
+            <div class={`w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative flex items-center justify-center text-stone-200 ${isModified(res, 'image_url') ? diffClass : ''}`}>
               {res.image_url ? (
                 <img src={getImageUrl(res.image_url)} alt="" class="absolute inset-0 w-full h-full object-contain p-2" />
               ) : (
@@ -116,38 +148,48 @@ const getRelatedNames = (ids: string[] = []) => {
                   </svg>
                   {t[`action_${res.action}`] || res.action}
                 </span>
-                <span class="badge badge-outline badge-sm uppercase text-[10px] font-bold">{getCategoryLabel(res.category, lang as any)}</span>
+                
+                <span class={`badge badge-outline badge-sm uppercase text-[10px] font-bold ${isModified(res, 'category') ? diffClass : ''}`}>
+                  {getCategoryLabel(res.category, lang as any)}
+                </span>
+
                 {res.metadata?.city && (
-                  <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-0.5 rounded border border-stone-100">
+                  <span class={`flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-0.5 rounded border border-stone-100 ${isModified(res, 'city') ? diffClass : ''}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     {res.metadata.city}
                   </span>
                 )}
                 {res.metadata?.published_at && (
-                  <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-0.5 rounded border border-stone-100">
+                  <span class={`flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-0.5 rounded border border-stone-100 ${isModified(res, 'published_at') ? diffClass : ''}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     {res.metadata.published_at}
                   </span>
                 )}
+                {res.metadata?.next_date && (
+                  <span class={`flex items-center gap-1 text-[10px] font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 ${isModified(res, 'next_date') ? diffClass : ''}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    {res.metadata.next_date}
+                  </span>
+                )}
               </div>
               
-              <h2 class="text-xl font-bold mb-1">{res.title}</h2>
+              <h2 class={`text-xl font-bold mb-1 inline-block ${isModified(res, 'title') ? diffClass : ''}`}>{res.title}</h2>
 
               {relatedNames.length > 0 && (
-                <p class="text-xs text-stone-400 mb-3">
+                <p class={`text-xs text-stone-400 mb-3 ${isModified(res, 'related_ids') ? diffClass : ''}`}>
                   <span class="italic font-medium">{t.by}</span> {relatedNames.join(', ')}
                 </p>
               )}
 
-              <p class="text-stone-500 text-sm mb-4">{res.description}</p>
+              <p class={`text-stone-500 text-sm mb-4 ${isModified(res, 'description') ? diffClass : ''}`}>{res.description}</p>
               
-              <div class="flex flex-wrap gap-1 mb-4">
+              <div class={`flex flex-wrap gap-1 mb-4 ${isModified(res, 'tags') ? diffClass : ''}`}>
                 {res.tags?.map((tag: string) => (
                   <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#{tag}</span>
                 ))}
               </div>
               
-              <a href={res.link} target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block">{res.link}</a>
+              <a href={res.link} target="_blank" class={`text-xs text-primary font-bold underline mb-4 inline-block ${isModified(res, 'link') ? diffClass : ''}`}>{res.link}</a>
 
               {res.action === 'delete' && (
                 <div class="mt-4 bg-red-50 p-4 rounded-xl border border-red-100 mb-4">
@@ -171,6 +213,14 @@ const getRelatedNames = (ids: string[] = []) => {
               >
                 {t.approve}
               </button>
+              {res.action !== 'delete' && (
+                <a 
+                  href={`/${lang}/propose?sid=${res.id}&moderation=true`}
+                  class="btn btn-outline btn-sm border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 flex-grow"
+                >
+                  {t.correct}
+                </a>
+              )}
               <button class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id={res.id}>
                 {t.reject}
               </button>

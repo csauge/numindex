@@ -15,6 +15,13 @@
 - **Internationalisation :** Entièrement bilingue (Français 🇫🇷 / Anglais 🇬🇧).
 - **Zéro Dépendance Lourde :** Utilisation de Vanilla JS pour l'interactivité.
 
+## 🛠 Fonctionnalités Admin & Modération
+
+- **Dashboard SSR** : Liste des suggestions en temps réel avec indicateur de badge.
+- **Workflow de Correction** : Le modérateur peut corriger une proposition (ajout ou modification) avant de l'approuver définitivement via un formulaire dédié.
+- **Visualisation des Différences** : Les champs modifiés par rapport à la ressource originale sont mis en évidence par un contour rouge dans l'interface de modération pour faciliter la revue.
+- **Approbation Directe** : Validation en un clic qui applique les changements en base de données et met à jour le statut de la suggestion.
+
 ## 🛠 Stack Technique
 
 - **Frontend :** [Astro](https://astro.build/) (Hybrid mode).
