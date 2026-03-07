@@ -1,18 +1,13 @@
 ---
+export const prerender = false;
+
 import Layout from '../../layouts/Layout.astro';
 import SuggestionForm from '../../components/SuggestionForm.astro';
 import type { SuggestionAction } from '../../lib/supabase/types';
 
-export async function getStaticPaths() {
-  return [
-    { params: { lang: 'fr' } },
-    { params: { lang: 'en' } },
-  ];
-}
-
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
-// Récupération des paramètres d'URL (SSR/Hybrid)
+// Récupération des paramètres d'URL (SSR)
 const action = (Astro.url.searchParams.get('action') || 'create') as SuggestionAction;
 const resourceId = Astro.url.searchParams.get('id');
 

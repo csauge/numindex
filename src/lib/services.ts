@@ -87,6 +87,41 @@ export async function fetchAllEvents() {
 }
 
 /**
+ * Récupère le nombre de suggestions en attente de modération
+ */
+export async function fetchPendingSuggestionsCount() {
+  if (!supabase) return 0;
+  const { count, error } = await supabase
+    .from('suggestions')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending');
+    
+  if (error) {
+    console.error('Error fetching suggestions count:', error);
+    return 0;
+  }
+  return count || 0;
+}
+
+/**
+ * Récupère une ressource par son ID
+ */
+export async function fetchResourceById(id: string) {
+  if (!supabase || !id) return null;
+  const { data, error } = await supabase
+    .from('resources')
+    .select('*')
+    .eq('id', id)
+    .single();
+    
+  if (error) {
+    console.error('Error fetching resource:', error);
+    return null;
+  }
+  return data as Resource;
+}
+
+/**
  * Récupère les entités pour le mapping des noms
  */
 export async function fetchEntitiesForMapping() {

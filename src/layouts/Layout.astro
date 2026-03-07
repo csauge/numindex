@@ -1,11 +1,14 @@
 ---
 import { ACTION_ICONS } from '../utils/categories';
+import { fetchPendingSuggestionsCount } from '../lib/services';
 
 interface Props {
   title: string;
   lang?: string;
 }
 const { title, lang = 'fr' } = Astro.props;
+
+const pendingCount = await fetchPendingSuggestionsCount();
 
 const translations = {
   fr: { propose: "Ajouter", skip: "Passer au contenu", admin: "Modérer" },
@@ -59,13 +62,23 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         {/* Bouton Modérer (Admin) */}
         <a 
           href={`/${lang}/admin`} 
-          class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-3 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all"
+          class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-3 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all relative"
           aria-label={lang === 'fr' ? 'Accéder à la modération' : 'Access moderation'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.moderate} />
-          </svg>
-          <span class="hidden md:inline">{t.admin}</span>
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.moderate} />
+            </svg>
+            {pendingCount > 0 && (
+              <span class="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold">
+                  {pendingCount > 99 ? '99+' : pendingCount}
+                </span>
+              </span>
+            )}
+          </div>
+          <span class="hidden md:inline ml-1">{t.admin}</span>
         </a>
 
         {/* Bouton Ajouter */}
