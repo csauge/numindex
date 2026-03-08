@@ -447,7 +447,7 @@ function getRelatedNames(ids) {
       if (params.has('cat')) elements.catFilter.value = params.get('cat')!;
       if (params.has('sort')) elements.sortFilter.value = params.get('sort')!;
     } else {
-      const sessionData = JSON.parse(sessionStorage.getItem('salvia-filters') || '{}');
+      const sessionData = JSON.parse(sessionStorage.getItem('numindex-filters') || '{}');
       if (sessionData.q) elements.searchInput.value = sessionData.q;
       if (sessionData.cat) elements.catFilter.value = sessionData.cat;
       if (sessionData.sort) elements.sortFilter.value = sessionData.sort;
@@ -510,7 +510,7 @@ function getRelatedNames(ids) {
       };
     }
 
-    const savedView = localStorage.getItem('salvia-view') || 'grid';
+    const savedView = localStorage.getItem('numindex-view') || 'grid';
     if (elements.viewToggle) elements.viewToggle.checked = savedView === 'list';
     setView(savedView as 'grid' | 'list');
 
@@ -635,7 +635,7 @@ function getRelatedNames(ids) {
     if (sort !== 'updated_at') params.set('sort', sort);
     
     // Sauvegarde en session pour le retour arrière
-    sessionStorage.setItem('salvia-filters', JSON.stringify({ q, cat, sort }));
+    sessionStorage.setItem('numindex-filters', JSON.stringify({ q, cat, sort }));
 
     const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
     window.history.replaceState({}, '', newUrl);
@@ -643,7 +643,7 @@ function getRelatedNames(ids) {
 
   function setView(view: 'grid' | 'list') {
     elements.grid?.classList.toggle('list-mode', view === 'list');
-    localStorage.setItem('salvia-view', view);
+    localStorage.setItem('numindex-view', view);
     updateUI();
   }
 
@@ -695,7 +695,7 @@ function getRelatedNames(ids) {
       ].map(v => `"${v.replace(/"/g, '""')}"`);
       rows.push(row.join(','));
     });
-    downloadFile(rows.join("\n"), `salvia_export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+    downloadFile(rows.join("\n"), `numindex_export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
   }
 
   function exportBookmarks() {
@@ -708,7 +708,7 @@ function getRelatedNames(ids) {
 <TITLE>Bookmarks</TITLE>
 <H1>Bookmarks</H1>
 <DL><p>
-    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">Salvia Export (${new Date().toLocaleDateString()})</H3>
+    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">numindex.org Export (${new Date().toLocaleDateString()})</H3>
     <DL><p>
 `;
 
@@ -726,7 +726,7 @@ function getRelatedNames(ids) {
     html += `    </DL><p>
 </DL><p>`;
 
-    downloadFile(html, `salvia_bookmarks_${new Date().toISOString().split('T')[0]}.html`, 'text/html;charset=utf-8;');
+    downloadFile(html, `numindex_bookmarks_${new Date().toISOString().split('T')[0]}.html`, 'text/html;charset=utf-8;');
   }
 
   function downloadFile(content: string, filename: string, type: string) {

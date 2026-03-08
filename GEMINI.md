@@ -1,6 +1,6 @@
-# Mandats du Projet Salvia 🌿
+# Mandats du Projet numindex.org 🌿
 
-Ce document définit les règles immuables pour le développement de l'annuaire Salvia.
+Ce document définit les règles immuables pour le développement de l'annuaire numindex.org.
 
 ## 1. Principes Fondamentaux (Écoconception)
 - **Sobriété Numérique :** Limiter le poids des pages. Pas de bibliothèques JS lourdes.

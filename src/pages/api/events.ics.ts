@@ -16,10 +16,10 @@ export const GET: APIRoute = async ({ request }) => {
   let lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Salvia//NONSGML Events//FR',
+    'PRODID:-//numindex.org//NONSGML Events//FR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:Salvia - Événements responsables',
+    'X-WR-CALNAME:numindex.org - Événements responsables',
     'X-WR-TIMEZONE:UTC',
     'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
     'X-PUBLISHED-TTL:PT1H'

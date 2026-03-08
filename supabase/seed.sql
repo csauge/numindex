@@ -1,4 +1,4 @@
--- Seed data for Salvia 🌿
+-- Seed data for numindex.org 🌿
 -- This file is used to populate your local database during `npx supabase db reset`
 
 -- 1. Entities (Companies, Associations, etc.)

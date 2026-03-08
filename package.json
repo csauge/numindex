@@ -1,6 +1,6 @@
 {
-  "name": "salvia",
-  "version": "1.0.0",
+  "name": "numindex",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "astro dev",

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Salvia Home Page', () => {
+test.describe('numindex.org Home Page', () => {
   
   test('should redirect root to /fr', async ({ page }) => {
     await page.goto('/');
@@ -9,7 +9,7 @@ test.describe('Salvia Home Page', () => {
 
   test('should have the correct title', async ({ page }) => {
     await page.goto('/fr');
-    await expect(page).toHaveTitle(/Salvia/);
+    await expect(page).toHaveTitle(/numindex.org/);
     const header = page.locator('#main-title');
     await expect(header).toContainText("L'annuaire du numérique responsable");
   });

@@ -29,13 +29,13 @@ export const POST: APIRoute = async ({ request }) => {
       },
       body: JSON.stringify({
         // L'expéditeur DOIT être une adresse validée dans votre compte Brevo (ex: votre propre mail)
-        sender: { name: 'Salvia Contact', email: toEmail }, 
+        sender: { name: 'numindex.org Contact', email: toEmail }, 
         to: [{ email: toEmail }],
         replyTo: { email, name },
-        subject: `[Salvia] Nouveau message de ${name}`,
+        subject: `[numindex.org] Nouveau message de ${name}`,
         htmlContent: `
           <div style="font-family: sans-serif; line-height: 1.5; color: #333;">
-            <h2 style="color: #059669;">Nouveau message de contact - Salvia</h2>
+            <h2 style="color: #059669;">Nouveau message de contact - numindex.org</h2>
             <p><strong>Nom :</strong> ${name}</p>
             <p><strong>Email :</strong> ${email}</p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">

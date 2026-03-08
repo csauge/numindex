@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * Script de création automatique de ressources pour Salvia.
+ * Script de création automatique de ressources pour numindex.org.
  * Utilisation : node scripts/add-ressource.mjs '{"title": "Mon Titre", "description": "...", "link": "https://...", "category": "société", "language": "fr", "date": "2026-02-25"}'
  */
 

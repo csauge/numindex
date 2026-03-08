@@ -1,4 +1,4 @@
--- SQL Schema for Salvia 🌿 (Synchronized with remote schema)
+-- SQL Schema for numindex.org 🌿 (Synchronized with remote schema)
 
 -- 0. Helper function for updated_at (Secure search_path)
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()

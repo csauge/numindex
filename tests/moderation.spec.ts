@@ -162,7 +162,7 @@ test.describe('Moderation Lifecycle', () => {
 
     // 4. Approve linked resource
     await page.goto('/fr/admin', { waitUntil: 'networkidle' });
-    const resourceCard = page.locator('.suggestion-card').filter({ hasText: linkedResourceTitle });
+    const resourceCard = page.locator('.suggestion-card').filter({ has: page.locator('h2', { hasText: linkedResourceTitle, exact: true }) });
     await expect(resourceCard).toBeVisible();
     await resourceCard.locator('.approve-btn').click();
     await expect(resourceCard).not.toBeVisible();

@@ -12,7 +12,7 @@ export default {
   daisyui: {
     themes: [
       {
-        salvia: {
+        numindex: {
           "primary": "#40916c",        /* Vert Sauge - Contraste RGAA OK */
           "primary-content": "#ffffff",
           "secondary": "#b7e4c7",      /* Vert Menthe douce */

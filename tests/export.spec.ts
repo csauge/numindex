@@ -46,7 +46,7 @@ test.describe('Export Functionality', () => {
       page.click('#btn-export-csv')
     ]);
     
-    expect(download.suggestedFilename()).toContain('salvia_export_');
+    expect(download.suggestedFilename()).toContain('numindex_export_');
     expect(download.suggestedFilename()).toContain('.csv');
     expect(errors).toHaveLength(0);
   });
@@ -66,7 +66,7 @@ test.describe('Export Functionality', () => {
       page.click('#btn-export-bookmarks')
     ]);
     
-    expect(download.suggestedFilename()).toContain('salvia_bookmarks_');
+    expect(download.suggestedFilename()).toContain('numindex_bookmarks_');
     expect(download.suggestedFilename()).toContain('.html');
     expect(errors).toHaveLength(0);
   });

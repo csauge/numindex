@@ -1,6 +1,6 @@
-# 🌱 Salvia
+# 🌱 numindex.org
 
-**Salvia** est un annuaire open-source de ressources numériques responsables (sociétés, associations, articles, podcasts, outils, livres). Le projet est conçu pour être un modèle de **sobriété numérique** et d'**accessibilité**, aligné sur les principes du **RGESN** et du **GR491**.
+**numindex.org** est un annuaire open-source de ressources numériques responsables (sociétés, associations, articles, podcasts, outils, livres). Le projet est conçu pour être un modèle de **sobriété numérique** et d'**accessibilité**, aligné sur les principes du **RGESN** et du **GR491**.
 
 ## ✨ Caractéristiques
 
@@ -34,8 +34,8 @@
 
 1.  **Cloner le dépôt :**
     ```bash
-    git clone https://github.com/votre-compte/salvia.git
-    cd salvia
+    git clone https://github.com/csauge/numindex.git
+    cd numindex
     ```
 2.  **Installer les dépendances :**
     ```bash
