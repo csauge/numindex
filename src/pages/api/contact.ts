@@ -28,8 +28,8 @@ export const POST: APIRoute = async ({ request }) => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        // L'expéditeur DOIT être une adresse validée dans votre compte Brevo (ex: votre propre mail)
-        sender: { name: 'numindex.org Contact', email: toEmail }, 
+        // L'expéditeur DOIT être une adresse validée dans votre compte Brevo
+        sender: { name: 'numindex.org', email: toEmail }, 
         to: [{ email: toEmail }],
         replyTo: { email, name },
         subject: `[numindex.org] Nouveau message de ${name}`,
