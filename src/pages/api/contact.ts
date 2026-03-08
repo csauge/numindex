@@ -2,14 +2,25 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
-  // On tente de récupérer les variables via process.env (Node) ou import.meta.env (Vite/Astro)
-  const apiKey = process.env.BREVO_API_KEY || import.meta.env.BREVO_API_KEY;
-  const toEmail = process.env.CONTACT_EMAIL || import.meta.env.CONTACT_EMAIL;
+export const POST: APIRoute = async ({ request, locals }) => {
+  // Sur Cloudflare Pages avec Astro 5, les variables peuvent se trouver dans locals.runtime.env
+  // ou injectées via process.env selon la configuration du projet
+  const runtime = (locals as any).runtime;
+  const env = runtime?.env || process.env;
+  
+  const apiKey = env.BREVO_API_KEY || import.meta.env.BREVO_API_KEY;
+  const toEmail = env.CONTACT_EMAIL || import.meta.env.CONTACT_EMAIL;
 
   if (!apiKey || !toEmail) {
     console.error('Contact API Error: Missing BREVO_API_KEY or CONTACT_EMAIL in environment');
-    return new Response(JSON.stringify({ error: 'Server configuration missing' }), { status: 500 });
+    return new Response(JSON.stringify({ 
+      error: 'Server configuration missing',
+      debug: { 
+        hasApiKey: !!apiKey, 
+        hasToEmail: !!toEmail,
+        isRuntimeEnv: !!runtime?.env 
+      }
+    }), { status: 500 });
   }
 
   try {
