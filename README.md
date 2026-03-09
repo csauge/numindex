@@ -1,6 +1,6 @@
 # 🌱 numindex.org
 
-**numindex.org** est un annuaire open-source de ressources numériques responsables (sociétés, associations, articles, podcasts, outils, livres). Le projet est conçu pour être un modèle de **sobriété numérique** et d'**accessibilité**, aligné sur les principes du **RGESN** et du **GR491**.
+**numindex.org** est un annuaire open-source de ressources numériques responsables (sociétés, associations, publications, podcasts, outils, livres, index). Le projet est conçu pour être un modèle de **sobriété numérique** et d'**accessibilité**, aligné sur les principes du **RGESN** et du **GR491**.
 
 ## ✨ Caractéristiques
 
