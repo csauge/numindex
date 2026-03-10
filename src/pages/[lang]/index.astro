@@ -22,6 +22,7 @@ const translations = {
     sortName: "Nom A-Z",
     sortCat: "Catégorie",
     sortDate: "Prochaine date",
+    sortPub: "Parution",
     results: "ressources",
     loadMore: "Afficher plus",
     noResults: "Aucune ressource trouvée.",
@@ -45,6 +46,7 @@ const translations = {
     sortName: "Name A-Z",
     sortCat: "Category",
     sortDate: "Next date",
+    sortPub: "Publication",
     results: "resources",
     loadMore: "Load more",
     noResults: "No resources found.",
@@ -71,6 +73,7 @@ const clientResources = allRessources.map(res => ({
   imgUrl: res.image_url ? getImageUrl(res.image_url, { width: 250, quality: 50 }) : null,
   link: res.link,
   up: res.updated_at,
+  pub: res.metadata?.published_at,
   next: res.metadata?.next_date,
   kw: (res.title + " " + (res.description || "") + " " + (res.tags?.join(" ") || "")).toLowerCase()
 }));
@@ -110,6 +113,7 @@ const spriteIcons = {
           <option value="updated_at">{t.sortNewest}</option>
           <option value="title">{t.sortName}</option>
           <option value="next_date" id="opt-next-date" class="hidden">{t.sortDate}</option>
+          <option value="published_at" id="opt-pub-date" class="hidden">{t.sortPub}</option>
           <option value="cat">{t.sortCat}</option>
         </select>
         <select id="filter-category" class="select select-sm bg-stone-100 text-stone-600 border-none rounded-lg text-[10px] font-bold uppercase">
@@ -207,9 +211,16 @@ const spriteIcons = {
     };
 
     els.cat.onchange = () => {
-      els.optNext.classList.toggle('hidden', els.cat.value !== 'evenement');
-      if (els.cat.value === 'evenement') {
+      const isEvent = els.cat.value === 'evenement';
+      const isPub = ['article', 'loi', 'livre', 'video', 'referentiel'].includes(els.cat.value);
+      
+      els.optNext.classList.toggle('hidden', !isEvent);
+      document.getElementById('opt-pub-date').classList.toggle('hidden', !isPub);
+
+      if (isEvent) {
         els.sort.value = 'next_date';
+      } else if (isPub) {
+        els.sort.value = 'published_at';
       } else if (els.cat.value === 'all') {
         els.sort.value = 'updated_at';
       } else {
@@ -261,6 +272,11 @@ const spriteIcons = {
         if (!dA && !dB) return 0; if (!dA) return 1; if (!dB) return -1;
         return (dA < today === dB < today) ? dA.localeCompare(dB) : (dA < today ? 1 : -1);
       }
+      if (s === 'published_at') {
+        const dA = a.pub || '', dB = b.pub || '';
+        if (!dA && !dB) return 0; if (!dA) return 1; if (!dB) return -1;
+        return dB.localeCompare(dA);
+      }
       if (s === 'title') return a.title.localeCompare(b.title);
       if (s === 'cat') return a.cat.localeCompare(b.cat) || a.title.localeCompare(b.title);
       return b.up.localeCompare(a.up);
@@ -293,9 +309,14 @@ const spriteIcons = {
 
     toShow.forEach(d => {
       let group = '';
-      if (s === 'updated_at') {
-        const diff = (new Date() - new Date(d.up)) / 86400000;
-        group = diff < 7 ? t.thisWeek : diff < 30 ? t.thisMonth : diff < 365 ? t.thisYear : t.older;
+      if (s === 'updated_at' || s === 'published_at') {
+        const dateStr = s === 'published_at' ? d.pub : d.up;
+        if (!dateStr) {
+          group = t.noDate;
+        } else {
+          const diff = (new Date() - new Date(dateStr)) / 86400000;
+          group = diff < 7 ? t.thisWeek : diff < 30 ? t.thisMonth : diff < 365 ? t.thisYear : t.older;
+        }
       } else if (s === 'title') {
         group = d.title[0].toUpperCase();
       } else if (s === 'next_date') {

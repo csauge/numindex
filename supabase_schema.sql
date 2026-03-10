@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.resources (
     updated_at timestamp with time zone DEFAULT now(),
     tags text[] DEFAULT '{}'::text[],
     related_ids uuid[] DEFAULT '{}'::uuid[],
-    CONSTRAINT resources_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'index'::text, 'autre'::text]))
+    CONSTRAINT resources_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'loi'::text, 'programme'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'index'::text, 'autre'::text]))
 );
 
 -- 2. Suggestions Table
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS public.suggestions (
     reason text,
     tags text[] DEFAULT '{}'::text[],
     related_ids uuid[] DEFAULT '{}'::uuid[],
-    CONSTRAINT suggestions_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'index'::text, 'autre'::text])),
+    CONSTRAINT suggestions_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'loi'::text, 'programme'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'index'::text, 'autre'::text])),
     CONSTRAINT suggestions_status_check CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]))
 );
 

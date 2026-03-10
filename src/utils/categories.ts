@@ -33,8 +33,12 @@ export const CATEGORIES: Record<string, CategoryInfo> = {
 
   // --- CONTENUS ---
   article: { 
-    fr: 'Publication / Article', en: 'Publication / Article', group: 'CONTENUS', type: 'resource',
+    fr: 'Article / Rapport', en: 'Article / Report', group: 'CONTENUS', type: 'resource',
     icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2zM14 4v4h4m-9 4h6m-6 4h6' 
+  },
+  loi: { 
+    fr: 'Loi', en: 'Law', group: 'CONTENUS', type: 'resource',
+    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' 
   },
   index: { 
     fr: 'Index / Liste', en: 'Index / List', group: 'CONTENUS', type: 'resource',
@@ -59,8 +63,12 @@ export const CATEGORIES: Record<string, CategoryInfo> = {
 
   // --- OUTILS & ACTION ---
   referentiel: { 
-    fr: 'Guide / Référentiel', en: 'Framework', group: 'OUTILS & ACTION', type: 'resource',
+    fr: 'Référentiel / Guide', en: 'Framework / Guide', group: 'OUTILS & ACTION', type: 'resource',
     icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' 
+  },
+  programme: { 
+    fr: 'Programme', en: 'Program', group: 'OUTILS & ACTION', type: 'resource',
+    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m3 4h.01M9 16h.01M9 12h.01M12 12h.01M12 16h.01M15 12h.01M15 16h.01' 
   },
   logiciel: { 
     fr: 'Logiciel / Outil', en: 'Software / Tool', group: 'OUTILS & ACTION', type: 'resource',

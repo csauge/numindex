@@ -310,7 +310,7 @@ const initial = {
 
     // Toggle container visibilities
     document.getElementById('city-container')?.classList.toggle('hidden', (type !== 'entity' && !isEvent) || isDelete);
-    document.getElementById('date-container')?.classList.toggle('hidden', group !== 'CONTENUS' || isDelete);
+    document.getElementById('date-container')?.classList.toggle('hidden', (group !== 'CONTENUS' && elements.cat.value !== 'referentiel') || isDelete);
     document.getElementById('next-date-container')?.classList.toggle('hidden', !isEvent || isDelete);
     document.getElementById('related-container')?.classList.toggle('hidden', type !== 'resource' || isDelete);
   }
