@@ -2,751 +2,361 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
-import { getCategoryLabel, getCategoryIcon } from "../../utils/categories";
+import { CATEGORIES, getCategoryLabel } from "../../utils/categories";
 import { getImageUrl } from "../../lib/supabase/client";
 import { fetchAllResources, fetchEntitiesForMapping } from "../../lib/services";
 
 const { lang } = Astro.params;
-
-// Data fetching
 const allRessources = await fetchAllResources();
 const entitiesForMapping = await fetchEntitiesForMapping();
-
-const activeCategoryKeys = [...new Set(allRessources.map(function(r) { return r.category; }))].sort();
+const activeCategoryKeys = [...new Set(allRessources.map(r => r.category))].sort();
 
 const translations = {
   fr: {
     title: "L'annuaire du numérique responsable",
     desc: "Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
-    searchPlaceholder: "Rechercher un outil, une entreprise, une publication...",
+    searchPlaceholder: "Rechercher...",
     filterCat: "Toutes catégories",
     filterSort: "Trier par",
     sortNewest: "Mise à jour",
     sortName: "Nom A-Z",
     sortCat: "Catégorie",
     sortDate: "Prochaine date",
-    groupThisWeek: "Cette semaine",
-    groupThisMonth: "Ce mois-ci",
-    groupThisYear: "Cette année",
-    groupOlder: "Plus ancien",
-    groupNoDate: "Événements sans date",
-    groupPast: "Événements passés",
+    results: "ressources",
+    loadMore: "Afficher plus",
+    noResults: "Aucune ressource trouvée.",
     exportCSV: "CSV",
     exportBookmarks: "Favoris Navigateur",
-    exportCalendar: "S'abonner au calendrier",
-    appleOutlook: "Apple / Outlook",
-    googleCalendar: "Google Calendar",
-    copyCalendarLink: "Copier le lien d'abonnement",
-    results: "ressources"
+    exportCalendar: "Calendrier évènements",
+    thisWeek: "Cette semaine",
+    thisMonth: "Ce mois-ci",
+    thisYear: "Cette année",
+    older: "Plus ancien",
+    noDate: "Sans date",
+    pastDate: "Past"
   },
   en: {
     title: "Sustainable Digital Directory",
-    desc: "Explore initiatives committed to a more sober, ethical, and accessible digital future.",
-    searchPlaceholder: "Search for a tool, company, article...",
+    desc: "Explore initiatives committed to a more digital future.",
+    searchPlaceholder: "Search...",
     filterCat: "All categories",
     filterSort: "Sort by",
     sortNewest: "Updated",
     sortName: "Name A-Z",
     sortCat: "Category",
     sortDate: "Next date",
-    groupThisWeek: "This week",
-    groupThisMonth: "This month",
-    groupThisYear: "This year",
-    groupOlder: "Older",
-    groupNoDate: "Events without date",
-    groupPast: "Past events",
+    results: "resources",
+    loadMore: "Load more",
+    noResults: "No resources found.",
     exportCSV: "CSV",
     exportBookmarks: "Browser Bookmarks",
-    exportCalendar: "Subscribe to calendar",
-    appleOutlook: "Apple / Outlook",
-    googleCalendar: "Google Calendar",
-    copyCalendarLink: "Copy subscription link",
-    results: "resources"
+    exportCalendar: "Events Calendar",
+    thisWeek: "This week",
+    thisMonth: "This month",
+    thisYear: "This year",
+    older: "Older",
+    noDate: "No date",
+    pastDate: "Past"
   }
 };
 
 const t = lang === "en" ? translations.en : translations.fr;
 
-function getRelatedNames(ids) {
-  if (!ids) return [];
-  return ids
-    .map(function(id) {
-      const found = entitiesForMapping.find(function(e) { return e.id === id; });
-      return found ? found.title : null;
-    })
-    .filter(Boolean);
-}
+const clientResources = allRessources.map(res => ({
+  id: res.id,
+  title: res.title,
+  desc: res.description,
+  cat: res.category,
+  catLabel: getCategoryLabel(res.category, lang as any),
+  imgUrl: res.image_url ? getImageUrl(res.image_url, { width: 250, quality: 50 }) : null,
+  link: res.link,
+  up: res.updated_at,
+  next: res.metadata?.next_date,
+  kw: (res.title + " " + (res.description || "") + " " + (res.tags?.join(" ") || "")).toLowerCase()
+}));
+
+const spriteIcons = {
+  ...Object.fromEntries(Object.entries(CATEGORIES).map(([k, v]) => [`cat-${k}`, v.icon])),
+  'search': 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
+  'close': 'M6 18L18 6M6 6l12 12',
+  'export': 'M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
+  'view-list': 'M4 6h16M4 12h16M4 18h16',
+  'view-grid': 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'
+};
 ---
 
 <Layout title={t.title} lang={lang as string}>
-  <section>
-    <header class="mb-12 text-center md:text-left w-full max-w-2xl">
-      <h1 id="main-title" class="text-3xl md:text-4xl font-black mb-4 text-stone-800 tracking-tight leading-tight">{t.title}</h1>
-      <p class="text-stone-600 leading-relaxed italic text-sm">{t.desc}</p>
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+    {Object.entries(spriteIcons).map(([id, path]) => (
+      <symbol id={id} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d={path} /></symbol>
+    ))}
+  </svg>
+
+  <section class="max-w-7xl mx-auto px-4">
+    <header class="mb-10 pt-8">
+      <h1 id="main-title" class="text-3xl font-black text-stone-800 mb-2">{t.title}</h1>
+      <p class="text-stone-500 italic text-sm">{t.desc}</p>
     </header>
 
-    {/* Search & Filters Toolbar */}
-    <div class="sticky top-20 z-30 mb-8 p-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-sm flex flex-col md:flex-row gap-2 overflow-visible">
-      <div class="flex-grow relative flex items-center min-w-0">
-        <label for="search-input" class="sr-only">{t.searchPlaceholder}</label>
-        <div class="absolute left-3.5 z-20 pointer-events-none opacity-30">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-        </div>
-        <input 
-          type="text" 
-          id="search-input" 
-          placeholder={t.searchPlaceholder} 
-          class="input input-ghost w-full pl-10 pr-10 h-10 bg-stone-50/50 focus:bg-white transition-all rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm z-10"
-        />
-        <button 
-          id="clear-search" 
-          class="absolute right-2 h-7 w-7 flex items-center justify-center rounded-lg hover:bg-stone-200 text-stone-400 transition-all opacity-0 pointer-events-none z-20"
-          aria-label="Effacer la recherche"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
+    <div class="sticky top-20 z-30 mb-8 p-1.5 bg-white/90 backdrop-blur border border-stone-200 rounded-2xl flex flex-col md:flex-row gap-2">
+      <div class="flex-grow relative flex items-center">
+        <div class="absolute left-3 opacity-30"><svg class="h-4 w-4"><use href="#search" /></svg></div>
+        <input type="text" id="search-input" placeholder={t.searchPlaceholder} class="input input-ghost w-full pl-9 h-10 bg-stone-50 focus:bg-white rounded-xl border-none text-sm" />
+        <button id="clear-search" class="absolute right-2 h-7 w-7 flex items-center justify-center rounded-lg hover:bg-stone-200 text-stone-400 opacity-0 pointer-events-none transition-opacity"><svg class="h-4 w-4"><use href="#close" /></svg></button>
       </div>
 
-      <div class="flex items-center gap-2 overflow-visible">
-        {/* Scrollable Selects Area - flex-grow to take available space */}
-        <div class="flex-grow overflow-x-auto no-scrollbar p-1.5 -m-1 min-w-0">
-          <div class="flex gap-2">
-            {/* Sort Selector */}
-            <div class="relative flex items-center shrink-0">
-              <div class="absolute left-2.5 z-10 pointer-events-none opacity-40 text-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                </svg>
-              </div>
-              <select id="filter-sort" class="select select-ghost bg-emerald-50/50 text-primary border-none rounded-lg h-9 min-h-0 pl-8 pr-7 text-[11px] font-bold uppercase tracking-wider focus:bg-emerald-100/50 transition-colors">
-                <option value="updated_at">{t.sortNewest}</option>
-                <option value="title">{t.sortName}</option>
-                <option value="next_date" id="opt-next-date">{t.sortDate}</option>
-                <option value="category">{t.sortCat}</option>
-              </select>
-            </div>
+      <div class="flex items-center gap-2">
+        <select id="filter-sort" class="select select-sm bg-emerald-50 text-emerald-700 border-none rounded-lg text-[10px] font-bold uppercase">
+          <option value="updated_at">{t.sortNewest}</option>
+          <option value="title">{t.sortName}</option>
+          <option value="next_date" id="opt-next-date" class="hidden">{t.sortDate}</option>
+          <option value="cat">{t.sortCat}</option>
+        </select>
+        <select id="filter-category" class="select select-sm bg-stone-100 text-stone-600 border-none rounded-lg text-[10px] font-bold uppercase">
+          <option value="all">{t.filterCat}</option>
+          {activeCategoryKeys.map(k => <option value={k}>{getCategoryLabel(k, lang as any)}</option>)}
+        </select>
 
-            {/* Category Selector */}
-            <div class="relative flex items-center shrink-0">
-              <div class="absolute left-2.5 z-10 pointer-events-none opacity-40 text-stone-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-              </div>
-              <select id="filter-category" class="select select-ghost bg-stone-50/50 text-stone-600 border-none rounded-lg h-9 min-h-0 pl-8 pr-8 text-[11px] font-bold uppercase tracking-wider focus:bg-stone-100 transition-colors">
-                <option value="all">{t.filterCat}</option>
-                {activeCategoryKeys.map(key => (
-                  <option value={key}>{getCategoryLabel(key, lang as any)}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+        <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-ghost btn-sm h-10 w-10 p-0 rounded-xl text-stone-400" title="Exporter"><svg class="h-4 w-4"><use href="#export" /></svg></label>
+          <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white border border-stone-100 rounded-xl w-48 mt-2 z-50">
+            <li><button id="btn-export-csv" class="text-xs font-bold">{t.exportCSV}</button></li>
+            <li><button id="btn-export-bookmarks" class="text-xs font-bold">{t.exportBookmarks}</button></li>
+            <li><button id="btn-export-calendar" class="text-xs font-bold text-left">{t.exportCalendar}</button></li>
+          </ul>
         </div>
 
-        {/* Fixed Controls Area - Forced to right */}
-        <div class="flex items-center border-l border-stone-100 pl-2 gap-2 shrink-0 overflow-visible relative ml-auto">
-          {/* Export Dropdown */}
-          <div class="dropdown dropdown-end dropdown-bottom overflow-visible">
-            <label tabindex="0" class="btn btn-ghost btn-sm h-9 w-9 p-0 rounded-xl text-stone-400 hover:text-primary transition-all bg-stone-50/50 border-none cursor-pointer focus:bg-primary/10 focus:text-primary" title="Exporter">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            </label>
-            <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-white border border-stone-100 rounded-xl w-56 mt-2">
-              <li>
-                <button id="btn-export-csv" class="text-xs font-bold text-stone-700 hover:text-primary active:bg-primary/10 flex items-center gap-2 px-3 py-2.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  <span>{t.exportCSV}</span>
-                </button>
-              </li>
-              <li>
-                <button id="btn-export-bookmarks" class="text-xs font-bold text-stone-700 hover:text-primary active:bg-primary/10 flex items-center gap-2 px-3 py-2.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
-                  <span>{t.exportBookmarks}</span>
-                </button>
-              </li>
-              <div class="divider my-1 opacity-5"></div>
-              <li class="menu-title px-3 py-1 text-[9px] uppercase tracking-widest text-stone-400 font-black">{t.exportCalendar}</li>
-              <li>
-                <a href={`webcal://${Astro.url.host}/api/events.ics`} class="text-[10px] font-bold text-stone-600 hover:text-primary active:bg-primary/10 flex items-center gap-2 px-3 py-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  <span>{t.appleOutlook}</span>
-                </a>
-              </li>
-              <li>
-                <a href={`https://calendar.google.com/calendar/u/0/r/settings/addbyurl?url=https://${Astro.url.host}/api/events.ics`} target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-stone-600 hover:text-primary active:bg-primary/10 flex items-center gap-2 px-3 py-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-40" fill="currentColor" viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.9 3,5V19C3,20.1 3.89,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.9 20.1,3 19,3M19,19H5V5H19V19M7,10H9V17H7V10M11,7H13V17H11V7M15,13H17V17H15V13Z" /></svg>
-                  <span>{t.googleCalendar}</span>
-                </a>
-              </li>
-              <li>
-                <button id="btn-copy-cal" class="text-[10px] font-bold text-stone-600 hover:text-primary active:bg-primary/10 flex items-center gap-2 px-3 py-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012-2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                  <span id="copy-cal-text">{t.copyCalendarLink}</span>
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <label class="swap swap-rotate btn btn-ghost btn-sm h-9 w-9 p-0 rounded-xl text-stone-400 hover:text-primary transition-all bg-stone-50/50 border-none" title="Changer de vue">
-            <input type="checkbox" id="view-toggle" aria-label="Toggle Grid/List view" />
-            
-            <!-- List Icon (visible when checked) -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="swap-on h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            
-            <!-- Grid Icon (visible when unchecked) -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="swap-off h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-          </label>
-        </div>
+        <label class="swap swap-rotate btn btn-ghost btn-sm h-10 w-10 p-0 rounded-xl text-stone-400">
+          <input type="checkbox" id="view-toggle" />
+          <svg class="swap-on h-4 w-4 pointer-events-none"><use href="#view-list" /></svg>
+          <svg class="swap-off h-4 w-4 pointer-events-none"><use href="#view-grid" /></svg>
+        </label>
       </div>
     </div>
 
-    <div class="mb-6 flex justify-between items-center px-2">
-      <div class="text-[10px] font-black uppercase tracking-widest text-stone-400">
-        <span id="results-count" aria-live="polite">{allRessources.length}</span> {t.results}
-      </div>
+    <div class="mb-4 px-2 text-[10px] font-black uppercase text-stone-400">
+      <span id="results-count">{allRessources.length}</span> {t.results}
     </div>
     
-    <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all duration-300">
-      {allRessources.map((res) => {
-        const relatedNames = getRelatedNames(res.related_ids || []);
-        const searchKeywords = (res.title + " " + (res.description || "") + " " + (res.tags ? res.tags.join(" ") : "") + " " + relatedNames.join(" ")).toLowerCase();
-        
-        let sortTitle = res.title.toLowerCase();
-        let letter = res.title.charAt(0).toUpperCase();
-        
-        if (res.category === 'personne') {
-          const parts = res.title.trim().split(/\s+/);
-          if (parts.length > 1) {
-            const lastName = parts[parts.length - 1];
-            const firstNames = parts.slice(0, -1).join(' ');
-            sortTitle = (lastName + " " + firstNames).toLowerCase();
-            letter = lastName.charAt(0).toUpperCase();
-          }
-        }
-        
-        return (
-          <a 
-            href={`/${lang}/resource/${res.id}`}
-            class="resource-card group flex flex-col bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-stone-200/40 hover:border-primary/30 transition-all duration-300"
-            data-id={res.id}
-            data-category={res.category}
-            data-title={res.title.toLowerCase()}
-            data-sort-title={sortTitle}
-            data-letter={letter}
-            data-link={res.link || ""}
-            data-tags={res.tags?.join(', ') || ""}
-            data-related={relatedNames.join(', ')}
-            data-related-ids={res.related_ids?.join(', ') || ""}
-            data-created_at={res.created_at}
-            data-updated_at={res.updated_at}
-            data-city={res.metadata?.city || ""}
-            data-next_date={res.metadata?.next_date || ""}
-            data-keywords={searchKeywords}
-          >
-            <div class="card-img-container relative w-full pt-[56%] bg-stone-50/30 border-b border-stone-50 flex items-center justify-center">
-              {res.image_url ? (
-                <img 
-                  src={getImageUrl(res.image_url, { width: 400, quality: 70 })} 
-                  alt="" 
-                  class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500 ease-out"
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <div class="absolute inset-0 flex items-center justify-center text-stone-200 group-hover:text-primary/10 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(res.category)} />
-                  </svg>
-                </div>
-              )}
-            </div>
-            
-            <div class="card-body-content p-4 flex flex-col flex-grow">
-              <div class="card-list-icon-box hidden shrink-0 text-stone-400 group-hover:text-primary/60 transition-colors" style="grid-area: icon;">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getCategoryIcon(res.category)} />
-                </svg>
-              </div>
+    <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all duration-300"></div>
 
-              <div class="card-content-main flex-grow min-w-0">
-                <span class="card-category-label text-[8px] font-black uppercase tracking-widest text-stone-400 mb-1 block" style="grid-area: cat;">
-                  {getCategoryLabel(res.category, lang as any)}
-                </span>
-                
-                <div class="card-title-tags-container flex items-baseline gap-3 overflow-hidden" style="grid-area: title;">
-                  <h2 class="text-[13px] font-bold text-stone-800 leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                    {res.title}
-                  </h2>
-                </div>
-                
-                <p class="card-desc text-[11px] text-stone-600 leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity line-clamp-2" style="grid-area: desc;">
-                  {res.description}
-                </p>
-              </div>
-            </div>
-          </a>
-        );
-      })}
+    <div id="load-more-container" class="mt-12 text-center pb-20 hidden">
+      <button id="btn-load-more" class="btn btn-sm btn-outline btn-primary rounded-xl px-8 text-[10px] font-black uppercase tracking-widest">{t.loadMore}</button>
     </div>
 
-    <style is:global>
-      .alphabet-divider {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 2rem 0.5rem 1rem 0.5rem;
-        pointer-events: none;
-      }
-      .alphabet-divider span {
-        font-size: 1.5rem;
-        font-weight: 900;
-        color: #10b981;
-        opacity: 0.3;
-        text-transform: capitalize;
-      }
-      .alphabet-divider::after {
-        content: '';
-        flex-grow: 1;
-        height: 1px;
-        background: #f5f5f4;
-      }
-
-      /* Unified Grid System for Data Table Rows */
-      .resource-card-grid {
-        display: grid;
-        gap: 1.5rem;
-        align-items: center;
-        grid-template-areas: "icon title desc cat";
-        grid-template-columns: 2rem 1fr 1.5fr 120px;
-      }
-
-      #resources-grid.list-mode {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      #resources-grid.list-mode .resource-card {
-        display: grid;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1.25rem;
-        height: 3.5rem;
-        gap: 1.5rem;
-        align-items: center;
-        grid-template-areas: "icon title desc cat";
-        grid-template-columns: 2rem 1fr 1.5fr 120px;
-      }
-      #resources-grid.list-mode .card-img-container { display: none; }
-      #resources-grid.list-mode .card-body-content { display: contents; }
-      #resources-grid.list-mode .card-list-icon-box { display: flex; align-items: center; justify-content: center; }
-      #resources-grid.list-mode .card-content-main { display: contents; }
-      #resources-grid.list-mode .card-desc {
-        display: block;
-        margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 1;
-        line-height: 1.4;
-        margin-top: 3px;
-      }
-      #resources-grid.list-mode .card-category-label { display: block; margin-bottom: 0; }
-      #resources-grid.list-mode h2 {
-        margin: 0;
-        -webkit-line-clamp: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.4;
-        margin-top: 3px;
-      }
-
-      @media (max-width: 1024px) {
-        #resources-grid.list-mode .resource-card {
-          grid-template-areas: "icon title cat";
-          grid-template-columns: 2rem 1fr 120px;
-        }
-        #resources-grid.list-mode .card-desc { display: none; }
-      }
-      @media (max-width: 640px) {
-        #resources-grid.list-mode .resource-card {
-          grid-template-areas: "icon title";
-          grid-template-columns: 2rem 1fr;
-          gap: 0.75rem;
-          padding: 0.5rem 0.75rem;
-        }
-        #resources-grid.list-mode .card-category-label { display: none; }
-      }
-    </style>
-
-    <div id="no-results" class={`${allRessources.length === 0 ? '' : 'hidden'} py-32 text-center text-stone-300 italic`}>
-      <p class="text-4xl mb-4 opacity-20">🏜️</p>
-      <p>Aucune ressource trouvée.</p>
-    </div>
+    <div id="no-results" class="hidden py-32 text-center text-stone-300 italic"><p>{t.noResults}</p></div>
   </section>
+
+  <script id="resource-data" type="application/json" is:inline set:html={JSON.stringify(clientResources)} />
 </Layout>
 
-<script>
-  /**
-   * CONFIGURATION & STATE
-   */
-  let cards: HTMLElement[] = [];
-  let elements: any = {};
-
+<script is:inline>
+  let allData = [];
+  let filteredData = [];
+  let visibleCount = 20;
   const currentLang = document.documentElement.lang || 'fr';
-  const labels = {
-    fr: {
-      noDate: "Événements sans date",
-      pastDate: "Événements passés",
-      thisWeek: "Cette semaine",
-      thisMonth: "Ce mois-ci",
-      thisYear: "Cette année",
-      older: "Plus ancien"
-    },
-    en: {
-      noDate: "Events without date",
-      pastDate: "Past events",
-      thisWeek: "This week",
-      thisMonth: "This month",
-      thisYear: "This year",
-      older: "Older"
-    }
-  }[currentLang as 'fr'|'en'] || {};
+  
+  const els = {
+    grid: document.getElementById('resources-grid'),
+    search: document.getElementById('search-input'),
+    clear: document.getElementById('clear-search'),
+    cat: document.getElementById('filter-category'),
+    sort: document.getElementById('filter-sort'),
+    count: document.getElementById('results-count'),
+    noRes: document.getElementById('no-results'),
+    view: document.getElementById('view-toggle'),
+    loadMoreBtn: document.getElementById('btn-load-more'),
+    loadMoreCont: document.getElementById('load-more-container'),
+    optNext: document.getElementById('opt-next-date')
+  };
 
-  /**
-   * INITIALIZATION
-   */
+  const t = {
+    fr: { thisWeek: "Cette semaine", thisMonth: "Ce mois-ci", thisYear: "Cette année", older: "Plus ancien", noDate: "Sans date", pastDate: "Past" },
+    en: { thisWeek: "This week", thisMonth: "This month", thisYear: "This year", older: "Older", noDate: "No date", pastDate: "Past" }
+  }[currentLang];
+
   function init() {
+    allData = JSON.parse(document.getElementById('resource-data').textContent);
     
-    // Select elements after DOM is ready
-    elements = {
-      searchInput: document.getElementById('search-input') as HTMLInputElement,
-      clearSearch: document.getElementById('clear-search') as HTMLButtonElement,
-      catFilter: document.getElementById('filter-category') as HTMLSelectElement,
-      sortFilter: document.getElementById('filter-sort') as HTMLSelectElement,
-      countDisplay: document.getElementById('results-count'),
-      noResults: document.getElementById('no-results'),
-      grid: document.getElementById('resources-grid'),
-      viewToggle: document.getElementById('view-toggle') as HTMLInputElement,
-      btnExportCSV: document.getElementById('btn-export-csv'),
-      btnExportBookmarks: document.getElementById('btn-export-bookmarks'),
-      optNextDate: document.getElementById('opt-next-date')
-    };
-
-    cards = Array.from(document.querySelectorAll('.resource-card')) as HTMLElement[];
-    
-    // 1. Lire les filtres (URL en priorité, sinon sessionStorage)
+    // Sync UI with URL on load
     const params = new URLSearchParams(window.location.search);
-    const hasUrlParams = params.has('q') || params.has('cat') || params.has('sort');
+    if (params.has('q')) els.search.value = params.get('q');
+    if (params.has('cat')) els.cat.value = params.get('cat');
+    if (params.has('sort')) els.sort.value = params.get('sort');
+    if (els.search.value) {
+      els.clear.classList.remove('opacity-0', 'pointer-events-none');
+    }
     
-    if (hasUrlParams) {
-      if (params.has('q')) elements.searchInput.value = params.get('q')!;
-      if (params.has('cat')) elements.catFilter.value = params.get('cat')!;
-      if (params.has('sort')) elements.sortFilter.value = params.get('sort')!;
-    } else {
-      const sessionData = JSON.parse(sessionStorage.getItem('numindex-filters') || '{}');
-      if (sessionData.q) elements.searchInput.value = sessionData.q;
-      if (sessionData.cat) elements.catFilter.value = sessionData.cat;
-      if (sessionData.sort) elements.sortFilter.value = sessionData.sort;
+    // View mode persistence
+    const savedView = localStorage.getItem('numindex_view');
+    if (savedView === 'list') {
+      els.view.checked = true;
     }
 
-    // Event Listeners
-    elements.searchInput?.addEventListener('input', () => {
-      toggleClearButton();
-      debouncedUpdate();
-    });
-
-    elements.clearSearch?.addEventListener('click', (e: MouseEvent) => {
-      e.preventDefault();
-      elements.searchInput.value = '';
-      toggleClearButton();
-      updateUI();
-      elements.searchInput.focus();
-    });
-    
-    elements.catFilter?.addEventListener('change', () => {
-      const cat = elements.catFilter.value;
-      if (cat === 'evenement') elements.sortFilter.value = 'next_date';
-      else if (cat === 'all') elements.sortFilter.value = 'updated_at';
-      else elements.sortFilter.value = 'title';
-      updateUI();
-    });
-
-    elements.sortFilter?.addEventListener('change', updateUI);
-    
-    elements.viewToggle?.addEventListener('change', () => {
-      setView(elements.viewToggle.checked ? 'list' : 'grid');
-    });
-
-    // Binding robust for exports
-    if (elements.btnExportCSV) {
-      elements.btnExportCSV.onclick = (e: MouseEvent) => {
-        e.preventDefault();
-        exportCSV();
-      };
-    }
-    if (elements.btnExportBookmarks) {
-      elements.btnExportBookmarks.onclick = (e: MouseEvent) => {
-        e.preventDefault();
-        exportBookmarks();
-      };
-    }
-    const btnCopyCal = document.getElementById('btn-copy-cal');
-    if (btnCopyCal) {
-      btnCopyCal.onclick = (e: MouseEvent) => {
-        e.preventDefault();
-        const calUrl = `https://${window.location.host}/api/events.ics`;
-        navigator.clipboard.writeText(calUrl).then(() => {
-          const textEl = document.getElementById('copy-cal-text');
-          if (textEl) {
-            const oldText = textEl.textContent;
-            textEl.textContent = currentLang === 'fr' ? 'Copié !' : 'Copied!';
-            setTimeout(() => { textEl.textContent = oldText; }, 2000);
-          }
-        });
-      };
-    }
-
-    const savedView = localStorage.getItem('numindex-view') || 'grid';
-    if (elements.viewToggle) elements.viewToggle.checked = savedView === 'list';
-    setView(savedView as 'grid' | 'list');
-
-    toggleClearButton();
-    updateUI();
-  }
-
-  /**
-   * CORE LOGIC: FILTER, SORT & RENDER
-   */
-  function updateUI() {
-    const query = elements.searchInput.value.toLowerCase().trim();
-    const cat = elements.catFilter.value;
-    let sort = elements.sortFilter.value;
-    const isListMode = elements.grid?.classList.contains('list-mode');
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    // Visibility logic for Next Date option
-    const supportsNextDate = cat === 'evenement';
-    elements.optNextDate?.classList.toggle('hidden', !supportsNextDate);
-    
-    // Auto-fallback if sort option is hidden
-    if (sort === 'next_date' && !supportsNextDate) {
-      sort = cat === 'all' ? 'updated_at' : 'title';
-      elements.sortFilter.value = sort;
-    }
-
-    // 1. Filter
-    const filtered = cards.filter(card => {
-      const matchSearch = !query || card.dataset.keywords?.includes(query);
-      const matchCat = cat === 'all' || card.dataset.category === cat;
-      return matchSearch && matchCat;
-    });
-
-    // 2. Sort
-    filtered.sort((a, b) => {
-      if (sort === 'next_date') {
-        const dA = a.dataset.next_date || '';
-        const dB = b.dataset.next_date || '';
-        if (!dA && !dB) return 0;
-        if (!dA) return 1;
-        if (!dB) return -1;
-        const isPastA = dA < todayStr;
-        const isPastB = dB < todayStr;
-        if (!isPastA && isPastB) return -1;
-        if (isPastA && !isPastB) return 1;
-        if (isPastA && isPastB) return dB.localeCompare(dA);
-        return dA.localeCompare(dB);
-      } 
-      
-      if (sort === 'title') {
-        return (a.dataset.sortTitle || '').localeCompare(b.dataset.sortTitle || '');
-      }
-
-      if (sort === 'category') {
-        const catA = a.dataset.category || '';
-        const catB = b.dataset.category || '';
-        if (catA !== catB) return catA.localeCompare(catB);
-        return (a.dataset.sortTitle || '').localeCompare(b.dataset.sortTitle || '');
-      }
-
-      return (b.dataset.updated_at || '').localeCompare(a.dataset.updated_at || '');
-    });
-
-    // 3. Grouping & Rendering
-    if (elements.grid) {
-      elements.grid.innerHTML = '';
-      document.querySelectorAll('.alphabet-divider').forEach(el => el.remove());
-
-      let currentGroup = '';
-      filtered.forEach(card => {
-        let groupKey = '';
-
-        if (sort === 'title') {
-          groupKey = (card.dataset.letter || '').toUpperCase();
-        } else if (sort === 'category') {
-          groupKey = card.querySelector('.card-category-label')?.textContent?.trim() || card.dataset.category || '';
-        } else if (sort === 'next_date') {
-          const d = card.dataset.next_date;
-          if (!d) groupKey = labels.noDate;
-          else if (d < todayStr) groupKey = labels.pastDate;
-          else groupKey = new Date(d).toLocaleDateString(currentLang, { month: 'long', year: 'numeric' });
-        } else if (sort === 'updated_at') {
-          const d = card.dataset.updated_at?.split('T')[0] || '';
-          if (d >= getDayOffset(-7)) groupKey = labels.thisWeek;
-          else if (d >= getDayOffset(-30)) groupKey = labels.thisMonth;
-          else if (d >= getDayOffset(-365)) groupKey = labels.thisYear;
-          else groupKey = labels.older;
-        }
-
-        if (groupKey && groupKey !== currentGroup) {
-          currentGroup = groupKey;
-          const divider = document.createElement('div');
-          divider.className = 'alphabet-divider';
-          divider.innerHTML = `<span>${currentGroup}</span>`;
-          elements.grid?.appendChild(divider);
-        }
-
-        card.style.display = isListMode ? 'grid' : 'flex';
-        elements.grid?.appendChild(card);
-      });
-    }
-
-    if (elements.countDisplay) elements.countDisplay.textContent = filtered.length.toString();
-    elements.noResults?.classList.toggle('hidden', filtered.length > 0);
-    syncUrl();
-  }
-
-  function getDayOffset(days: number) {
-    const d = new Date();
-    d.setDate(d.getDate() + days);
-    return d.toISOString().split('T')[0];
-  }
-
-  function syncUrl() {
-    const params = new URLSearchParams();
-    const q = elements.searchInput.value;
-    const cat = elements.catFilter.value;
-    const sort = elements.sortFilter.value;
-    if (q) params.set('q', q);
-    if (cat !== 'all') params.set('cat', cat);
-    if (sort !== 'updated_at') params.set('sort', sort);
-    
-    // Sauvegarde en session pour le retour arrière
-    sessionStorage.setItem('numindex-filters', JSON.stringify({ q, cat, sort }));
-
-    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-    window.history.replaceState({}, '', newUrl);
-  }
-
-  function setView(view: 'grid' | 'list') {
-    elements.grid?.classList.toggle('list-mode', view === 'list');
-    localStorage.setItem('numindex-view', view);
-    updateUI();
-  }
-
-  function toggleClearButton() {
-    if (elements.searchInput && elements.clearSearch) {
-      if (elements.searchInput.value.length > 0) {
-        elements.clearSearch.classList.remove('opacity-0', 'pointer-events-none');
-        elements.clearSearch.classList.add('opacity-100', 'pointer-events-auto');
-      } else {
-        elements.clearSearch.classList.add('opacity-0', 'pointer-events-none');
-        elements.clearSearch.classList.remove('opacity-100', 'pointer-events-auto');
-      }
-    }
-  }
-
-  function debounce(func: Function, wait: number) {
-    let timeout: any;
-    return (...args: any[]) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        func(...args);
-        syncUrl();
-      }, wait);
+    els.search.oninput = () => {
+      els.clear.classList.toggle('opacity-0', !els.search.value);
+      els.clear.classList.toggle('pointer-events-none', !els.search.value);
+      update(true);
     };
+    
+    els.clear.onclick = () => { 
+      els.search.value = ''; 
+      els.clear.classList.add('opacity-0', 'pointer-events-none');
+      els.search.focus();
+      update(true); 
+    };
+
+    els.cat.onchange = () => {
+      els.optNext.classList.toggle('hidden', els.cat.value !== 'evenement');
+      if (els.cat.value === 'evenement') {
+        els.sort.value = 'next_date';
+      } else if (els.cat.value === 'all') {
+        els.sort.value = 'updated_at';
+      } else {
+        els.sort.value = 'title';
+      }
+      update(true);
+    };
+    
+    els.sort.onchange = () => update(true);
+    els.view.onchange = () => {
+      localStorage.setItem('numindex_view', els.view.checked ? 'list' : 'grid');
+      render();
+    };
+    els.loadMoreBtn.onclick = () => { visibleCount += 20; render(); };
+
+    document.getElementById('btn-export-csv').onclick = exportCSV;
+    document.getElementById('btn-export-bookmarks').onclick = exportBookmarks;
+    document.getElementById('btn-export-calendar').onclick = copyCalendarLink;
+
+    update();
   }
 
-  const debouncedUpdate = debounce(updateUI, 150);
+  function copyCalendarLink() {
+    const url = 'webcal://' + window.location.host + '/api/events.ics';
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('btn-export-calendar');
+      const old = btn.textContent;
+      btn.textContent = currentLang === 'fr' ? 'Lien copié !' : 'Link copied!';
+      btn.classList.add('text-success');
+      setTimeout(() => { 
+        btn.textContent = old; 
+        btn.classList.remove('text-success');
+      }, 2000);
+    });
+  }
 
-  function getVisibleCards() {
-    return cards.filter(c => c.parentElement === elements.grid);
+  function update(reset = false) {
+    if (reset) visibleCount = 20;
+    const q = els.search.value.toLowerCase().trim();
+    const c = els.cat.value;
+    const s = els.sort.value;
+    const today = new Date().toISOString().split('T')[0];
+
+    filteredData = allData.filter(d => (c === 'all' || d.cat === c) && (!q || d.kw.includes(q)));
+
+    filteredData.sort((a, b) => {
+      if (s === 'next_date') {
+        const dA = a.next || '', dB = b.next || '';
+        if (!dA && !dB) return 0; if (!dA) return 1; if (!dB) return -1;
+        return (dA < today === dB < today) ? dA.localeCompare(dB) : (dA < today ? 1 : -1);
+      }
+      if (s === 'title') return a.title.localeCompare(b.title);
+      if (s === 'cat') return a.cat.localeCompare(b.cat) || a.title.localeCompare(b.title);
+      return b.up.localeCompare(a.up);
+    });
+
+    els.count.textContent = filteredData.length;
+    els.noRes.classList.toggle('hidden', filteredData.length > 0);
+    render();
+    
+    const p = new URLSearchParams();
+    if (q) p.set('q', q);
+    if (c !== 'all') p.set('cat', c);
+    if (s !== 'updated_at') p.set('sort', s);
+    const qs = p.toString();
+    const newURL = window.location.pathname + (qs ? '?' + qs : '');
+    if (window.location.search !== (qs ? '?' + qs : '')) {
+      window.history.replaceState({}, '', newURL);
+    }
+  }
+
+  function render() {
+    const isList = els.view.checked;
+    els.grid.className = isList ? 'flex flex-col gap-1 list-mode' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+    
+    const toShow = filteredData.slice(0, visibleCount);
+    let html = '';
+    let lastGroup = '';
+    const s = els.sort.value;
+    const today = new Date().toISOString().split('T')[0];
+
+    toShow.forEach(d => {
+      let group = '';
+      if (s === 'updated_at') {
+        const diff = (new Date() - new Date(d.up)) / 86400000;
+        group = diff < 7 ? t.thisWeek : diff < 30 ? t.thisMonth : diff < 365 ? t.thisYear : t.older;
+      } else if (s === 'title') {
+        group = d.title[0].toUpperCase();
+      } else if (s === 'next_date') {
+        group = !d.next ? t.noDate : d.next < today ? t.pastDate : new Date(d.next).toLocaleDateString(currentLang, {month:'long', year:'numeric'});
+      }
+
+      if (group && group !== lastGroup) {
+        lastGroup = group;
+        html += '<div class="col-span-full pt-6 pb-2 border-b border-stone-50 flex items-center gap-4 alphabet-divider"><span>' + group + '</span><div class="h-px bg-stone-100 flex-grow"></div></div>';
+      }
+
+      html += '<a href="/' + currentLang + '/resource/' + d.id + '" class="resource-card group bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all ' + (isList ? 'flex items-center p-3 h-14 gap-4' : 'flex flex-col') + '">';
+      if (!isList) {
+        html += '<div class="relative w-full aspect-video bg-stone-50 flex items-center justify-center overflow-hidden">';
+        if (d.imgUrl) {
+          html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy"/>';
+        } else {
+          html += '<svg class="w-10 h-10 text-stone-200"><use href="#cat-' + d.cat + '"/></svg>';
+        }
+        html += '</div>';
+      } else {
+        html += '<div class="card-list-icon-box flex-shrink-0"><svg class="w-6 h-6 text-stone-300"><use href="#cat-' + d.cat + '"/></svg></div>';
+      }
+      html += '<div class="p-4 flex-grow min-w-0">';
+      html += '<span class="card-category-label text-[7px] font-black uppercase tracking-tighter text-stone-400 block">' + d.catLabel + '</span>';
+      html += '<h2 class="text-[12px] font-bold text-stone-800 truncate">' + d.title + '</h2>';
+      html += '<p class="card-desc text-[10px] text-stone-500 mt-1 ' + (isList ? 'truncate' : 'line-clamp-2') + '">' + (d.desc || '') + '</p>';
+      html += '</div></a>';
+    });
+
+    els.grid.innerHTML = html;
+    els.loadMoreCont.classList.toggle('hidden', filteredData.length <= visibleCount);
   }
 
   function exportCSV() {
-    const visibleCards = getVisibleCards();
-    const headers = ['ID', 'Title', 'Category', 'Link', 'Description', 'Tags', 'City', 'Next Date', 'Related IDs', 'Updated At'];
-    const rows = [headers.join(',')];
-    visibleCards.forEach(card => {
-      const row = [
-        card.dataset.id || '',
-        card.querySelector('h2')?.textContent?.trim() || '',
-        card.dataset.category || '',
-        card.dataset.link || '',
-        card.querySelector('.card-desc')?.textContent?.trim() || '',
-        card.dataset.tags || '',
-        card.dataset.city || '',
-        card.dataset.next_date || '',
-        card.dataset.relatedIds || '',
-        card.dataset.updated_at || ''
-      ].map(v => `"${v.replace(/"/g, '""')}"`);
-      rows.push(row.join(','));
-    });
-    downloadFile(rows.join("\n"), `numindex_export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+    const headers = "ID,Title,Category,Link,Description,Updated\n";
+    const rows = filteredData.map(d => '"' + d.id + '","' + d.title + '","' + d.cat + '","' + (d.link || '') + '","' + (d.desc || '').replace(/"/g, '""') + '","' + d.up + '"').join("\n");
+    const now = new Date().toISOString().replace(/[:.]/g, '-');
+    download(headers + rows, 'numindex_export_' + now + '.csv', 'text/csv');
   }
 
   function exportBookmarks() {
-    const visibleCards = getVisibleCards();
-    const now = Math.floor(Date.now() / 1000);
-    let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
-<!-- This is an automatically generated file.
-     It will be read and classified if you import it. -->
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-<TITLE>Bookmarks</TITLE>
-<H1>Bookmarks</H1>
-<DL><p>
-    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">numindex.org Export (${new Date().toLocaleDateString()})</H3>
-    <DL><p>
-`;
-
-    visibleCards.forEach(card => {
-      const title = card.querySelector('h2')?.textContent?.trim() || 'Untitled';
-      const link = card.dataset.link || '#';
-      const desc = card.querySelector('.card-desc')?.textContent?.trim() || '';
-      const tags = card.dataset.tags || '';
-      
-      html += `        <DT><A HREF="${link}" ADD_DATE="${now}" ICON="" TAGS="${tags}">${title}</A>
-        <DD>${desc}
-`;
-    });
-
-    html += `    </DL><p>
-</DL><p>`;
-
-    downloadFile(html, `numindex_bookmarks_${new Date().toISOString().split('T')[0]}.html`, 'text/html;charset=utf-8;');
+    let html = '<!DOCTYPE NETSCAPE-Bookmark-file-1><TITLE>Bookmarks</TITLE><H1>Bookmarks</H1><DL><p>';
+    filteredData.forEach(d => { html += '<DT><A HREF="' + (d.link || '#') + '">' + d.title + '</A><DD>' + (d.desc || '') + '\n'; });
+    const now = new Date().toISOString().replace(/[:.]/g, '-');
+    download(html + '</DL><p>', 'numindex_bookmarks_' + now + '.html', 'text/html');
   }
 
-  function downloadFile(content: string, filename: string, type: string) {
-    try {
-      const blob = new Blob(["\ufeff" + content], { type });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error("❌ Failed to trigger download:", err);
-    }
+  function download(content, name, type) {
+    const blob = new Blob([content], { type });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = name;
+    link.click();
   }
 
-  // Execution immediate
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  init();
 </script>
+
+<style is:global>
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .alphabet-divider span { font-size: 1.5rem; font-weight: 900; color: #10b981; opacity: 0.3; text-transform: capitalize; }
+</style>
