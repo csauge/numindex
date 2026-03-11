@@ -1,0 +1,163 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+
+const { lang } = Astro.params;
+
+const translations = {
+  fr: {
+    title: "Créer un compte",
+    fullName: "Nom complet",
+    email: "Email",
+    password: "Mot de passe",
+    submit: "S'inscrire",
+    hasAccount: "Déjà un compte ?",
+    login: "Se connecter",
+    error: "Erreur lors de la création du compte.",
+    success: "Compte créé ! Vous pouvez maintenant vous connecter."
+  },
+  en: {
+    title: "Create an account",
+    fullName: "Full Name",
+    email: "Email",
+    password: "Password",
+    submit: "Sign up",
+    hasAccount: "Already have an account?",
+    login: "Login",
+    error: "Error creating account.",
+    success: "Account created! You can now login."
+  }
+};
+const t = translations[lang as keyof typeof translations] || translations.fr;
+---
+
+<Layout title={t.title} lang={lang as string}>
+  <div class="max-w-md mx-auto py-12">
+    <div class="bg-white p-8 rounded-3xl border border-stone-200 shadow-xl shadow-stone-100/50">
+      <h1 class="text-3xl font-black mb-6 text-center">{t.title}</h1>
+      
+      <form id="register-form" class="space-y-4">
+        <div class="form-control">
+          <label class="label"><span class="label-text font-bold">{t.fullName}</span></label>
+          <input type="text" name="full_name" required class="input input-bordered rounded-2xl" />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text font-bold">{t.email}</span></label>
+          <input type="email" name="email" required class="input input-bordered rounded-2xl" />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text font-bold">{t.password}</span></label>
+          <input type="password" name="password" required class="input input-bordered rounded-2xl" />
+        </div>
+        
+        <div id="error-message" class="text-error text-sm font-bold hidden bg-red-50 p-3 rounded-xl border border-red-100 text-center">
+          {t.error}
+        </div>
+        <div id="success-message" class="text-success text-sm font-bold hidden bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center">
+          {t.success}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full rounded-2xl font-black mt-4">
+          {t.submit}
+        </button>
+      </form>
+
+      <div class="mt-8 pt-8 border-t border-stone-100 text-center text-sm">
+        <p class="text-stone-400 font-medium">{t.hasAccount}</p>
+        <a href={`/${lang}/login`} class="text-primary font-bold hover:underline mt-2 inline-block">
+          {t.login}
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase/client';
+
+  const form = document.getElementById('register-form') as HTMLFormElement;
+  const errorMsg = document.getElementById('error-message');
+  const successMsg = document.getElementById('success-message');
+  const lang = (document.documentElement.lang || 'fr') as 'fr' | 'en';
+
+  // Garde : rediriger si déjà connecté
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      const target = redirect ? (redirect.startsWith('/') ? redirect : `/${lang}/${redirect}`) : `/${lang}`;
+      window.location.href = target;
+    }
+  }
+  checkSession();
+
+  // Preserver le param redirect dans le lien vers login
+  const loginLink = document.querySelector('a[href*="/login"]') as HTMLAnchorElement;
+  if (loginLink) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get('redirect');
+    if (redirect) {
+      loginLink.href += `?redirect=${encodeURIComponent(redirect)}`;
+    }
+  }
+
+  // Mapping des erreurs Supabase courantes
+  const errorTranslations = {
+    fr: {
+      "User already registered": "Cet utilisateur est déjà inscrit.",
+      "Password should be at least 6 characters": "Le mot de passe doit faire au moins 6 caractères.",
+      "Invalid email structure": "Le format de l'email est invalide.",
+      "Signup is disabled": "Les inscriptions sont actuellement désactivées.",
+      "To signup, please provide your email": "Veuillez renseigner votre adresse email."
+    },
+    en: {} 
+  };
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (errorMsg) errorMsg.classList.add('hidden');
+    if (successMsg) successMsg.classList.add('hidden');
+    
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const fullName = formData.get('full_name') as string;
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        }
+      }
+    });
+
+    if (error) {
+      if (errorMsg) {
+        const translations = errorTranslations[lang] || errorTranslations.fr;
+        let translation = (translations as any)[error.message] || error.message;
+        if (lang === 'en' && !translation.endsWith('.')) translation += '.';
+        errorMsg.innerText = translation;
+        errorMsg.classList.remove('hidden');
+      }
+    } else {
+      // Redirection intelligente après inscription
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      const target = redirect ? (redirect.startsWith('/') ? redirect : `/${lang}/${redirect}`) : `/${lang}`;
+      
+      // Update success message based on whether session exists (auto-login enabled or not)
+      if (data.session) {
+        const successText = lang === 'fr' ? 'Compte créé ! Redirection...' : 'Account created! Redirecting...';
+        if (successMsg) successMsg.innerText = successText;
+      }
+      successMsg?.classList.remove('hidden');
+      
+      setTimeout(() => {
+        window.location.href = target;
+      }, 1500);
+    }
+  });
+</script>

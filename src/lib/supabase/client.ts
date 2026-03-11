@@ -19,13 +19,16 @@ interface ImageOptions {
 
 /**
  * Utility function to get the public URL for an image in the suggestions bucket.
- * Supports Supabase Image Transformations if available on the project.
+ * Supports Supabase Image Transformations if enabled on the project.
  */
 export const getImageUrl = (path: string | null | undefined, options: ImageOptions = {}) => {
   if (!path || !supabase) return null;
   
+  // Use transformations only if width/height is provided AND the feature is likely enabled
+  const useTransform = (options.width || options.height) && import.meta.env.PUBLIC_SUPABASE_IMAGE_TRANSFORM === 'true';
+
   const { data } = supabase.storage.from('suggestions').getPublicUrl(path, {
-    transform: options.width || options.height ? {
+    transform: useTransform ? {
       width: options.width,
       height: options.height,
       quality: options.quality || 80,

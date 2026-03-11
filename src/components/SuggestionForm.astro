@@ -426,6 +426,8 @@ const initial = {
     btn.disabled = true; btn.innerText = t.loading;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       let imageUrl = existingData?.image_url || null;
       if (elements.img.files?.[0]) imageUrl = await uploadCompressedImage(elements.img.files[0]);
 
@@ -447,7 +449,8 @@ const initial = {
         action: currentAction,
         status: 'pending',
         resource_id: sid ? (existingData as Suggestion).resource_id : (rid || null),
-        reason: elements.reason.value || null
+        reason: elements.reason.value || null,
+        submitted_by: (isModeration && (existingData as Suggestion)?.submitted_by) ? (existingData as Suggestion).submitted_by : (session?.user.id || null)
       };
 
       if (sid) {

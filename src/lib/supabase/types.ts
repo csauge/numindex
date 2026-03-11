@@ -1,3 +1,13 @@
+export type UserRole = 'user' | 'admin';
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  role: UserRole;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Resource {
   id: string;
   title: string;
@@ -10,6 +20,8 @@ export interface Resource {
   metadata: Record<string, any>;
   created_at: string;
   updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
 }
 
 export type SuggestionStatus = 'pending' | 'approved' | 'rejected';

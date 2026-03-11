@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:4322",
+      "localStorage": [
+        {
+          "name": "sb-127-auth-token",
+          "value": "{\"access_token\":\"eyJhbGciOiJFUzI1NiIsImtpZCI6ImI4MTI2OWYxLTIxZDgtNGYyZS1iNzE5LWMyMjQwYTg0MGQ5MCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJjOWQyNjYyYi1iOWExLTQ0NTQtYjc1Yy01MGY5ZmNhYzQzZjMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzczMjUyNTQzLCJpYXQiOjE3NzMyNDg5NDMsImVtYWlsIjoiYWRtaW5AbnVtaW5kZXgub3JnIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiQWRtaW4gVGVzdCJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzczMjQ4OTQzfV0sInNlc3Npb25faWQiOiI2MjdiMzliYy0zNDQ5LTQ4OWItOGQ0Ny1iODI3NWQ3YWM1MDIiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.OujI_iigG5W6bOYPCQWbkFW-LYUWNZHKl-QzbLKWV7l7KeWKwMjb4lPRn2yQOML_qe8aYhaOmaCez7AW64FUQA\",\"token_type\":\"bearer\",\"expires_in\":3600,\"expires_at\":1773252543,\"refresh_token\":\"74oj5nrmktst\",\"user\":{\"id\":\"c9d2662b-b9a1-4454-b75c-50f9fcac43f3\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"admin@numindex.org\",\"email_confirmed_at\":\"2026-03-11T16:21:51.461182Z\",\"phone\":\"\",\"confirmed_at\":\"2026-03-11T16:21:51.461182Z\",\"last_sign_in_at\":\"2026-03-11T17:09:03.766300045Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"email_verified\":true,\"full_name\":\"Admin Test\"},\"identities\":[{\"identity_id\":\"86edde7d-439b-4055-af28-bceb473c9040\",\"id\":\"c9d2662b-b9a1-4454-b75c-50f9fcac43f3\",\"user_id\":\"c9d2662b-b9a1-4454-b75c-50f9fcac43f3\",\"identity_data\":{\"email\":\"admin@numindex.org\",\"email_verified\":false,\"phone_verified\":false,\"sub\":\"c9d2662b-b9a1-4454-b75c-50f9fcac43f3\"},\"provider\":\"email\",\"last_sign_in_at\":\"2026-03-11T16:21:51.45941Z\",\"created_at\":\"2026-03-11T16:21:51.459434Z\",\"updated_at\":\"2026-03-11T16:21:51.459434Z\",\"email\":\"admin@numindex.org\"}],\"created_at\":\"2026-03-11T16:21:51.457062Z\",\"updated_at\":\"2026-03-11T17:09:03.770699Z\",\"is_anonymous\":false},\"weak_password\":null}"
+        }
+      ]
+    }
+  ]
+}

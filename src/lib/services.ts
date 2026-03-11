@@ -1,5 +1,36 @@
 import { supabase } from './supabase/client';
-import type { Resource, Suggestion } from './supabase/types';
+import type { Resource, Suggestion, Profile } from './supabase/types';
+
+/**
+ * Get current session
+ */
+export async function getCurrentSession() {
+  if (!supabase) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}
+
+/**
+ * Get current user profile
+ */
+export async function getProfile(userId: string) {
+  if (!supabase || !userId) return null;
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  return data as Profile;
+}
+
+/**
+ * Get all profiles for mapping IDs to names
+ */
+export async function fetchAllProfiles() {
+  if (!supabase) return [];
+  const { data } = await supabase.from('profiles').select('id, full_name');
+  return (data || []) as Profile[];
+}
 
 /**
  * Recherche de villes via l'API Photon

@@ -1,6 +1,5 @@
 ---
 import { ACTION_ICONS } from '../utils/categories';
-import { fetchPendingSuggestionsCount } from '../lib/services';
 
 interface Props {
   title: string;
@@ -8,11 +7,9 @@ interface Props {
 }
 const { title, lang = 'fr' } = Astro.props;
 
-const pendingCount = await fetchPendingSuggestionsCount();
-
 const translations = {
-  fr: { propose: "Ajouter", skip: "Passer au contenu", admin: "Modérer" },
-  en: { propose: "Add", skip: "Skip to content", admin: "Moderate" }
+  fr: { propose: "Ajouter", skip: "Passer au contenu", admin: "Modérer", login: "Connexion", logout: "Déconnexion" },
+  en: { propose: "Add", skip: "Skip to content", admin: "Moderate", login: "Login", logout: "Logout" }
 };
 const t = translations[lang as keyof typeof translations] || translations.fr;
 ---
@@ -47,6 +44,9 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         background-size: 24px 24px;
         background-attachment: fixed;
       }
+      [data-auth-only], [data-admin-only] {
+        display: none;
+      }
     </style>
   </head>
   <body class="min-h-screen flex flex-col font-sans text-stone-800 antialiased">
@@ -62,6 +62,8 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         {/* Bouton Modérer (Admin) */}
         <a 
           href={`/${lang}/admin`} 
+          id="admin-btn"
+          data-admin-only
           class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-4 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all hover:scale-105 active:scale-95 relative gap-1.5"
           aria-label={lang === 'fr' ? 'Accéder à la modération' : 'Access moderation'}
         >
@@ -69,14 +71,10 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.moderate} />
             </svg>
-            {pendingCount > 0 && (
-              <span class="absolute -top-1.5 -right-1.5 flex h-4 w-4">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold">
-                  {pendingCount > 99 ? '99+' : pendingCount}
-                </span>
-              </span>
-            )}
+            <span id="pending-badge" class="hidden absolute -top-1.5 -right-1.5 h-4 w-4">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span id="pending-count" class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold"></span>
+            </span>
           </div>
           <span class="hidden md:inline">{t.admin}</span>
         </a>
@@ -84,6 +82,8 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         {/* Bouton Ajouter */}
         <a 
           href={`/${lang}/propose`} 
+          id="propose-btn"
+          data-auth-only
           class="btn btn-primary btn-sm font-bold min-h-0 h-9 px-4 rounded-full border-none shadow-md shadow-emerald-200/50 hover:bg-[#52b788] hover:scale-105 active:scale-95 transition-all gap-1.5"
           aria-label={lang === 'fr' ? 'Proposer une nouvelle ressource' : 'Propose a new resource'}
         >
@@ -92,6 +92,15 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           </svg>
           <span class="hidden md:inline">{t.propose}</span>
         </a>
+
+        {/* User Menu */}
+        <div id="user-menu" class="flex items-center gap-2">
+          <a href={`/${lang}/login`} id="login-link" class="text-xs font-bold text-stone-400 hover:text-primary transition-colors px-2">{t.login}</a>
+          <div id="user-info" class="hidden items-center gap-2">
+            <span id="user-name" class="text-[10px] font-black uppercase text-stone-400 max-w-[100px] truncate"></span>
+            <button id="logout-btn" class="text-[10px] font-bold text-red-400 hover:text-red-600 transition-colors uppercase tracking-widest">{t.logout}</button>
+          </div>
+        </div>
 
         {/* Sélecteur de langue (Swap) */}
         <div class="ml-2">
@@ -122,6 +131,80 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     </footer>
 
     <script>
+      import { supabase } from '../lib/supabase/client';
+      import { fetchPendingSuggestionsCount } from '../lib/services';
+
+      async function updateUI(session: any) {
+        const loginLink = document.getElementById('login-link');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const authOnlyEls = document.querySelectorAll('[data-auth-only]');
+        const adminOnlyEls = document.querySelectorAll('[data-admin-only]');
+        const pendingBadge = document.getElementById('pending-badge');
+        const pendingCountEl = document.getElementById('pending-count');
+
+        if (session) {
+          loginLink?.classList.add('hidden');
+          userInfo?.classList.remove('hidden');
+          userInfo?.classList.add('flex');
+          
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (userName) userName.innerText = profile?.full_name || session.user.email?.split('@')[0] || 'User';
+          
+          authOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'inline-flex'));
+          
+          if (profile?.role === 'admin') {
+            adminOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'inline-flex'));
+            const count = await fetchPendingSuggestionsCount();
+            if (count > 0 && pendingBadge && pendingCountEl) {
+              pendingCountEl.innerText = count > 99 ? '99+' : count.toString();
+              pendingBadge.classList.remove('hidden');
+              pendingBadge.classList.add('flex');
+            }
+          }
+        } else {
+          loginLink?.classList.remove('hidden');
+          userInfo?.classList.add('hidden');
+          authOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'none'));
+          adminOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'none'));
+          pendingBadge?.classList.add('hidden');
+
+          const path = window.location.pathname;
+          const isProtected = path.includes('/propose') || path.includes('/admin');
+          const hasValidLang = path.startsWith('/fr/') || path.startsWith('/en/');
+
+          if (isProtected && hasValidLang) {
+            const currentLang = document.documentElement.lang || 'fr';
+            const currentPath = window.location.pathname + window.location.search;
+            window.location.replace(`/${currentLang}/login?redirect=${encodeURIComponent(currentPath)}`);
+          }
+        }
+      }
+
+      async function initAuth() {
+        if (!supabase) return;
+
+        // Écouter les changements d'état (plus robuste)
+        supabase.auth.onAuthStateChange((_event, session) => {
+          updateUI(session);
+        });
+
+        // Premier check
+        const { data: { session } } = await supabase.auth.getSession();
+        updateUI(session);
+
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn?.addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          window.location.reload();
+        });
+      }
+
       function initLangToggle() {
         const toggle = document.getElementById('lang-toggle') as HTMLInputElement;
         if (!toggle) return;
@@ -134,7 +217,15 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           window.location.href = newPath + search;
         };
       }
+
+      initAuth();
       initLangToggle();
+      
+      // Re-init on page transitions (if using ViewTransitions)
+      document.addEventListener('astro:after-swap', () => {
+        initAuth();
+        initLangToggle();
+      });
     </script>
   </body>
 </html>

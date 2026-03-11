@@ -4,7 +4,8 @@ export const prerender = false;
 import Layout from '../../../layouts/Layout.astro';
 import { getCategoryLabel, getCategoryIcon, getCategoryType, ACTION_ICONS } from '../../../utils/categories';
 import { supabase, getImageUrl } from '../../../lib/supabase/client';
-import type { Resource } from '../../../lib/supabase/types';
+import type { Resource, Profile } from '../../../lib/supabase/types';
+import { getProfile } from '../../../lib/services';
 
 const { id, lang } = Astro.params;
 
@@ -16,6 +17,10 @@ const { data: res } = await supabase
   .single();
 
 if (!res) return Astro.redirect(`/${lang}`);
+
+// Fetch profiles for creators/editors
+const createdByProfile = res.created_by ? await getProfile(res.created_by) : null;
+const updatedByProfile = res.updated_by ? await getProfile(res.updated_by) : null;
 
 // Fetch related entities (if this is a resource) or children (if this is an entity)
 let relatedResources: Resource[] = [];
@@ -42,6 +47,7 @@ const translations = {
     meta: "Informations",
     created: "Ajouté le",
     updated: "Mis à jour le",
+    by: "par",
     edit: "Modifier",
     report: "Supprimer",
     published: "Publié le",
@@ -97,7 +103,7 @@ const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day
             {t.visit}
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           </a>
-          <div class="flex gap-2">
+          <div class="flex gap-2" data-auth-only>
             <a href={`/${lang}/propose?id=${res.id}&action=update`} class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-primary gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.update} /></svg>
               {t.edit}
@@ -175,12 +181,18 @@ const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day
         <div class="pt-8 border-t border-stone-100 flex flex-wrap gap-x-8 gap-y-4">
           <div>
             <p class="text-[9px] font-black uppercase tracking-tighter text-stone-300">{t.created}</p>
-            <p class="text-xs font-bold text-stone-500">{formatDate(res.created_at)}</p>
+            <p class="text-xs font-bold text-stone-500">
+              {formatDate(res.created_at)}
+              {createdByProfile && <span class="text-stone-300 font-medium"> {t.by} {createdByProfile.full_name}</span>}
+            </p>
           </div>
           {res.updated_at !== res.created_at && (
             <div>
               <p class="text-[9px] font-black uppercase tracking-tighter text-stone-300">{t.updated}</p>
-              <p class="text-xs font-bold text-stone-500">{formatDate(res.updated_at)}</p>
+              <p class="text-xs font-bold text-stone-500">
+                {formatDate(res.updated_at)}
+                {updatedByProfile && <span class="text-stone-300 font-medium"> {t.by} {updatedByProfile.full_name}</span>}
+              </p>
             </div>
           )}
         </div>

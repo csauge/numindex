@@ -1,0 +1,124 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+
+const { lang } = Astro.params;
+
+const translations = {
+  fr: {
+    title: "Connexion",
+    email: "Email",
+    password: "Mot de passe",
+    submit: "Se connecter",
+    noAccount: "Pas encore de compte ?",
+    register: "Créer un compte",
+    error: "Erreur de connexion. Vérifiez vos identifiants.",
+    success: "Connexion réussie !"
+  },
+  en: {
+    title: "Login",
+    email: "Email",
+    password: "Password",
+    submit: "Login",
+    noAccount: "Don't have an account?",
+    register: "Create an account",
+    error: "Login error. Check your credentials.",
+    success: "Login successful!"
+  }
+};
+const t = translations[lang as keyof typeof translations] || translations.fr;
+---
+
+<Layout title={t.title} lang={lang as string}>
+  <div class="max-w-md mx-auto py-12">
+    <div class="bg-white p-8 rounded-3xl border border-stone-200 shadow-xl shadow-stone-100/50">
+      <h1 class="text-3xl font-black mb-6 text-center">{t.title}</h1>
+      
+      <form id="login-form" class="space-y-4">
+        <div class="form-control">
+          <label class="label"><span class="label-text font-bold">{t.email}</span></label>
+          <input type="email" name="email" required class="input input-bordered rounded-2xl" />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text font-bold">{t.password}</span></label>
+          <input type="password" name="password" required class="input input-bordered rounded-2xl" />
+        </div>
+        
+        <div id="error-message" class="text-error text-sm font-bold hidden bg-red-50 p-3 rounded-xl border border-red-100 text-center">
+          {t.error}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full rounded-2xl font-black mt-4">
+          {t.submit}
+        </button>
+      </form>
+
+      <div class="mt-8 pt-8 border-t border-stone-100 text-center text-sm">
+        <p class="text-stone-400 font-medium">{t.noAccount}</p>
+        <a href={`/${lang}/register`} class="text-primary font-bold hover:underline mt-2 inline-block">
+          {t.register}
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase/client';
+
+  const form = document.getElementById('login-form') as HTMLFormElement;
+  const errorMsg = document.getElementById('error-message');
+  const lang = (document.documentElement.lang || 'fr') as 'fr' | 'en';
+
+  // Garde : rediriger si déjà connecté
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      const target = redirect ? (redirect.startsWith('/') ? redirect : `/${lang}/${redirect}`) : `/${lang}`;
+      window.location.href = target;
+    }
+  }
+  checkSession();
+
+  // Preserver le param redirect dans le lien vers register
+  const regLink = document.querySelector('a[href*="/register"]') as HTMLAnchorElement;
+  if (regLink) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get('redirect');
+    if (redirect) {
+      regLink.href += `?redirect=${encodeURIComponent(redirect)}`;
+    }
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg?.classList.add('hidden');
+    
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      errorMsg?.classList.remove('hidden');
+    } else {
+      // Success - check for redirect param
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      
+      if (redirect) {
+        // Le param peut etre un path complet ou juste un mot clé
+        const target = redirect.startsWith('/') ? redirect : `/${lang}/${redirect}`;
+        window.location.href = target;
+      } else {
+        window.location.href = `/${lang}`;
+      }
+    }
+  });
+</script>

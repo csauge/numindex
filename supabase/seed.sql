@@ -1,6 +1,22 @@
 -- Seed data for numindex.org 🌿
 -- This file is used to populate your local database during `npx supabase db reset`
 
+-- 0. Seed Users (for local dev and tests)
+-- Password is 'password123'
+INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, raw_user_meta_data, created_at, updated_at, role, aud, confirmation_token)
+VALUES 
+  ('00000000-0000-0000-0000-000000000000', 'admin@numindex.org', crypt('password123', gen_salt('bf')), now(), '{"full_name": "Admin Test"}', now(), now(), 'authenticated', 'authenticated', '');
+
+INSERT INTO public.profiles (id, full_name, role)
+VALUES 
+  ('00000000-0000-0000-0000-000000000000', 'Admin Test', 'admin')
+ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role;
+
+-- 0.1 Ensure Storage Buckets
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('suggestions', 'suggestions', true)
+ON CONFLICT (id) DO NOTHING;
+
 -- 1. Entities (Companies, Associations, etc.)
 INSERT INTO public.resources (id, title, description, link, category, image_url, tags, metadata)
 VALUES 

@@ -17,5 +17,9 @@ export default defineConfig({
     routing: {
       prefixDefaultLocale: true
     }
+  },
+  redirects: {
+    '/admin': '/fr/admin',
+    '/propose': '/fr/propose',
   }
 });
