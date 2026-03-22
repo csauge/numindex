@@ -17,6 +17,7 @@ pnpm-debug.log*
 /blob-report/
 /playwright-log.txt
 /playwright/.cache/
+/playwright/.auth/
 
 # Environment
 .env
