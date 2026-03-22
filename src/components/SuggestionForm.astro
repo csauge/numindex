@@ -48,8 +48,8 @@ const t = {
     loading: 'Envoi...',
     success: isModeration ? 'Corrections enregistrées !' : 'Suggestion envoyée !',
     error: 'Erreur technique.',
-    city: 'Ville',
-    cityPlaceholder: 'Rechercher...',
+    city: 'Lieu / Adresse',
+    cityPlaceholder: 'Ex: 12 rue de la Paix, Paris',
     pubDate: 'Date parution',
     nextDate: 'Prochaine date',
   },
@@ -74,8 +74,8 @@ const t = {
     loading: 'Sending...',
     success: isModeration ? 'Corrections saved!' : 'Suggestion sent!',
     error: 'Error occurred.',
-    city: 'City',
-    cityPlaceholder: 'Search...',
+    city: 'Location / Address',
+    cityPlaceholder: 'Ex: 12 Oxford St, London',
     pubDate: 'Publication date',
     nextDate: 'Next date',
   }
@@ -211,7 +211,7 @@ const initial = {
 <script>
   import { supabase, getImageUrl } from '../lib/supabase/client';
   import { getCategoryIcon, getCategoryLabel, getCategoryType, getCategoryGroup, ACTION_ICONS } from '../utils/categories';
-  import { searchCities, uploadCompressedImage, fetchEntities, fetchResourceById, fetchSuggestionById } from '../lib/services';
+  import { searchAddresses, uploadCompressedImage, fetchEntities, fetchResourceById, fetchSuggestionById } from '../lib/services';
   import type { Resource, SuggestionAction, Suggestion } from '../lib/supabase/types';
 
   const form = document.getElementById('suggestion-form') as HTMLFormElement;
@@ -338,7 +338,7 @@ const initial = {
     const val = (e.target as HTMLInputElement).value;
     if (val.length < 2) return elements.cityResults!.classList.add('hidden');
     photonTimer = setTimeout(async () => {
-      const findRes = await searchCities(val, lang!);
+      const findRes = await searchAddresses(val, lang!);
       elements.cityResults!.innerHTML = findRes.map(c => `
         <button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50 border-b last:border-none" data-label="${c.label}">
           <p class="font-bold text-sm">${c.name}</p><p class="text-[10px] text-stone-400">${c.sub}</p>

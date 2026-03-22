@@ -33,21 +33,26 @@ export async function fetchAllProfiles() {
 }
 
 /**
- * Recherche de villes via l'API Photon
+ * Recherche d'adresses ou de lieux via l'API Photon
  */
-export async function searchCities(query: string, lang: string) {
+export async function searchAddresses(query: string, lang: string) {
   try {
     const response = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10&lang=${lang}`);
     const data = await response.json();
     if (!data.features) return [];
 
     return data.features
-      .filter((f: any) => f.properties.osm_key === 'place' && ['city', 'town', 'village', 'hamlet'].includes(f.properties.osm_value))
-      .map((f: any) => ({
-        name: f.properties.name,
-        sub: [f.properties.city || f.properties.state, f.properties.country].filter(Boolean).join(', '),
-        label: [f.properties.name, f.properties.country].filter(Boolean).join(', ')
-      }))
+      .map((f: any) => {
+        const p = f.properties;
+        const name = [p.housenumber, p.street, p.name].filter(Boolean).join(' ');
+        const sub = [p.postcode, p.city || p.town || p.village, p.state, p.country].filter(Boolean).join(', ');
+        
+        return {
+          name,
+          sub,
+          label: `${name}, ${sub}`.replace(/^, /, '')
+        };
+      })
       .slice(0, 5);
   } catch (err) {
     console.error('Photon API Error:', err);
