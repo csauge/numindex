@@ -95,9 +95,50 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         {/* User Menu */}
         <div id="user-menu" class="flex items-center gap-2">
           <a href={`/${lang}/login`} id="login-link" class="text-xs font-bold text-stone-400 hover:text-primary transition-colors px-2">{t.login}</a>
-          <div id="user-info" class="hidden items-center gap-2">
-            <span id="user-name" class="text-[10px] font-black uppercase text-stone-400 max-w-[100px] truncate"></span>
-            <button id="logout-btn" class="text-[10px] font-bold text-red-400 hover:text-red-600 transition-colors uppercase tracking-widest">{t.logout}</button>
+          <div id="user-info" class="hidden dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost h-auto py-1 px-1 md:pl-1 md:pr-3 flex items-center gap-2 rounded-full border border-stone-100 hover:bg-stone-50 transition-all group">
+              <div class="avatar placeholder">
+                <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-[10px] md:text-xs uppercase overflow-hidden group-hover:scale-105 transition-transform">
+                  <span id="user-initials" class="leading-none"></span>
+                </div>
+              </div>
+              <div class="hidden md:flex flex-col items-start text-left">
+                <span id="user-name-trigger" class="text-xs font-bold text-stone-700 leading-tight truncate max-w-[100px]"></span>
+                <span class="text-[9px] font-medium text-stone-400 uppercase tracking-wider">{lang === 'fr' ? 'Mon Compte' : 'My Account'}</span>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="hidden md:block h-3 w-3 text-stone-300 group-hover:text-stone-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <ul tabindex="0" class="mt-3 z-[100] p-2 shadow-2xl menu menu-sm dropdown-content bg-white rounded-2xl w-64 border border-stone-100">
+              <div class="px-4 py-3 border-b border-stone-50 mb-2 flex items-center gap-3 overflow-hidden bg-stone-50/50 rounded-t-xl">
+                <div class="avatar placeholder flex-shrink-0">
+                  <div class="bg-emerald-100 text-emerald-700 rounded-full w-10 h-10 flex items-center justify-center shadow-inner">
+                    <span id="user-initials-menu" class="text-xs font-black uppercase leading-none"></span>
+                  </div>
+                </div>
+                <div class="flex flex-col min-w-0">
+                  <span id="user-name" class="font-bold text-stone-800 truncate leading-none mb-1"></span>
+                  <span id="user-email" class="text-[10px] text-stone-400 truncate leading-none"></span>
+                </div>
+              </div>
+              <li>
+                <a href={`/${lang}/profile`} class="py-3 font-bold text-stone-600 hover:text-primary active:bg-emerald-50 active:text-primary rounded-xl transition-all">
+                  <div class="bg-white p-1.5 rounded-lg border border-stone-100 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  </div>
+                  <span>{lang === 'fr' ? 'Tableau de bord' : 'Dashboard'}</span>
+                </a>
+              </li>
+              <li class="mt-1">
+                <button id="logout-btn" class="py-3 font-bold text-red-400 hover:text-red-600 hover:bg-red-50 active:bg-red-100 rounded-xl">
+                  <div class="bg-red-50/50 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  </div>
+                  <span>{t.logout}</span>
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -137,6 +178,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         const loginLink = document.getElementById('login-link');
         const userInfo = document.getElementById('user-info');
         const userName = document.getElementById('user-name');
+        const userInitials = document.getElementById('user-initials');
         const authOnlyEls = document.querySelectorAll('[data-auth-only]');
         const adminOnlyEls = document.querySelectorAll('[data-admin-only]');
         const pendingBadge = document.getElementById('pending-badge');
@@ -145,7 +187,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         if (session) {
           loginLink?.classList.add('hidden');
           userInfo?.classList.remove('hidden');
-          userInfo?.classList.add('flex');
+          userInfo?.classList.add('inline-block');
           
           const { data: profile } = await supabase
             .from('profiles')
@@ -153,9 +195,25 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
             .eq('id', session.user.id)
             .single();
 
-          if (userName) userName.innerText = profile?.full_name || session.user.email?.split('@')[0] || 'User';
+          const fullName = profile?.full_name || session.user.email?.split('@')[0] || 'User';
+          const userEmail = session.user.email || '';
+          const initials = fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase();
+
+          if (userName) userName.innerText = fullName;
+          
+          const userNameTrigger = document.getElementById('user-name-trigger');
+          if (userNameTrigger) userNameTrigger.innerText = fullName;
+
+          const userEmailEl = document.getElementById('user-email');
+          if (userEmailEl) userEmailEl.innerText = userEmail;
+
+          if (userInitials) userInitials.innerText = initials;
+          
+          const userInitialsMenu = document.getElementById('user-initials-menu');
+          if (userInitialsMenu) userInitialsMenu.innerText = initials;
           
           authOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'inline-flex'));
+
           
           if (profile?.role === 'admin') {
             adminOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'inline-flex'));
@@ -169,6 +227,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         } else {
           loginLink?.classList.remove('hidden');
           userInfo?.classList.add('hidden');
+          userInfo?.classList.remove('inline-block');
           authOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'none'));
           adminOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'none'));
           pendingBadge?.classList.add('hidden');
