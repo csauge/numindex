@@ -83,7 +83,6 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         <a 
           href={`/${lang}/propose`} 
           id="propose-btn"
-          data-auth-only
           class="btn btn-primary btn-sm font-bold min-h-0 h-9 px-4 rounded-full border-none shadow-md shadow-emerald-200/50 hover:bg-[#52b788] hover:scale-105 active:scale-95 transition-all gap-1.5"
           aria-label={lang === 'fr' ? 'Proposer une nouvelle ressource' : 'Propose a new resource'}
         >

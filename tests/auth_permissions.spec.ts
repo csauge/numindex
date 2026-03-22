@@ -17,6 +17,50 @@ test.describe('Authentication & Authorization Permissions', () => {
     await context.close();
   });
 
+  test('Visitor should see the Proposer button and be redirected when clicking it', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await context.newPage();
+    
+    // 1. Visit home page as visitor
+    await page.goto('/fr');
+    
+    // 2. Proposer button should be visible
+    const proposeBtn = page.locator('#propose-btn');
+    await expect(proposeBtn).toBeVisible();
+    await expect(proposeBtn).toContainText('Ajouter');
+
+    // 3. Clicking it should redirect to login with redirect param
+    await proposeBtn.click();
+    await expect(page).toHaveURL(/\/fr\/login\?redirect=.*propose/);
+
+    await context.close();
+  });
+
+  test('Visitor should see Edit/Report buttons on resource page and be redirected', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await context.newPage();
+    
+    // 1. Visit any resource page (assuming one exists or using a known path if seeded)
+    // We can get the first resource from home page
+    await page.goto('/fr');
+    await page.locator('.resource-card').first().click();
+    await page.waitForURL(/\/fr\/resource\//);
+
+    // 2. Edit button should be visible
+    const editBtn = page.locator('a:has-text("Modifier")');
+    await expect(editBtn).toBeVisible();
+
+    // 3. Report button should be visible
+    const reportBtn = page.locator('a:has-text("Supprimer")');
+    await expect(reportBtn).toBeVisible();
+
+    // 4. Clicking edit should redirect
+    await editBtn.click();
+    await expect(page).toHaveURL(/\/fr\/login\?redirect=.*propose/);
+
+    await context.close();
+  });
+
   test('Authenticated User (non-admin) should see Access Denied on /admin', async ({ browser }) => {
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
@@ -159,8 +203,8 @@ test.describe('Authentication & Authorization Permissions', () => {
     // 2. Should show success and redirect to home (not login)
     await expect(page).toHaveURL(/\/fr\/?$/, { timeout: 10000 });
     
-    // 3. Add button should be visible (meaning logged in)
-    await expect(page.locator('#propose-btn')).toBeVisible();
+    // 3. User info should be visible (meaning logged in)
+    await expect(page.locator('#user-info')).toBeVisible();
     
     // 4. Try to go back to login -> should be redirected to home
     await page.goto('/fr/login');
