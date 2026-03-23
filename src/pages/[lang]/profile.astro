@@ -1,0 +1,152 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase/client';
+
+const { lang } = Astro.params;
+
+const translations = {
+  fr: {
+    title: "Mon Profil",
+    info: "Informations personnelles",
+    name: "Nom complet",
+    email: "Adresse Email",
+    role: "Rôle",
+    roleAdmin: "Administrateur",
+    roleUser: "Utilisateur",
+    contributions: "Mes contributions",
+    noContributions: "Vous n'avez pas encore proposé de ressources.",
+    statusPending: "En attente",
+    statusApproved: "Approuvé",
+    statusRejected: "Refusé",
+    backHome: "Retour à l'accueil"
+  },
+  en: {
+    title: "My Profile",
+    info: "Personal Information",
+    name: "Full Name",
+    email: "Email Address",
+    role: "Role",
+    roleAdmin: "Administrator",
+    roleUser: "User",
+    contributions: "My contributions",
+    noContributions: "You haven't suggested any resources yet.",
+    statusPending: "Pending",
+    statusApproved: "Approved",
+    statusRejected: "Rejected",
+    backHome: "Back to home"
+  }
+};
+
+const t = translations[lang as keyof typeof translations] || translations.fr;
+---
+
+<Layout title={t.title} lang={lang as string}>
+  <div id="profile-content" class="max-w-4xl mx-auto py-8 hidden">
+    <div class="flex items-center gap-6 mb-12">
+      <div class="w-20 h-20 rounded-3xl bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-3xl uppercase shadow-inner border border-emerald-50">
+        <span id="p-initials"></span>
+      </div>
+      <div>
+        <h1 id="p-name" class="text-4xl font-black text-stone-800"></h1>
+        <p id="p-email" class="text-stone-400 font-medium"></p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="md:col-span-1 space-y-6">
+        <div class="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm">
+          <h2 class="text-xs font-black uppercase tracking-widest text-stone-400 mb-4">{t.info}</h2>
+          <div class="space-y-4">
+            <div>
+              <p class="text-[10px] font-bold text-stone-300 uppercase tracking-tighter">{t.role}</p>
+              <p id="p-role" class="font-bold text-stone-600"></p>
+            </div>
+          </div>
+        </div>
+        <a href={`/${lang}`} class="btn btn-ghost btn-sm w-full rounded-xl text-stone-400 font-bold gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
+          {t.backHome}
+        </a>
+      </div>
+
+      <div class="md:col-span-2">
+        <div class="bg-white p-8 rounded-3xl border border-stone-100 shadow-sm min-h-[400px]">
+          <h2 class="text-xl font-black text-stone-800 mb-6">{t.contributions}</h2>
+          <div id="contributions-list" class="space-y-4">
+            <div class="animate-pulse space-y-4">
+              <div class="h-12 bg-stone-50 rounded-2xl w-full"></div>
+              <div class="h-12 bg-stone-50 rounded-2xl w-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loading-profile" class="flex flex-col items-center justify-center py-20 gap-4">
+    <span class="loading loading-ring loading-lg text-primary"></span>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase/client';
+
+  async function loadProfile() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const lang = document.documentElement.lang || 'fr';
+      window.location.href = `/${lang}/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    const { data: suggestions } = await supabase
+      .from('suggestions')
+      .select('*')
+      .eq('submitted_by', session.user.id)
+      .order('created_at', { ascending: false });
+
+    // UI Update
+    const name = profile?.full_name || session.user.email?.split('@')[0] || 'User';
+    document.getElementById('p-name')!.innerText = name;
+    document.getElementById('p-email')!.innerText = session.user.email;
+    document.getElementById('p-initials')!.innerText = name.split(' ').map((n: any) => n[0]).join('').substring(0, 2).toUpperCase();
+    
+    const roleEl = document.getElementById('p-role')!;
+    const lang = document.documentElement.lang || 'fr';
+    roleEl.innerText = profile?.role === 'admin' 
+      ? (lang === 'fr' ? 'Administrateur' : 'Administrator')
+      : (lang === 'fr' ? 'Utilisateur' : 'User');
+
+    const list = document.getElementById('contributions-list')!;
+    if (!suggestions || suggestions.length === 0) {
+      list.innerHTML = `<p class="text-stone-400 italic text-sm text-center py-10">${lang === 'fr' ? "Aucune proposition pour le moment." : "No suggestions yet."}</p>`;
+    } else {
+      list.innerHTML = suggestions.map(s => `
+        <div class="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 hover:border-emerald-100 transition-colors">
+          <div>
+            <p class="font-bold text-stone-800">${s.title}</p>
+            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">${s.category}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-black uppercase px-2 py-1 rounded-lg ${
+              s.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 
+              s.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+            }">${s.status}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('loading-profile')?.classList.add('hidden');
+    document.getElementById('profile-content')?.classList.remove('hidden');
+  }
+
+  loadProfile();
+</script>
