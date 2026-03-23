@@ -108,15 +108,15 @@ const spriteIcons = {
         <button id="clear-search" class="absolute right-2 h-7 w-7 flex items-center justify-center rounded-lg hover:bg-stone-200 text-stone-400 opacity-0 pointer-events-none transition-opacity"><svg class="h-4 w-4"><use href="#close" /></svg></button>
       </div>
 
-      <div class="flex items-center gap-2">
-        <select id="filter-sort" class="select select-sm bg-emerald-50 text-emerald-700 border-none rounded-lg text-[10px] font-bold uppercase">
+      <div class="flex items-center gap-2 flex-wrap md:flex-nowrap justify-end">
+        <select id="filter-sort" class="select select-sm bg-emerald-50 text-emerald-700 border-none rounded-lg text-[10px] font-bold uppercase flex-grow md:flex-grow-0 max-w-[120px] md:max-w-none">
           <option value="updated_at">{t.sortNewest}</option>
           <option value="title">{t.sortName}</option>
           <option value="next_date" id="opt-next-date" class="hidden">{t.sortDate}</option>
           <option value="published_at" id="opt-pub-date" class="hidden">{t.sortPub}</option>
           <option value="cat">{t.sortCat}</option>
         </select>
-        <select id="filter-category" class="select select-sm bg-stone-100 text-stone-600 border-none rounded-lg text-[10px] font-bold uppercase">
+        <select id="filter-category" class="select select-sm bg-stone-100 text-stone-600 border-none rounded-lg text-[10px] font-bold uppercase flex-grow md:flex-grow-0 max-w-[140px] md:max-w-none">
           <option value="all">{t.filterCat}</option>
           {activeCategoryKeys.map(k => <option value={k}>{getCategoryLabel(k, lang as any)}</option>)}
         </select>

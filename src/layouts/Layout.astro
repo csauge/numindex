@@ -58,13 +58,13 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           <img src="/logo.svg" alt="NumIndex Logo" class="h-8 md:h-9 w-auto" />
         </a>
       </div>
-      <div class="flex-none gap-2 flex items-center">
+      <div class="flex-none gap-1 md:gap-2 flex items-center">
         {/* Bouton Modérer (Admin) */}
         <a 
           href={`/${lang}/admin`} 
           id="admin-btn"
           data-admin-only
-          class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-4 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all hover:scale-105 active:scale-95 relative gap-1.5"
+          class="btn btn-ghost btn-sm font-bold min-h-0 h-9 px-2 md:px-4 rounded-full hover:bg-emerald-50 text-emerald-700 transition-all hover:scale-105 active:scale-95 relative gap-1.5"
           aria-label={lang === 'fr' ? 'Accéder à la modération' : 'Access moderation'}
         >
           <div class="relative">
@@ -80,23 +80,25 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         </a>
 
         {/* Bouton Ajouter */}
-        <a 
-          href={`/${lang}/propose`} 
-          id="propose-btn"
-          class="btn btn-primary btn-sm font-bold min-h-0 h-9 px-4 rounded-full border-none shadow-md shadow-emerald-200/50 hover:bg-[#52b788] hover:scale-105 active:scale-95 transition-all gap-1.5"
-          aria-label={lang === 'fr' ? 'Proposer une nouvelle ressource' : 'Propose a new resource'}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.create} />
-          </svg>
-          <span class="hidden md:inline">{t.propose}</span>
-        </a>
+        {!Astro.url.pathname.includes('/propose') && (
+          <a 
+            href={`/${lang}/propose`} 
+            id="propose-btn"
+            class="btn btn-primary btn-sm font-bold min-h-0 h-9 px-3 md:px-4 rounded-full border-none shadow-md shadow-emerald-200/50 hover:bg-[#52b788] hover:scale-105 active:scale-95 transition-all gap-1.5"
+            aria-label={lang === 'fr' ? 'Proposer une nouvelle ressource' : 'Propose a new resource'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.create} />
+            </svg>
+            <span class="hidden md:inline">{t.propose}</span>
+          </a>
+        )}
 
         {/* User Menu */}
-        <div id="user-menu" class="flex items-center gap-2">
-          <a href={`/${lang}/login`} id="login-link" class="text-xs font-bold text-stone-400 hover:text-primary transition-colors px-2">{t.login}</a>
+        <div id="user-menu" class="flex items-center gap-1 md:gap-2">
+          <a href={`/${lang}/login`} id="login-link" class="text-xs font-bold text-stone-400 hover:text-primary transition-colors px-1 md:px-2">{t.login}</a>
           <div id="user-info" class="hidden dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-ghost h-auto py-1 px-1 md:pl-1 md:pr-3 flex items-center gap-2 rounded-full border border-stone-100 hover:bg-stone-50 transition-all group">
+            <div tabindex="0" role="button" class="btn btn-ghost h-auto py-1 px-1 md:pl-1 md:pr-3 flex items-center gap-1.5 md:gap-2 rounded-full border border-stone-100 hover:bg-stone-50 transition-all group">
               <div class="avatar placeholder">
                 <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-[10px] md:text-xs uppercase overflow-hidden group-hover:scale-105 transition-transform">
                   <span id="user-initials" class="leading-none"></span>
@@ -157,7 +159,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       </div>
     </header>
 
-    <main id="main-content" class="flex-grow container mx-auto p-6 max-w-5xl outline-none" tabindex="-1">
+    <main id="main-content" class="flex-grow w-full px-4 md:px-6 py-6 md:py-8 outline-none" tabindex="-1">
       <slot />
     </main>
 
@@ -212,11 +214,11 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           const userInitialsMenu = document.getElementById('user-initials-menu');
           if (userInitialsMenu) userInitialsMenu.innerText = initials;
           
-          authOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'inline-flex'));
+          authOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'flex'));
 
           
           if (profile?.role === 'admin') {
-            adminOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'inline-flex'));
+            adminOnlyEls.forEach(el => (el as HTMLElement).style.setProperty('display', 'flex'));
             const count = await fetchPendingSuggestionsCount();
             if (count > 0 && pendingBadge && pendingCountEl) {
               pendingCountEl.innerText = count > 99 ? '99+' : count.toString();

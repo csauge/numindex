@@ -99,22 +99,22 @@ const initial = {
 };
 ---
 
-<div class="max-w-2xl mx-auto p-6 bg-base-100 rounded-xl shadow-sm border border-base-200">
-  <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-    <div id="form-icon-container" class={`p-2 rounded-lg border flex items-center justify-center ${isDelete ? 'bg-red-50 border-red-100' : 'bg-stone-50 border-stone-100'}`}>
-      <svg id="action-icon" xmlns="http://www.w3.org/2000/svg" class={`h-6 w-6 ${isDelete ? 'text-error' : 'text-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS[action]} />
+<div class="bg-white rounded-3xl shadow-sm border border-stone-100 p-4 md:p-8 w-full overflow-hidden">
+  <h2 class="text-2xl font-black mb-8 flex items-center gap-4">
+    <div id="form-icon-container" class={`w-12 h-12 rounded-2xl border flex items-center justify-center flex-shrink-0 ${isDelete ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100'}`}>
+      <svg id="action-icon" xmlns="http://www.w3.org/2000/svg" class={`h-6 w-6 ${isDelete ? 'text-red-600' : 'text-emerald-700'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d={ACTION_ICONS[action]} />
       </svg>
     </div>
-    <span id="form-title-text">{title}</span>
+    <span id="form-title-text" class="truncate text-stone-800">{title}</span>
   </h2>
 
-  <div id="resource-preview-block" class="mb-8 p-4 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-4">
-    <div id="preview-img" class="w-20 h-20 rounded-lg bg-white border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-stone-200"></div>
-    <div class="flex-grow">
+  <div id="resource-preview-block" class="mb-8 p-5 bg-stone-50/50 border border-stone-100 rounded-2xl flex items-center gap-4 overflow-hidden">
+    <div id="preview-img" class="w-16 h-16 md:w-20 md:h-20 rounded-lg bg-white border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-stone-200"></div>
+    <div class="flex-grow min-w-0">
       <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t.target}</p>
-      <p id="preview-title" class="font-bold text-stone-800 leading-tight">{initial.title || '...'}</p>
-      <div class="flex gap-2 mt-1 flex-wrap">
+      <p id="preview-title" class="font-bold text-stone-800 leading-tight truncate">{initial.title || '...'}</p>
+      <div class="flex gap-2 mt-1 flex-wrap overflow-hidden">
         <span id="badge-cat" class="text-[9px] font-bold uppercase text-stone-400"></span>
         <span id="badge-city" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
         <span id="badge-date" class="text-[9px] font-bold uppercase text-stone-400 hidden"></span>
@@ -123,22 +123,22 @@ const initial = {
     </div>
   </div>
 
-  <form id="suggestion-form" class="space-y-4" data-lang={lang} data-t={JSON.stringify(t)} data-existing={JSON.stringify(existingData)} data-moderation={isModeration.toString()}>
-    <div id="standard-fields" class={isDelete ? 'hidden' : 'space-y-4'}>
-      <div class="form-control">
+  <form id="suggestion-form" class="space-y-4 w-full" data-lang={lang} data-t={JSON.stringify(t)} data-existing={JSON.stringify(existingData)} data-moderation={isModeration.toString()}>
+    <div id="standard-fields" class={isDelete ? 'hidden' : 'space-y-4 w-full'}>
+      <div class="form-control w-full">
         <label class="label"><span class="label-text">{t.name}</span></label>
-        <input type="text" name="title" value={initial.title} required={!isDelete} class="input input-bordered" />
+        <input type="text" name="title" value={initial.title} required={!isDelete} class="input input-bordered w-full" />
       </div>
 
-      <div class="form-control">
+      <div class="form-control w-full">
         <label class="label"><span class="label-text">{t.description}</span></label>
-        <textarea name="description" required={!isDelete} class="textarea textarea-bordered h-24">{initial.description}</textarea>
+        <textarea name="description" required={!isDelete} class="textarea textarea-bordered h-24 w-full">{initial.description}</textarea>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="form-control">
+        <div class="form-control w-full">
           <label class="label"><span class="label-text">{t.category}</span></label>
-          <select name="category" class="select select-bordered">
+          <select name="category" class="select select-bordered w-full">
             {Object.entries(CATEGORIES).map(([k, v]) => <option value={k} selected={k === initial.category}>{v[lang]}</option>)}
           </select>
         </div>
@@ -172,27 +172,27 @@ const initial = {
         <div id="selected-related" class="flex flex-wrap gap-2 mt-2"></div>
       </div>
 
-      <div class="form-control">
+      <div class="form-control w-full">
         <label class="label"><span class="label-text">{t.link}</span></label>
-        <input type="url" name="link" value={initial.link} required={!isDelete} class="input input-bordered" />
+        <input type="url" name="link" value={initial.link} required={!isDelete} class="input input-bordered w-full" />
       </div>
 
-      <div class="form-control">
+      <div class="form-control w-full">
         <label class="label"><span class="label-text">{t.tags}</span></label>
-        <input type="text" name="tags" value={initial.tags} class="input input-bordered" />
+        <input type="text" name="tags" value={initial.tags} class="input input-bordered w-full" />
       </div>
 
-      <div class="form-control">
+      <div class="form-control w-full">
         <label class="label"><span class="label-text font-bold">{t.image}</span></label>
-        <input type="file" name="image" accept="image/svg+xml,image/avif,image/webp,image/png,image/jpeg" class="file-input file-input-bordered" />
+        <input type="file" name="image" accept="image/svg+xml,image/avif,image/webp,image/png,image/jpeg" class="file-input file-input-bordered w-full" />
         <label class="label"><span class="label-text-alt italic opacity-60">{t.imageHelp}</span></label>
       </div>
     </div>
 
-    <div id="delete-fields" class={!isDelete ? 'hidden' : 'space-y-4'}>
-      <div class="form-control">
+    <div id="delete-fields" class={!isDelete ? 'hidden' : 'space-y-4 w-full'}>
+      <div class="form-control w-full">
         <label class="label"><span class="label-text text-error font-bold">{t.reason}</span></label>
-        <textarea name="reason" required={isDelete} class="textarea textarea-bordered textarea-error h-24">{(existingData as Suggestion)?.reason || ''}</textarea>
+        <textarea name="reason" required={isDelete} class="textarea textarea-bordered textarea-error h-24 w-full">{(existingData as Suggestion)?.reason || ''}</textarea>
       </div>
     </div>
 
