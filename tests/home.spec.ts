@@ -11,7 +11,7 @@ test.describe('numindex.org Home Page', () => {
     await page.goto('/fr');
     await expect(page).toHaveTitle(/numindex.org/);
     const header = page.locator('#main-title');
-    await expect(header).toContainText("L'annuaire du numérique responsable");
+    await expect(header).toContainText("L'index du numérique responsable");
   });
 
   test('should display resource cards or empty state', async ({ page }) => {
@@ -48,7 +48,7 @@ test.describe('numindex.org Home Page', () => {
     await page.click('label.swap:has(#lang-toggle)');
     await expect(page).toHaveURL(/\/en\/?$/);
     const header = page.locator('#main-title');
-    await expect(header).toContainText("Sustainable Digital Directory");
+    await expect(header).toContainText("Sustainable Digital Index");
   });
 
   test('should toggle between grid and list view and persist preference', async ({ page }) => {

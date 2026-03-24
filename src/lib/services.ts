@@ -95,7 +95,7 @@ export async function fetchEntities() {
 }
 
 /**
- * Récupère toutes les ressources pour l'annuaire
+ * Récupère toutes les ressources pour l'index
  */
 export async function fetchAllResources() {
   if (!supabase) return [];

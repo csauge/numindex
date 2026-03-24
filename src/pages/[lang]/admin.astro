@@ -77,7 +77,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         </svg>
       </div>
       <h2 class="text-2xl font-black text-stone-800 mb-2">{lang === 'fr' ? 'Accès réservé' : 'Access Restricted'}</h2>
-      <p class="text-stone-500 mb-8 leading-relaxed italic">{lang === 'fr' ? 'Désolé, cette page est réservée aux administrateurs du répertoire.' : 'Sorry, this page is restricted to directory administrators.'}</p>
+      <p class="text-stone-500 mb-8 leading-relaxed italic">{lang === 'fr' ? 'Désolé, cette page est réservée aux administrateurs de l\'index.' : 'Sorry, this page is restricted to index administrators.'}</p>
       <a href={`/${lang}`} class="btn btn-primary rounded-2xl px-12 font-black shadow-md shadow-emerald-200">{lang === 'fr' ? "Retour à l'accueil" : "Back to Home"}</a>
     </div>
   </div>
