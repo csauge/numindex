@@ -416,6 +416,7 @@ const spriteIcons = {
   }
 
   function exportBookmarks() {
+    const esc = (s) => !s ? '' : s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const categoriesGrouped = filteredData.reduce((acc, d) => {
       const cat = d.catLabel;
       if (!acc[cat]) acc[cat] = {};
@@ -428,22 +429,30 @@ const spriteIcons = {
       return acc;
     }, {});
 
-    let html = '<!DOCTYPE NETSCAPE-Bookmark-file-1><TITLE>Bookmarks</TITLE><H1>Bookmarks</H1><DL><p>';
+    const now = Math.floor(Date.now() / 1000);
+    let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<!-- This is an automatically generated file. -->
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+`;
     
     Object.entries(categoriesGrouped).forEach(([cat, subs]) => {
-      html += `<DT><H3>${cat}</H3><DL><p>`;
+      html += `    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${esc(cat)}</H3>\n    <DL><p>\n`;
       Object.entries(subs).forEach(([sub, items]) => {
-        html += `<DT><H3>${sub}</H3><DL><p>`;
+        html += `        <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${esc(sub)}</H3>\n        <DL><p>\n`;
         items.forEach(d => {
-          html += `<DT><A HREF="${d.link || '#'}">${d.title}</A><DD>${d.desc || ''}\n`;
+          html += `            <DT><A HREF="${esc(d.link || '#')}" ADD_DATE="${now}">${esc(d.title)}</A>\n`;
+          if (d.desc) html += `            <DD>${esc(d.desc)}\n`;
         });
-        html += '</DL><p>';
+        html += `        </DL><p>\n`;
       });
-      html += '</DL><p>';
+      html += `    </DL><p>\n`;
     });
 
-    const now = new Date().toISOString().replace(/[:.]/g, '-');
-    download(html + '</DL><p>', 'numindex_bookmarks_' + now + '.html', 'text/html');
+    const fileNameDate = new Date().toISOString().replace(/[:.]/g, '-');
+    download(html + '</DL><p>\n', 'numindex_bookmarks_' + fileNameDate + '.html', 'text/html');
   }
 
   function download(content, name, type) {

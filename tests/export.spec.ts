@@ -54,8 +54,9 @@ test.describe('Export Functionality', () => {
     if (path) {
       const content = fs.readFileSync(path, 'utf8');
       expect(content).toContain('<!DOCTYPE NETSCAPE-Bookmark-file-1>');
-      expect(content).toContain('<H3>'); // Folders use H3 in this format
+      expect(content).toContain('<H3'); // Folders use H3 in this format
       expect(content).toContain('<DL><p>'); // Nested lists
+      expect(content).toContain('<META HTTP-EQUIV="Content-Type"'); // Meta tag for charset
     }
     
     expect(errors).toHaveLength(0);
