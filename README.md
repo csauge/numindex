@@ -5,13 +5,13 @@
 ## ✨ Caractéristiques
 
 - **Architecture Hybride (Astro 5) :** Mixte Statique (performance) et SSR (données temps-réel pour l'admin et les détails).
-- **Filtrage & Tri Avancé :** Recherche temps-réel, filtrage par 4 grandes catégories (**Acteurs, Événements, Contenus, Outils**) et tri dynamique.
+- **Filtrage & Tri Avancé :** Recherche temps-réel, filtrage par 4 grandes catégories (**Acteur, Événement, Contenu, Outil**) et tri dynamique.
 - **Système de Tags Structuré :** Chaque ressource possède une sous-catégorie obligatoire et des tags qualificatifs optionnels (ex: ESS, Open Source, Débutant).
 - **Export de Données :** Possibilité d'exporter les ressources filtrées au format **CSV**.
 - **Flux Calendrier (ICS) :** Abonnement aux événements via un lien `.ics` gérant désormais les multi-occurrences (dates multiples pour un même événement).
 - **Bascule d'affichage :** Mode **Grille** visuel ou **Liste ultra-compacte** (type tableau) avec mémorisation de la préférence.
 - **Sobriété Maximale :** Images au format **AVIF** avec miniatures redimensionnées via Supabase.
-- **Relations Dynamiques :** Liens entre "Acteurs" (entités) et "Contenus" (ressources).
+- **Relations Dynamiques :** Liens entre "Acteur" (entité) et "Contenu" (ressource).
 - **Métadonnées Contextuelles :** Gestion des adresses (via API Photon OSM), dates de parution, versions et occurrences multiples pour les événements.
 - **Internationalisation :** Entièrement bilingue (Français 🇫🇷 / Anglais 🇬🇧).
 - **Zéro Dépendance Lourde :** Utilisation de Vanilla JS pour l'interactivité.

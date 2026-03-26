@@ -32,7 +32,7 @@ Ce document définit les règles immuables pour le développement de l'index num
 Toute ressource est stockée dans la table `resources` avec :
 - `title`, `description`, `link`, `category` (**acteur, evenement, contenu, outil**), `image_url`.
 - `tags` (text[]) : Contient le tag obligatoire (sous-catégorie) et les tags optionnels.
-- `metadata` (JSONB) : `address` (lieu précis), `published_at` (date de parution), `version_date` (date de mise à jour), `occurrences` (tableau d'objets pour les événements : start, end, address).
+- `metadata` (JSONB) : `address` (lieu précis), `published_at` (date de parution), `version_date` (date de mise à jour), `occurrences` (tableau d'objets pour l'événement : start, end, address).
 - `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'une publication).
 
 ## 5. Checklist de Livraison Finale (Commande "Checklist")

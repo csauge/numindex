@@ -17,7 +17,7 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('suggestions', 'suggestions', true)
 ON CONFLICT (id) DO NOTHING;
 
--- 1. Acteurs
+-- 1. Acteur
 INSERT INTO public.resources (id, title, description, link, category, image_url, tags, metadata)
 VALUES 
   (
@@ -61,7 +61,7 @@ VALUES
     '{"address": "Paris"}'::jsonb
   );
 
--- 2. Événements
+-- 2. Événement
 INSERT INTO public.resources (id, title, description, link, category, image_url, tags, metadata)
 VALUES 
   (
@@ -75,7 +75,7 @@ VALUES
     '{"address": "Paris", "occurrences": [{"start": "2030-11-05T09:00:00Z", "end": "2030-11-06T18:00:00Z", "address": "Palais des Congrès, Paris"}]}'::jsonb
   );
 
--- 3. Contenus & Outils
+-- 3. Contenu & Outil
 INSERT INTO public.resources (title, description, link, category, tags, related_ids, metadata)
 VALUES 
   (

@@ -10,29 +10,29 @@ export interface CategoryInfo {
 
 export const CATEGORIES: Record<CategoryKey, CategoryInfo> = {
   acteur: {
-    fr: 'Acteurs',
-    en: 'Actors',
+    fr: 'Acteur',
+    en: 'Actor',
     icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
     mandatoryTags: ['Entreprise', 'Association', 'Institution', 'Coopérative', 'Personne'],
     optionalTags: ['Local', 'ESS', 'B-Corp', 'Label NR nv1', 'Label NR nv2']
   },
   evenement: {
-    fr: 'Événements',
-    en: 'Events',
+    fr: 'Événement',
+    en: 'Event',
     icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
     mandatoryTags: ['Conférence', 'Atelier', 'Webinaire', 'Meetup', 'Salon'],
     optionalTags: ['Gratuit', 'Payant']
   },
   contenu: {
-    fr: 'Contenus',
-    en: 'Contents',
+    fr: 'Contenu',
+    en: 'Content',
     icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2zM14 4v4h4m-9 4h6m-6 4h6',
     mandatoryTags: ['Article', 'Livre', 'Rapport', 'Podcast', 'Vidéo', 'Infographie'],
     optionalTags: ['Débutant', 'Expert']
   },
   outil: {
-    fr: 'Outils',
-    en: 'Tools',
+    fr: 'Outil',
+    en: 'Tool',
     icon: 'M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.7a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.7z',
     mandatoryTags: ['Logiciel', 'Référentiel', 'Guide', 'Jeu', 'Formation', 'Atelier', 'Loi'],
     optionalTags: ['Open Source', 'Gratuit', 'Payant', 'Libre']

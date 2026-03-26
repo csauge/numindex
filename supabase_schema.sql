@@ -1,4 +1,4 @@
--- SQL Schema for numindex.org 🌿 (Synchronized with migrations up to 20260310130000)
+-- SQL Schema for numindex.org 🌿 (Synchronized with migrations up to 20260326000000)
 
 -- 0. Types & Helpers
 CREATE TYPE public.user_role AS ENUM ('user', 'admin');

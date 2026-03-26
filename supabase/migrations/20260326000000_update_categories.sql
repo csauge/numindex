@@ -6,14 +6,14 @@ ALTER TABLE public.resources DROP CONSTRAINT IF EXISTS resources_category_check;
 ALTER TABLE public.suggestions DROP CONSTRAINT IF EXISTS suggestions_category_check;
 
 -- 2. Update existing data (Resources)
--- Acteurs
+-- Acteur
 UPDATE public.resources SET tags = array_append(tags, 'Entreprise'), category = 'acteur' WHERE category = 'entreprise';
 UPDATE public.resources SET tags = array_append(tags, 'Association'), category = 'acteur' WHERE category = 'association';
 UPDATE public.resources SET tags = array_append(tags, 'Coopérative'), category = 'acteur' WHERE category = 'cooperative';
 UPDATE public.resources SET tags = array_append(tags, 'Institution'), category = 'acteur' WHERE category = 'public';
 UPDATE public.resources SET tags = array_append(tags, 'Personne'), category = 'acteur' WHERE category = 'personne';
 
--- Evenement
+-- Événement
 UPDATE public.resources SET tags = array_append(tags, 'Conférence'), category = 'evenement' WHERE category = 'evenement';
 
 -- Contenu

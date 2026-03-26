@@ -82,7 +82,7 @@ export async function uploadCompressedImage(file: File) {
 }
 
 /**
- * Récupère les entités liées possibles (Acteurs)
+ * Récupère les entités liées possibles (Acteur)
  */
 export async function fetchEntities() {
   if (!supabase) return [];
