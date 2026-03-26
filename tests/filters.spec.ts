@@ -11,7 +11,7 @@ test.describe('Filters, Sorting and Grouping', () => {
     const sortFilter = page.locator('#filter-sort');
 
     // Select "Entreprise" (should sync to Name A-Z)
-    await catFilter.selectOption('entreprise');
+    await catFilter.selectOption('acteur');
     await expect(sortFilter).toHaveValue('title');
 
     // Select "Événement" (should sync to Next Date)
@@ -27,7 +27,7 @@ test.describe('Filters, Sorting and Grouping', () => {
     const catFilter = page.locator('#filter-category');
     
     // Select "Entreprise"
-    await catFilter.selectOption('entreprise');
+    await catFilter.selectOption('acteur');
     
     // Check if at least one divider is visible
     const divider = page.locator('.alphabet-divider');
@@ -61,12 +61,12 @@ test.describe('Filters, Sorting and Grouping', () => {
     const catFilter = page.locator('#filter-category');
 
     await searchInput.fill('test');
-    await catFilter.selectOption('entreprise');
+    await catFilter.selectOption('acteur');
     await page.waitForTimeout(300); // Wait for debounce and state sync
 
     // Verify URL params
     await expect(page).toHaveURL(/q=test/);
-    await expect(page).toHaveURL(/cat=entreprise/);
+    await expect(page).toHaveURL(/cat=acteur/);
 
     // Click on a resource card (if any)
     const firstCard = page.locator('.resource-card').first();
@@ -79,7 +79,7 @@ test.describe('Filters, Sorting and Grouping', () => {
       
       // Verify filters are restored
       await expect(searchInput).toHaveValue('test');
-      await expect(catFilter).toHaveValue('entreprise');
+      await expect(catFilter).toHaveValue('acteur');
     }
   });
 
@@ -88,7 +88,7 @@ test.describe('Filters, Sorting and Grouping', () => {
     const catFilter = page.locator('#filter-category');
 
     await searchInput.fill('test');
-    await catFilter.selectOption('entreprise');
+    await catFilter.selectOption('acteur');
     await page.waitForTimeout(300);
 
     // Switch to English
@@ -97,10 +97,10 @@ test.describe('Filters, Sorting and Grouping', () => {
     // Verify URL and filters
     await expect(page).toHaveURL(/\/en/);
     await expect(page).toHaveURL(/q=test/);
-    await expect(page).toHaveURL(/cat=entreprise/);
+    await expect(page).toHaveURL(/cat=acteur/);
     
     await expect(searchInput).toHaveValue('test');
-    await expect(catFilter).toHaveValue('entreprise');
+    await expect(catFilter).toHaveValue('acteur');
   });
 
   test('should clear search input when clear button is clicked', async ({ page }) => {

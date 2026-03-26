@@ -2,7 +2,7 @@
 export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';
-import { ACTION_ICONS } from '../../utils/categories';
+import { ACTION_ICONS, CATEGORIES } from '../../utils/categories';
 
 const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
@@ -68,7 +68,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       <p class="text-stone-400 font-medium italic">{t.noPending}</p>
     </div>
 
-    <div id="suggestions-list" class="grid gap-6"></div>
+    <div id="suggestions-list" class="grid gap-6" data-categories={JSON.stringify(CATEGORIES)}></div>
 
     <div id="access-denied" class="hidden bg-white border border-stone-50 p-12 rounded-3xl text-center shadow-xl shadow-stone-100/50 max-w-lg mx-auto mt-12">
       <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -95,6 +95,9 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
   const emptyState = document.getElementById('empty-state');
   const accessDenied = document.getElementById('access-denied');
   const diffNotice = document.getElementById('diff-notice');
+
+  // Parse CATEGORIES from data attribute
+  const categoriesData = JSON.parse(listContainer?.dataset.categories || '{}');
 
   async function loadModeration() {
     if (!supabase) {
@@ -172,12 +175,17 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       if (res.action !== 'update' || !res.resource_id) return false;
       const original = allResources.find(r => r.id === res.resource_id);
       if (!original) return false;
-      if (field === 'city' || field === 'published_at' || field === 'next_date') return res.metadata?.[field] !== original.metadata?.[field];
+      if (field === 'address' || field === 'published_at' || field === 'next_date') return res.metadata?.[field] !== original.metadata?.[field];
       return (res as any)[field] !== (original as any)[field];
     };
 
     const diffClass = "ring-2 ring-red-500 ring-offset-2 rounded-sm";
     const proposer = allProfiles.find(p => p.id === res.submitted_by)?.full_name || '...';
+
+    const catInfo = categoriesData[res.category];
+    const mandatoryTags = catInfo?.mandatoryTags || [];
+    const subCategory = res.tags?.find(t => mandatoryTags.includes(t));
+    const qualifiers = res.tags?.filter(t => !mandatoryTags.includes(t)) || [];
 
     return `
       <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden">
@@ -198,7 +206,8 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
             <span class="badge badge-outline badge-sm uppercase text-[10px] font-bold ${isMod('category') ? diffClass : ''}">
               ${getCategoryLabel(res.category, lang)}
             </span>
-            ${res.metadata?.city ? `<span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-0.5 rounded border border-stone-100 ${isMod('city') ? diffClass : ''}">${res.metadata.city}</span>` : ''}
+            ${subCategory ? `<span class="badge badge-primary badge-sm uppercase text-[10px] font-bold ${isMod('tags') ? diffClass : ''}">${subCategory}</span>` : ''}
+            ${res.metadata?.address ? `<span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-0.5 rounded border border-stone-100 ${isMod('address') ? diffClass : ''}">${res.metadata.address}</span>` : ''}
           </div>
 
           <h2 class="text-xl font-bold mb-1 inline-block ${isMod('title') ? diffClass : ''}">${res.title}</h2>
@@ -213,9 +222,9 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 
           <p class="text-stone-500 text-sm mb-4 ${isMod('description') ? diffClass : ''}">${res.description}</p>
           
-          ${res.tags && res.tags.length > 0 ? `
+          ${qualifiers.length > 0 ? `
             <div class="flex flex-wrap gap-1 mb-4 ${isMod('tags') ? diffClass : ''}">
-              ${res.tags.map(tag => `<span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#${tag}</span>`).join('')}
+              ${qualifiers.map(tag => `<span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-400">#${tag}</span>`).join('')}
             </div>
           ` : ''}
 

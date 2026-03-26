@@ -5,22 +5,24 @@
 ## ✨ Caractéristiques
 
 - **Architecture Hybride (Astro 5) :** Mixte Statique (performance) et SSR (données temps-réel pour l'admin et les détails).
-- **Filtrage & Tri Avancé :** Recherche temps-réel, filtrage par catégorie et tri dynamique (Nom, Date, Catégorie).
+- **Filtrage & Tri Avancé :** Recherche temps-réel, filtrage par 4 grandes catégories (**Acteurs, Événements, Contenus, Outils**) et tri dynamique.
+- **Système de Tags Structuré :** Chaque ressource possède une sous-catégorie obligatoire et des tags qualificatifs optionnels (ex: ESS, Open Source, Débutant).
 - **Export de Données :** Possibilité d'exporter les ressources filtrées au format **CSV**.
-- **Flux Calendrier (ICS) :** Abonnement aux prochains événements via un lien `.ics` compatible (Google Calendar, Apple Calendar, Outlook).
+- **Flux Calendrier (ICS) :** Abonnement aux événements via un lien `.ics` gérant désormais les multi-occurrences (dates multiples pour un même événement).
 - **Bascule d'affichage :** Mode **Grille** visuel ou **Liste ultra-compacte** (type tableau) avec mémorisation de la préférence.
 - **Sobriété Maximale :** Images au format **AVIF** avec miniatures redimensionnées via Supabase.
 - **Relations Dynamiques :** Liens entre "Acteurs" (entités) et "Contenus" (ressources).
-- **Métadonnées Contextuelles :** Gestion des villes (via API Photon OSM), dates de parution et prochaines dates d'événements.
+- **Métadonnées Contextuelles :** Gestion des adresses (via API Photon OSM), dates de parution, versions et occurrences multiples pour les événements.
 - **Internationalisation :** Entièrement bilingue (Français 🇫🇷 / Anglais 🇬🇧).
 - **Zéro Dépendance Lourde :** Utilisation de Vanilla JS pour l'interactivité.
 
 ## 🛠 Fonctionnalités Admin & Modération
 
 - **Dashboard SSR** : Liste des suggestions en temps réel avec indicateur de badge.
-- **Workflow de Correction** : Le modérateur peut corriger une proposition (ajout ou modification) avant de l'approuver définitivement via un formulaire dédié.
-- **Visualisation des Différences** : Les champs modifiés par rapport à la ressource originale sont mis en évidence par un contour rouge dans l'interface de modération pour faciliter la revue.
-- **Approbation Directe** : Validation en un clic qui applique les changements en base de données et met à jour le statut de la suggestion.
+- **Workflow de Correction** : Le modérateur peut corriger une proposition (ajout ou modification) avant de l'approuver définitivement.
+- **Visualisation des Différences** : Les champs modifiés par rapport à la ressource originale sont mis en évidence par un contour rouge.
+- **Tags & Catégories** : Interface de sélection intelligente des tags en fonction de la catégorie choisie.
+- **Approbation Directe** : Validation en un clic qui applique les changements en base de données.
 
 ## 🛠 Stack Technique
 

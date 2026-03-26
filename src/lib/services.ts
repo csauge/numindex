@@ -82,14 +82,14 @@ export async function uploadCompressedImage(file: File) {
 }
 
 /**
- * Récupère les entités liées possibles
+ * Récupère les entités liées possibles (Acteurs)
  */
 export async function fetchEntities() {
   if (!supabase) return [];
   const { data } = await supabase
     .from('resources')
     .select('id, title, category')
-    .in('category', ['entreprise', 'association', 'personne'])
+    .eq('category', 'acteur')
     .order('title');
   return (data || []) as Resource[];
 }
@@ -101,25 +101,63 @@ export async function fetchAllResources() {
   if (!supabase) return [];
   const { data } = await supabase
     .from('resources')
-    .select('*')
-    .order('updated_at', { ascending: false });
+    .select('*');
   return (data || []) as Resource[];
 }
 
 /**
- * Récupère tous les événements (passés et futurs)
+ * Récupère les entités pour le mapping des noms
  */
-export async function fetchAllEvents() {
+export async function fetchEntitiesForMapping() {
   if (!supabase) return [];
   const { data } = await supabase
     .from('resources')
-    .select('*')
-    // Correct way to check for null in JSONB field via PostgREST
-    .not('metadata->next_date', 'is', null)
-    .order('metadata->next_date', { ascending: false })
-    .limit(500);
-    
+    .select('id, title')
+    .eq('category', 'acteur');
   return (data || []) as Resource[];
+}
+
+/**
+ * Helper : Trouve la prochaine date d'un événement
+ */
+export function getNextEventDate(resource: Resource): string | null {
+  if (resource.category !== 'evenement' || !resource.metadata?.occurrences) return null;
+  const now = new Date();
+  const futureDates = resource.metadata.occurrences
+    .map((occ: any) => new Date(occ.start))
+    .filter((d: Date) => d >= now)
+    .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+    
+  return futureDates.length > 0 ? futureDates[0].toISOString() : null;
+}
+
+/**
+ * Logique de tri par catégorie
+ */
+export function sortResources(resources: Resource[], category: string | 'all') {
+  return [...resources].sort((a, b) => {
+    // Si filtré par catégorie spécifique
+    if (category === 'acteur' || category === 'outil') {
+      return a.title.localeCompare(b.title);
+    }
+    
+    if (category === 'evenement') {
+      const dateA = getNextEventDate(a);
+      const dateB = getNextEventDate(b);
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+      return new Date(dateA).getTime() - new Date(dateB).getTime();
+    }
+    
+    if (category === 'contenu') {
+      const dateA = a.metadata?.published_at || '0000-00-00';
+      const dateB = b.metadata?.published_at || '0000-00-00';
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
+    }
+
+    // Par défaut : mise à jour la plus récente
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+  });
 }
 
 /**
@@ -173,16 +211,4 @@ export async function fetchSuggestionById(id: string) {
     return null;
   }
   return data as Suggestion;
-}
-
-/**
- * Récupère les entités pour le mapping des noms
- */
-export async function fetchEntitiesForMapping() {
-  if (!supabase) return [];
-  const { data } = await supabase
-    .from('resources')
-    .select('id, title')
-    .in('category', ['entreprise', 'association', 'personne']);
-  return (data || []) as Resource[];
 }

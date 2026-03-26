@@ -16,7 +16,8 @@ test.describe('Moderation Correction Workflow', () => {
     await page.goto('/fr/propose');
     await page.fill('input[name="title"]', resourceTitle);
     await page.fill('textarea[name="description"]', 'Initial description.');
-    await page.selectOption('select[name="category"]', 'logiciel');
+    await page.selectOption('select[name="category"]', 'outil');
+    await page.selectOption('select[name="mandatory-tag"]', 'Logiciel');
     await page.fill('input[name="link"]', 'https://example.com/initial');
     await page.click('#submit-btn');
     await expect(page.locator('#toast-container')).toBeVisible();
@@ -79,7 +80,8 @@ test.describe('Moderation Correction Workflow', () => {
     await page.goto('/fr/propose');
     await page.fill('input[name="title"]', baseTitle);
     await page.fill('textarea[name="description"]', 'Original description.');
-    await page.selectOption('select[name="category"]', 'logiciel');
+    await page.selectOption('select[name="category"]', 'outil');
+    await page.selectOption('select[name="mandatory-tag"]', 'Logiciel');
     await page.fill('input[name="link"]', 'https://example.com/diff');
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);

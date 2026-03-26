@@ -4,11 +4,10 @@ export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import { CATEGORIES, getCategoryLabel } from "../../utils/categories";
 import { getImageUrl } from "../../lib/supabase/client";
-import { fetchAllResources, fetchEntitiesForMapping } from "../../lib/services";
+import { fetchAllResources, getNextEventDate } from "../../lib/services";
 
 const { lang } = Astro.params;
 const allRessources = await fetchAllResources();
-const entitiesForMapping = await fetchEntitiesForMapping();
 const activeCategoryKeys = [...new Set(allRessources.map(r => r.category))].sort();
 
 const translations = {
@@ -34,7 +33,7 @@ const translations = {
     thisYear: "Cette année",
     older: "Plus ancien",
     noDate: "Sans date",
-    pastDate: "Past"
+    pastDate: "Passé"
   },
   en: {
     title: "Sustainable Digital Index",
@@ -74,7 +73,7 @@ const clientResources = allRessources.map(res => ({
   link: res.link,
   up: res.updated_at,
   pub: res.metadata?.published_at,
-  next: res.metadata?.next_date,
+  next: getNextEventDate(res),
   kw: (res.title + " " + (res.description || "") + " " + (res.tags?.join(" ") || "")).toLowerCase()
 }));
 
@@ -171,11 +170,12 @@ const spriteIcons = {
     view: document.getElementById('view-toggle'),
     loadMoreBtn: document.getElementById('btn-load-more'),
     loadMoreCont: document.getElementById('load-more-container'),
-    optNext: document.getElementById('opt-next-date')
+    optNext: document.getElementById('opt-next-date'),
+    optPub: document.getElementById('opt-pub-date')
   };
 
   const t = {
-    fr: { thisWeek: "Cette semaine", thisMonth: "Ce mois-ci", thisYear: "Cette année", older: "Plus ancien", noDate: "Sans date", pastDate: "Past" },
+    fr: { thisWeek: "Cette semaine", thisMonth: "Ce mois-ci", thisYear: "Cette année", older: "Plus ancien", noDate: "Sans date", pastDate: "Passé" },
     en: { thisWeek: "This week", thisMonth: "This month", thisYear: "This year", older: "Older", noDate: "No date", pastDate: "Past" }
   }[currentLang];
 
@@ -212,19 +212,21 @@ const spriteIcons = {
 
     els.cat.onchange = () => {
       const isEvent = els.cat.value === 'evenement';
-      const isPub = ['article', 'loi', 'livre', 'video', 'referentiel'].includes(els.cat.value);
+      const isContenu = els.cat.value === 'contenu';
+      const isOutil = els.cat.value === 'outil';
+      const isActeur = els.cat.value === 'acteur';
       
       els.optNext.classList.toggle('hidden', !isEvent);
-      document.getElementById('opt-pub-date').classList.toggle('hidden', !isPub);
+      els.optPub.classList.toggle('hidden', !isContenu);
 
       if (isEvent) {
         els.sort.value = 'next_date';
-      } else if (isPub) {
+      } else if (isContenu) {
         els.sort.value = 'published_at';
-      } else if (els.cat.value === 'all') {
-        els.sort.value = 'updated_at';
-      } else {
+      } else if (isOutil || isActeur) {
         els.sort.value = 'title';
+      } else {
+        els.sort.value = 'updated_at';
       }
       update(true);
     };
@@ -240,6 +242,8 @@ const spriteIcons = {
     document.getElementById('btn-export-bookmarks').onclick = exportBookmarks;
     document.getElementById('btn-export-calendar').onclick = copyCalendarLink;
 
+    // Trigger initial visibility of sort options
+    els.cat.dispatchEvent(new Event('change'));
     update();
   }
 
@@ -336,6 +340,13 @@ const spriteIcons = {
         } else {
           html += '<svg class="w-10 h-10 text-stone-200"><use href="#cat-' + d.cat + '"/></svg>';
         }
+        
+        // Next date badge for events in grid mode
+        if (d.cat === 'evenement' && d.next) {
+          const isNextToday = d.next.split('T')[0] === today;
+          html += '<div class="absolute bottom-2 right-2 px-2 py-1 rounded-lg text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-500 text-white' : 'bg-white/90 text-stone-800') + '">📅 ' + new Date(d.next).toLocaleDateString(currentLang, {day: 'numeric', month: 'short'}) + '</div>';
+        }
+
         html += '</div>';
       } else {
         html += '<div class="card-list-icon-box flex-shrink-0"><svg class="w-6 h-6 text-stone-300"><use href="#cat-' + d.cat + '"/></svg></div>';

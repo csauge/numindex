@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.resources (
     related_ids uuid[] DEFAULT '{}'::uuid[],
     created_by uuid REFERENCES auth.users(id),
     updated_by uuid REFERENCES auth.users(id),
-    CONSTRAINT resources_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'loi'::text, 'programme'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'index'::text, 'autre'::text]))
+    CONSTRAINT resources_category_check CHECK (category = ANY (ARRAY['acteur'::text, 'evenement'::text, 'contenu'::text, 'outil'::text]))
 );
 
 -- 3. Suggestions Table
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS public.suggestions (
     link text,
     category text NOT NULL,
     image_url text,
-    metadata jsonb DEFAULT '{"tags": []}'::jsonb,
+    metadata jsonb DEFAULT '{}'::jsonb,
     status text DEFAULT 'pending'::text,
     submitted_by uuid REFERENCES auth.users(id),
     created_at timestamp with time zone DEFAULT now(),
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS public.suggestions (
     reason text,
     tags text[] DEFAULT '{}'::text[],
     related_ids uuid[] DEFAULT '{}'::uuid[],
-    CONSTRAINT suggestions_category_check CHECK (category = ANY (ARRAY['entreprise'::text, 'association'::text, 'cooperative'::text, 'public'::text, 'personne'::text, 'article'::text, 'livre'::text, 'podcast'::text, 'video'::text, 'infographie'::text, 'referentiel'::text, 'loi'::text, 'programme'::text, 'logiciel'::text, 'jeu'::text, 'formation'::text, 'evenement'::text, 'index'::text, 'autre'::text])),
+    CONSTRAINT suggestions_category_check CHECK (category = ANY (ARRAY['acteur'::text, 'evenement'::text, 'contenu'::text, 'outil'::text])),
     CONSTRAINT suggestions_status_check CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]))
 );
 

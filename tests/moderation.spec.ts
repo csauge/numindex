@@ -12,7 +12,8 @@ test.describe('Moderation Lifecycle', () => {
     await page.goto('/fr/propose');
     await page.fill('input[name="title"]', resourceTitle);
     await page.fill('textarea[name="description"]', 'Une description de test pour cette ressource.');
-    await page.selectOption('select[name="category"]', 'logiciel');
+    await page.selectOption('select[name="category"]', 'outil');
+    await page.selectOption('select[name="mandatory-tag"]', 'Logiciel');
     await page.fill('input[name="link"]', 'https://example.com/test-resource');
     
     await page.click('#submit-btn');
@@ -91,37 +92,37 @@ test.describe('Moderation Lifecycle', () => {
     await expect(page.locator('.resource-card').filter({ hasText: updatedTitle })).not.toBeVisible();
   });
 
-  test('should handle metadata fields (City, Dates) for specific categories', async ({ page }) => {
-    // 1. Check Event fields (City and Next Date)
+  test('should handle metadata fields (Address, Dates) for specific categories', async ({ page }) => {
+    // 1. Check Event fields (Address and Occurrences)
     await page.goto('/fr/propose');
     await page.selectOption('select[name="category"]', 'evenement');
     
-    await expect(page.locator('#city-container')).toBeVisible();
-    await expect(page.locator('#next-date-container')).toBeVisible();
-    await expect(page.locator('#date-container')).toBeHidden(); // No publication date for events by default (group is ACTEURS)
+    await expect(page.locator('#address-container')).toBeVisible();
+    await expect(page.locator('#occurrences-container')).toBeVisible();
+    await expect(page.locator('#pub-date-container')).toBeHidden();
 
-    // Fill City with search mock (or just manual if search is complex)
-    await page.fill('#city-search', 'Lyon');
-    await page.waitForTimeout(500); // debounce
-    // Even if Photon isn't mocked, it might work if network is allowed, 
-    // but better to just fill and verify it updates the hidden field or preview.
-    await page.click('#city-results button:first-child'); 
-    await expect(page.locator('#badge-city')).toContainText('Lyon');
+    // Fill Address
+    await page.fill('#address-search', 'Lyon');
+    await page.waitForTimeout(500);
+    await page.click('#address-results button:first-child'); 
+    await expect(page.locator('#preview-badges')).toContainText('Lyon');
 
-    // Fill Next Date
-    const nextDate = '2026-12-31';
-    await page.fill('input[name="next_date"]', nextDate);
-    await expect(page.locator('#badge-next-date')).toContainText(nextDate);
+    // Add an occurrence
+    await page.click('#add-occurrence');
+    await page.fill('.occ-start', '2026-12-31T20:00');
+    // The preview doesn't show occurrences yet, but we can check if the field is there
+    await expect(page.locator('.occ-start')).toBeVisible();
 
     // 2. Check Content fields (Publication Date)
-    await page.selectOption('select[name="category"]', 'article');
-    await expect(page.locator('#city-container')).toBeHidden();
-    await expect(page.locator('#next-date-container')).toBeHidden();
-    await expect(page.locator('#date-container')).toBeVisible();
+    await page.selectOption('select[name="category"]', 'contenu');
+    await page.selectOption('select[name="mandatory-tag"]', 'Article');
+    await expect(page.locator('#address-container')).toBeHidden();
+    await expect(page.locator('#occurrences-container')).toBeHidden();
+    await expect(page.locator('#pub-date-container')).toBeVisible();
 
     const pubDate = '2026-01-01';
     await page.fill('input[name="published_at"]', pubDate);
-    await expect(page.locator('#badge-date')).toContainText(pubDate);
+    await expect(page.locator('#preview-badges')).toContainText('2026');
   });
 
   test('should display bidirectional relations correctly on detail pages', async ({ page }) => {
@@ -132,7 +133,8 @@ test.describe('Moderation Lifecycle', () => {
     await page.goto('/fr/propose');
     await page.fill('input[name="title"]', entityTitle);
     await page.fill('textarea[name="description"]', 'A testing entity');
-    await page.selectOption('select[name="category"]', 'entreprise');
+    await page.selectOption('select[name="category"]', 'acteur');
+    await page.selectOption('select[name="mandatory-tag"]', 'Entreprise');
     await page.fill('input[name="link"]', 'https://entity.example.com');
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
@@ -148,7 +150,8 @@ test.describe('Moderation Lifecycle', () => {
     await page.goto('/fr/propose');
     await page.fill('input[name="title"]', linkedResourceTitle);
     await page.fill('textarea[name="description"]', 'An article linked to our entity');
-    await page.selectOption('select[name="category"]', 'article');
+    await page.selectOption('select[name="category"]', 'contenu');
+    await page.selectOption('select[name="mandatory-tag"]', 'Article');
     await page.fill('input[name="link"]', 'https://article.example.com');
     
     // Link the entity

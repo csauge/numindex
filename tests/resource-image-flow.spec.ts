@@ -16,7 +16,8 @@ test.describe('Resource Image Flow', () => {
       await page.goto('/fr/propose');
       await page.fill('input[name="title"]', resourceTitle);
       await page.fill('textarea[name="description"]', 'Description image test');
-      await page.selectOption('select[name="category"]', 'article');
+      await page.selectOption('select[name="category"]', 'contenu');
+      await page.selectOption('select[name="mandatory-tag"]', 'Article');
       await page.fill('input[name="link"]', 'https://image.test');
       
       // Upload image

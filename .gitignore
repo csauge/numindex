@@ -33,3 +33,4 @@ Thumbs.db
 .wrangler/
 playwright-report/
 test-results/
+supabase/snippets/

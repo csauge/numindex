@@ -138,9 +138,13 @@ test.describe('Authentication & Authorization Permissions', () => {
     await page.goto('/fr/propose');
     await page.fill('input[name="title"]', resourceTitle);
     await page.fill('textarea[name="description"]', 'Description tracking test');
-    await page.selectOption('select[name="category"]', 'article');
+    await page.selectOption('select[name="category"]', 'contenu');
+    await page.selectOption('select[name="mandatory-tag"]', 'Article');
     await page.fill('input[name="link"]', 'https://tracking.test');
-    await page.fill('input[name="tags"]', 'test, tracking');
+    
+    // Select an optional tag
+    await page.click('button:has-text("Expert")');
+    
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
 
@@ -150,7 +154,7 @@ test.describe('Authentication & Authorization Permissions', () => {
     await expect(suggestionCard).toBeVisible();
     
     // Check tags are visible
-    await expect(suggestionCard.locator('span:has-text("#test")')).toBeVisible();
+    await expect(suggestionCard.locator('span:has-text("#Expert")')).toBeVisible();
     
     // 3. Approuver
     await suggestionCard.locator('.approve-btn').click();

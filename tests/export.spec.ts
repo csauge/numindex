@@ -34,7 +34,7 @@ test.describe('Export Functionality', () => {
     await page.goto('/fr');
     
     // Filter by category to have a predictable result set
-    await page.selectOption('#filter-category', 'entreprise');
+    await page.selectOption('#filter-category', 'acteur');
     await page.waitForTimeout(800); // Wait for UI update
     
     // Open dropdown first to make button visible/clickable
@@ -75,7 +75,7 @@ test.describe('Export Functionality', () => {
     await page.goto('/fr');
     
     // Filter by a category that has items (Company/Entreprise)
-    await page.selectOption('#filter-category', 'entreprise');
+    await page.selectOption('#filter-category', 'acteur');
     await page.waitForTimeout(800);
     
     const countText = await page.locator('#results-count').textContent();
