@@ -30,7 +30,6 @@ const translations = {
     results: "ressources",
     loadMore: "Afficher plus",
     noResults: "Aucune ressource trouvée.",
-    exportCSV: "CSV",
     exportBookmarks: "Favoris Navigateur",
     exportCalendar: "Calendrier évènements",
     thisWeek: "Cette semaine",
@@ -55,7 +54,6 @@ const translations = {
     results: "resources",
     loadMore: "Load more",
     noResults: "No resources found.",
-    exportCSV: "CSV",
     exportBookmarks: "Browser Bookmarks",
     exportCalendar: "Events Calendar",
     thisWeek: "This week",
@@ -131,7 +129,6 @@ const spriteIcons = {
           <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-ghost btn-sm h-10 w-10 p-0 rounded-xl text-stone-400" title="Exporter"><svg class="h-4 w-4"><use href="#export" /></svg></label>
             <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white border border-stone-100 rounded-xl w-48 mt-2 z-50">
-              <li><button id="btn-export-csv" class="text-xs font-bold">{t.exportCSV}</button></li>
               <li><button id="btn-export-bookmarks" class="text-xs font-bold">{t.exportBookmarks}</button></li>
               <li><button id="btn-export-calendar" class="text-xs font-bold text-left">{t.exportCalendar}</button></li>
             </ul>
@@ -258,7 +255,6 @@ const spriteIcons = {
     };
     els.loadMoreBtn.onclick = () => { visibleCount += 20; render(); };
 
-    document.getElementById('btn-export-csv').onclick = exportCSV;
     document.getElementById('btn-export-bookmarks').onclick = exportBookmarks;
     document.getElementById('btn-export-calendar').onclick = copyCalendarLink;
 
@@ -419,16 +415,33 @@ const spriteIcons = {
     els.loadMoreCont.classList.toggle('hidden', filteredData.length <= visibleCount);
   }
 
-  function exportCSV() {
-    const headers = "ID,Title,Category,Link,Description,Updated\n";
-    const rows = filteredData.map(d => '"' + d.id + '","' + d.title + '","' + d.cat + '","' + (d.link || '') + '","' + (d.desc || '').replace(/"/g, '""') + '","' + d.up + '"').join("\n");
-    const now = new Date().toISOString().replace(/[:.]/g, '-');
-    download(headers + rows, 'numindex_export_' + now + '.csv', 'text/csv');
-  }
-
   function exportBookmarks() {
+    const categoriesGrouped = filteredData.reduce((acc, d) => {
+      const cat = d.catLabel;
+      if (!acc[cat]) acc[cat] = {};
+      
+      const subCats = taxonomy[d.cat] || [];
+      const sub = d.tags.find(t => subCats.includes(t)) || "Autre";
+      
+      if (!acc[cat][sub]) acc[cat][sub] = [];
+      acc[cat][sub].push(d);
+      return acc;
+    }, {});
+
     let html = '<!DOCTYPE NETSCAPE-Bookmark-file-1><TITLE>Bookmarks</TITLE><H1>Bookmarks</H1><DL><p>';
-    filteredData.forEach(d => { html += '<DT><A HREF="' + (d.link || '#') + '">' + d.title + '</A><DD>' + (d.desc || '') + '\n'; });
+    
+    Object.entries(categoriesGrouped).forEach(([cat, subs]) => {
+      html += `<DT><H3>${cat}</H3><DL><p>`;
+      Object.entries(subs).forEach(([sub, items]) => {
+        html += `<DT><H3>${sub}</H3><DL><p>`;
+        items.forEach(d => {
+          html += `<DT><A HREF="${d.link || '#'}">${d.title}</A><DD>${d.desc || ''}\n`;
+        });
+        html += '</DL><p>';
+      });
+      html += '</DL><p>';
+    });
+
     const now = new Date().toISOString().replace(/[:.]/g, '-');
     download(html + '</DL><p>', 'numindex_bookmarks_' + now + '.html', 'text/html');
   }
