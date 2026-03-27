@@ -106,6 +106,19 @@ export async function fetchAllResources() {
 }
 
 /**
+ * Récupère les ressources avec coordonnées (lat/lng)
+ */
+export async function fetchResourcesWithLocation() {
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from('resources')
+    .select('*')
+    .not('metadata->lat', 'is', null)
+    .not('metadata->lng', 'is', null);
+  return (data || []) as Resource[];
+}
+
+/**
  * Récupère les entités pour le mapping des noms
  */
 export async function fetchEntitiesForMapping() {

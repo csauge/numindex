@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS public.resources (
     link text,
     category text NOT NULL,
     image_url text,
-    metadata jsonb DEFAULT '{"tags": []}'::jsonb,
+    metadata jsonb DEFAULT '{"tags": []}'::jsonb, -- Includes lat, lng, address, published_at, etc.
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
     tags text[] DEFAULT '{}'::text[],

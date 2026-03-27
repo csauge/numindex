@@ -1,0 +1,202 @@
+---
+import type { Resource } from '../lib/supabase/types';
+import { getCategoryLabel, getCategoryIcon } from '../utils/categories';
+
+interface Props {
+  resources: Resource[];
+  lang: 'fr' | 'en';
+}
+
+const { resources, lang } = Astro.props;
+
+// Filtrer les ressources qui ont des coordonnées
+const resourcesWithLocation = resources.filter(r => r.metadata?.lat && r.metadata?.lng);
+
+const translations = {
+  fr: {
+    activate: "Activer la carte interactive",
+    loading: "Chargement de la carte...",
+    description: "Visualisez les acteurs et événements sur la carte. Les données de localisation sont chargées uniquement à votre demande pour économiser de la bande passante.",
+    backToGrid: "Retour à la liste"
+  },
+  en: {
+    activate: "Activate interactive map",
+    loading: "Loading map...",
+    description: "Visualize actors and events on the map. Location data is only loaded upon your request to save bandwidth.",
+    backToGrid: "Back to list"
+  }
+};
+
+const t = translations[lang];
+
+// Préparer les données pour le client
+const geoData = resourcesWithLocation.map(r => ({
+  id: r.id,
+  title: r.title,
+  lat: r.metadata.lat,
+  lng: r.metadata.lng,
+  category: r.category,
+  categoryLabel: getCategoryLabel(r.category, lang),
+  link: `/${lang}/resource/${r.id}`
+}));
+---
+
+<div class="relative w-full h-[600px] bg-base-200 rounded-3xl overflow-hidden border-4 border-base-300 shadow-inner group">
+  {/* Placeholder / Overlay de Sobriété */}
+  <div id="map-placeholder" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 text-center bg-base-200/80 backdrop-blur-sm transition-opacity duration-500">
+    <div class="w-20 h-20 mb-6 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    </div>
+    <h3 class="text-xl font-black text-stone-800 mb-2">{t.activate}</h3>
+    <p class="max-w-md text-stone-500 text-sm mb-8 leading-relaxed italic">
+      {t.description}
+    </p>
+    <button 
+      id="activate-map" 
+      class="btn btn-primary rounded-2xl px-8 font-black shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+    >
+      {t.activate}
+    </button>
+  </div>
+
+  {/* Conteneur de la carte */}
+  <div id="map" class="absolute inset-0 z-10 opacity-0 transition-opacity duration-1000"></div>
+  
+  {/* Indicateur de chargement (caché par défaut) */}
+  <div id="map-loader" class="absolute inset-0 z-30 hidden items-center justify-center bg-base-200">
+    <span class="loading loading-ring loading-lg text-primary"></span>
+    <span class="ml-4 font-bold text-stone-500">{t.loading}</span>
+  </div>
+</div>
+
+<style is:global>
+  /* Styles personnalisés pour Leaflet pour coller au thème numindex */
+  .leaflet-container {
+    background-color: #fdfcfb !important;
+    font-family: inherit !important;
+  }
+  .leaflet-popup-content-wrapper {
+    border-radius: 1rem !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e5e7eb !important;
+  }
+  .leaflet-popup-tip {
+    box-shadow: none !important;
+  }
+  .numindex-marker {
+    filter: drop-shadow(0 4px 6px rgba(64, 145, 108, 0.3));
+  }
+</style>
+
+<script define:vars={{ geoData, lang }}>
+  const activateBtn = document.getElementById('activate-map');
+  const placeholder = document.getElementById('map-placeholder');
+  const mapContainer = document.getElementById('map');
+  const loader = document.getElementById('map-loader');
+
+  let mapInitialized = false;
+
+  async function initMap() {
+    if (mapInitialized) return;
+    
+    // Afficher le loader
+    loader.classList.remove('hidden');
+    loader.classList.add('flex');
+
+    try {
+      // Charger CSS Leaflet
+      if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      // Charger JS Leaflet
+      if (!window.L) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      // Initialiser la carte
+      const map = L.map('map', {
+        scrollWheelZoom: false,
+        zoomControl: false
+      }).setView([46.603354, 1.888334], 6); // Centre de la France par défaut
+
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+      // Tuiles CartoDB Light (très sobres)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20
+      }).addTo(map);
+
+      // Icone personnalisée
+      const customIcon = L.divIcon({
+        className: 'numindex-marker',
+        html: `<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                </svg>
+              </div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+      });
+
+      // Ajouter les marqueurs
+      const markers = L.featureGroup();
+      
+      geoData.forEach(item => {
+        const popupContent = `
+          <div class="p-2">
+            <span class="text-[10px] font-black uppercase text-primary mb-1 block tracking-wider">${item.categoryLabel}</span>
+            <h4 class="font-black text-stone-800 mb-2 leading-tight">${item.title}</h4>
+            <a href="${item.link}" class="btn btn-xs btn-primary rounded-lg no-underline text-white font-bold w-full">Détails</a>
+          </div>
+        `;
+
+        const marker = L.marker([item.lat, item.lng], { icon: customIcon })
+          .bindPopup(popupContent);
+        
+        markers.addLayer(marker);
+      });
+
+      markers.addTo(map);
+
+      // Ajuster la vue pour voir tous les marqueurs
+      if (geoData.length > 0) {
+        map.fitBounds(markers.getBounds(), { padding: [50, 50] });
+      }
+
+      mapInitialized = true;
+      
+      // Afficher la carte et cacher le reste
+      mapContainer.classList.remove('opacity-0');
+      placeholder.classList.add('opacity-0');
+      setTimeout(() => {
+        placeholder.classList.add('hidden');
+        loader.classList.add('hidden');
+        loader.classList.remove('flex');
+      }, 500);
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      alert('Impossible de charger la carte. Veuillez vérifier votre connexion.');
+      loader.classList.add('hidden');
+    }
+  }
+
+  activateBtn.addEventListener('click', initMap);
+</script>
