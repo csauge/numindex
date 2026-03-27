@@ -20,8 +20,7 @@ Ce document définit les règles essentielles pour le développement de numindex
 ## 4. Structure des Données
 - Table `resources` : `title`, `description`, `link`, `category`, `image_url`.
 - `tags` (text[]) : Colonne dédiée pour les tags (obligatoire et optionnels).
-- `metadata` (JSONB) : Utilisé pour des champs comme `address` (lieu précis), `published_at` (date de parution), `version_date` (date de mise
-     à jour), `occurrences` (tableau d'objets pour l'événement : start, end, address). L'usage de ces champs est géré par la logique applicative.
+- `metadata` (JSONB) : Utilisé pour des champs comme `address` (lieu précis), `published_at` (date de parution), `version_date` (date de mise à jour), `occurrences` (tableau d'objets pour l'événement : start, end, address). L'usage de ces champs est géré par la logique applicative.
 - `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'une publication).
 
 ## 5. Livraison Finale (Checklist)
