@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.astro/
+.wrangler/
+
+# Test reports and results
+playwright-report/
+test-results/
+playwright/
+
+# Logs and system files
+*.log
+.DS_Store
+
+# Secrets and environment
+.env
+.env.*
+!.env.example
+
+# Large lock files
+package-lock.json
+
+# Temporary files
+tmp/
+.temp/

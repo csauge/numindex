@@ -2,6 +2,9 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
+import ResourceIcons from "../../components/ResourceIcons.astro";
+import FilterBar from "../../components/FilterBar.astro";
+import ResourceGrid from "../../components/ResourceGrid.astro";
 import { CATEGORIES, getCategoryLabel } from "../../utils/categories";
 import { getImageUrl } from "../../lib/supabase/client";
 import { fetchAllResources, getNextEventDate } from "../../lib/services";
@@ -81,23 +84,10 @@ const clientResources = allRessources.map(res => ({
   tags: res.tags || [],
   kw: (res.title + " " + (res.description || "") + " " + (res.tags?.join(" ") || "")).toLowerCase()
 }));
-
-const spriteIcons = {
-  ...Object.fromEntries(Object.entries(CATEGORIES).map(([k, v]) => [`cat-${k}`, v.icon])),
-  'search': 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
-  'close': 'M6 18L18 6M6 6l12 12',
-  'export': 'M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
-  'view-list': 'M4 6h16M4 12h16M4 18h16',
-  'view-grid': 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'
-};
 ---
 
 <Layout title={t.title} lang={lang as string}>
-  <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
-    {Object.entries(spriteIcons).map(([id, path]) => (
-      <symbol id={id} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d={path} /></symbol>
-    ))}
-  </svg>
+  <ResourceIcons />
 
   <section class="max-w-7xl mx-auto px-4">
     <header class="mb-10 pt-8">
@@ -105,365 +95,30 @@ const spriteIcons = {
       <p class="text-stone-500 italic text-sm">{t.desc}</p>
     </header>
 
-    <div class="sticky top-20 z-30 mb-8 p-1.5 bg-white/90 backdrop-blur border border-stone-200 rounded-2xl flex flex-col gap-2">
-      <div class="flex flex-col md:flex-row gap-2">
-        <div class="flex-grow relative flex items-center">
-          <div class="absolute left-3 opacity-30"><svg class="h-4 w-4"><use href="#search" /></svg></div>
-          <input type="text" id="search-input" placeholder={t.searchPlaceholder} class="input input-ghost w-full pl-9 h-10 bg-stone-50 focus:bg-white rounded-xl border-none text-sm" />
-          <button id="clear-search" class="absolute right-2 h-7 w-7 flex items-center justify-center rounded-lg hover:bg-stone-200 text-stone-400 opacity-0 pointer-events-none transition-opacity"><svg class="h-4 w-4"><use href="#close" /></svg></button>
-        </div>
+    <FilterBar lang={lang as string} t={t} activeCategoryKeys={activeCategoryKeys} />
 
-        <div class="flex items-center gap-2 flex-wrap md:flex-nowrap justify-end">
-          <select id="filter-sort" class="select select-sm bg-emerald-50 text-emerald-700 border-none rounded-lg text-[10px] font-bold uppercase flex-grow md:flex-grow-0 max-w-[120px] md:max-w-none">
-            <option value="updated_at">{t.sortNewest}</option>
-            <option value="title">{t.sortName}</option>
-            <option value="next_date" id="opt-next-date" class="hidden">{t.sortDate}</option>
-            <option value="published_at" id="opt-pub-date" class="hidden">{t.sortPub}</option>
-            <option value="cat">{t.sortCat}</option>
-          </select>
-          <select id="filter-category" class="select select-sm bg-stone-100 text-stone-600 border-none rounded-lg text-[10px] font-bold uppercase flex-grow md:flex-grow-0 max-w-[140px] md:max-w-none">
-            <option value="all">{t.filterCat}</option>
-            {activeCategoryKeys.map(k => <option value={k}>{getCategoryLabel(k, lang as any)}</option>)}
-          </select>
-
-          <div class="dropdown dropdown-end">
-            <label tabindex="0" class="btn btn-ghost btn-sm h-10 w-10 p-0 rounded-xl text-stone-400" title="Exporter"><svg class="h-4 w-4"><use href="#export" /></svg></label>
-            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white border border-stone-100 rounded-xl w-48 mt-2 z-50">
-              <li><button id="btn-export-bookmarks" class="text-xs font-bold">{t.exportBookmarks}</button></li>
-              <li><button id="btn-export-calendar" class="text-xs font-bold text-left">{t.exportCalendar}</button></li>
-            </ul>
-          </div>
-
-          <label class="swap swap-rotate btn btn-ghost btn-sm h-10 w-10 p-0 rounded-xl text-stone-400">
-            <input type="checkbox" id="view-toggle" />
-            <svg class="swap-on h-4 w-4 pointer-events-none"><use href="#view-list" /></svg>
-            <svg class="swap-off h-4 w-4 pointer-events-none"><use href="#view-grid" /></svg>
-          </label>
-        </div>
-      </div>
-      <div id="sub-filters-container" class="hidden px-1 pb-1 overflow-x-auto no-scrollbar flex items-center gap-2 whitespace-nowrap"></div>
-    </div>
-
-    <div class="mb-4 px-2 text-[10px] font-black uppercase text-stone-400">
-      <span id="results-count">{allRessources.length}</span> {t.results}
-    </div>
-    
-    <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all duration-300"></div>
-
-    <div id="load-more-container" class="mt-12 text-center pb-20 hidden">
-      <button id="btn-load-more" class="btn btn-sm btn-outline btn-primary rounded-xl px-8 text-[10px] font-black uppercase tracking-widest">{t.loadMore}</button>
-    </div>
-
-    <div id="no-results" class="hidden py-32 text-center text-stone-300 italic"><p>{t.noResults}</p></div>
+    <ResourceGrid t={t} initialCount={allRessources.length} />
   </section>
 
   <script id="taxonomy-data" type="application/json" is:inline set:html={JSON.stringify(taxonomy)} />
   <script id="resource-data" type="application/json" is:inline set:html={JSON.stringify(clientResources)} />
 </Layout>
 
-<script is:inline>
-  let allData = [];
-  let filteredData = [];
-  let taxonomy = {};
-  let currentSubCat = null;
-  let visibleCount = 20;
+<script>
+  import { initIndex } from "../../lib/index-client";
+
+  const allData = JSON.parse(document.getElementById('resource-data')?.textContent || '[]');
+  const taxonomy = JSON.parse(document.getElementById('taxonomy-data')?.textContent || '{}');
   const currentLang = document.documentElement.lang || 'fr';
   
-  const els = {
-    grid: document.getElementById('resources-grid'),
-    search: document.getElementById('search-input'),
-    clear: document.getElementById('clear-search'),
-    cat: document.getElementById('filter-category'),
-    sort: document.getElementById('filter-sort'),
-    count: document.getElementById('results-count'),
-    noRes: document.getElementById('no-results'),
-    view: document.getElementById('view-toggle'),
-    loadMoreBtn: document.getElementById('btn-load-more'),
-    loadMoreCont: document.getElementById('load-more-container'),
-    optNext: document.getElementById('opt-next-date'),
-    optPub: document.getElementById('opt-pub-date'),
-    subFilters: document.getElementById('sub-filters-container')
-  };
-
-  const t = {
+  const translations = {
     fr: { thisWeek: "Cette semaine", thisMonth: "Ce mois-ci", thisYear: "Cette année", older: "Plus ancien", noDate: "Sans date", pastDate: "Passé", filterSub: "Tous types" },
     en: { thisWeek: "This week", thisMonth: "This month", thisYear: "This year", older: "Older", noDate: "No date", pastDate: "Past", filterSub: "All types" }
-  }[currentLang];
+  };
 
-  function init() {
-    allData = JSON.parse(document.getElementById('resource-data').textContent);
-    taxonomy = JSON.parse(document.getElementById('taxonomy-data').textContent);
-    
-    // Sync UI with URL on load
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('q')) els.search.value = params.get('q');
-    if (params.has('cat')) els.cat.value = params.get('cat');
-    if (params.has('sort')) els.sort.value = params.get('sort');
-    if (params.has('type')) currentSubCat = params.get('type');
-    
-    if (els.search.value) {
-      els.clear.classList.remove('opacity-0', 'pointer-events-none');
-    }
-    
-    // View mode persistence
-    const savedView = localStorage.getItem('numindex_view');
-    if (savedView === 'list') {
-      els.view.checked = true;
-    }
+  const t = translations[currentLang as keyof typeof translations] || translations.fr;
 
-    els.search.oninput = () => {
-      els.clear.classList.toggle('opacity-0', !els.search.value);
-      els.clear.classList.toggle('pointer-events-none', !els.search.value);
-      update(true);
-    };
-    
-    els.clear.onclick = () => { 
-      els.search.value = ''; 
-      els.clear.classList.add('opacity-0', 'pointer-events-none');
-      els.search.focus();
-      update(true); 
-    };
-
-    els.cat.onchange = () => {
-      const isEvent = els.cat.value === 'evenement';
-      const isContenu = els.cat.value === 'contenu';
-      const isOutil = els.cat.value === 'outil';
-      const isActeur = els.cat.value === 'acteur';
-      
-      els.optNext.classList.toggle('hidden', !isEvent);
-      els.optPub.classList.toggle('hidden', !isContenu);
-
-      if (isEvent) {
-        els.sort.value = 'next_date';
-      } else if (isContenu) {
-        els.sort.value = 'published_at';
-      } else if (isOutil || isActeur) {
-        els.sort.value = 'title';
-      } else {
-        els.sort.value = 'updated_at';
-      }
-      
-      currentSubCat = null;
-      renderSubFilters();
-      update(true);
-    };
-    
-    els.sort.onchange = () => update(true);
-    els.view.onchange = () => {
-      localStorage.setItem('numindex_view', els.view.checked ? 'list' : 'grid');
-      render();
-    };
-    els.loadMoreBtn.onclick = () => { visibleCount += 20; render(); };
-
-    document.getElementById('btn-export-bookmarks').onclick = exportBookmarks;
-    document.getElementById('btn-export-calendar').onclick = copyCalendarLink;
-
-    // Trigger initial visibility of sort options
-    els.cat.dispatchEvent(new Event('change'));
-    if (currentSubCat) {
-      renderSubFilters();
-    }
-    update();
-  }
-
-  function renderSubFilters() {
-    const cat = els.cat.value;
-    const subCats = taxonomy[cat] || [];
-    
-    if (subCats.length === 0) {
-      els.subFilters.classList.add('hidden');
-      return;
-    }
-    
-    els.subFilters.classList.remove('hidden');
-    let html = `<button class="pill ${!currentSubCat ? 'active' : ''}" data-sub="all">${t.filterSub}</button>`;
-    subCats.forEach(s => {
-      html += `<button class="pill ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
-    });
-    els.subFilters.innerHTML = html;
-    
-    els.subFilters.querySelectorAll('.pill').forEach(btn => {
-      btn.onclick = () => {
-        const sub = btn.getAttribute('data-sub');
-        currentSubCat = sub === 'all' ? null : sub;
-        
-        els.subFilters.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        update(true);
-      };
-    });
-  }
-
-  function copyCalendarLink() {
-    const url = 'webcal://' + window.location.host + '/api/events.ics';
-    navigator.clipboard.writeText(url).then(() => {
-      const btn = document.getElementById('btn-export-calendar');
-      const old = btn.textContent;
-      btn.textContent = currentLang === 'fr' ? 'Lien copié !' : 'Link copied!';
-      btn.classList.add('text-success');
-      setTimeout(() => { 
-        btn.textContent = old; 
-        btn.classList.remove('text-success');
-      }, 2000);
-    });
-  }
-
-  function update(reset = false) {
-    if (reset) visibleCount = 20;
-    const q = els.search.value.toLowerCase().trim();
-    const c = els.cat.value;
-    const s = els.sort.value;
-    const sub = currentSubCat;
-    const today = new Date().toISOString().split('T')[0];
-
-    filteredData = allData.filter(d => 
-      (c === 'all' || d.cat === c) && 
-      (!sub || d.tags.includes(sub)) &&
-      (!q || d.kw.includes(q))
-    );
-
-    filteredData.sort((a, b) => {
-      if (s === 'next_date') {
-        const dA = a.next || '', dB = b.next || '';
-        if (!dA && !dB) return 0; if (!dA) return 1; if (!dB) return -1;
-        return (dA < today === dB < today) ? dA.localeCompare(dB) : (dA < today ? 1 : -1);
-      }
-      if (s === 'published_at') {
-        const dA = a.pub || '', dB = b.pub || '';
-        if (!dA && !dB) return 0; if (!dA) return 1; if (!dB) return -1;
-        return dB.localeCompare(dA);
-      }
-      if (s === 'title') return a.title.localeCompare(b.title);
-      if (s === 'cat') return a.cat.localeCompare(b.cat) || a.title.localeCompare(b.title);
-      return b.up.localeCompare(a.up);
-    });
-
-    els.count.textContent = filteredData.length;
-    els.noRes.classList.toggle('hidden', filteredData.length > 0);
-    render();
-    
-    const p = new URLSearchParams();
-    if (q) p.set('q', q);
-    if (c !== 'all') p.set('cat', c);
-    if (sub) p.set('type', sub);
-    if (s !== 'updated_at') p.set('sort', s);
-    const qs = p.toString();
-    const newURL = window.location.pathname + (qs ? '?' + qs : '');
-    if (window.location.search !== (qs ? '?' + qs : '')) {
-      window.history.replaceState({}, '', newURL);
-    }
-  }
-
-  function render() {
-    const isList = els.view.checked;
-    els.grid.className = isList ? 'flex flex-col gap-1 list-mode' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
-    
-    const toShow = filteredData.slice(0, visibleCount);
-    let html = '';
-    let lastGroup = '';
-    const s = els.sort.value;
-    const today = new Date().toISOString().split('T')[0];
-
-    toShow.forEach(d => {
-      let group = '';
-      if (s === 'updated_at' || s === 'published_at') {
-        const dateStr = s === 'published_at' ? d.pub : d.up;
-        if (!dateStr) {
-          group = t.noDate;
-        } else {
-          const diff = (new Date() - new Date(dateStr)) / 86400000;
-          group = diff < 7 ? t.thisWeek : diff < 30 ? t.thisMonth : diff < 365 ? t.thisYear : t.older;
-        }
-      } else if (s === 'title') {
-        group = d.title[0].toUpperCase();
-      } else if (s === 'next_date') {
-        group = !d.next ? t.noDate : d.next < today ? t.pastDate : new Date(d.next).toLocaleDateString(currentLang, {month:'long', year:'numeric'});
-      }
-
-      if (group && group !== lastGroup) {
-        lastGroup = group;
-        html += '<div class="col-span-full pt-6 pb-2 border-b border-stone-50 flex items-center gap-4 alphabet-divider"><span>' + group + '</span><div class="h-px bg-stone-100 flex-grow"></div></div>';
-      }
-
-      html += '<a href="/' + currentLang + '/resource/' + d.id + '" class="resource-card group bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all ' + (isList ? 'flex items-center p-3 h-14 gap-4' : 'flex flex-col') + '">';
-      if (!isList) {
-        html += '<div class="relative w-full aspect-video bg-stone-50 flex items-center justify-center overflow-hidden">';
-        if (d.imgUrl) {
-          html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy"/>';
-        } else {
-          html += '<svg class="w-10 h-10 text-stone-200"><use href="#cat-' + d.cat + '"/></svg>';
-        }
-        
-        if (d.cat === 'evenement' && d.next) {
-          const isNextToday = d.next.split('T')[0] === today;
-          html += '<div class="absolute bottom-2 right-2 px-2 py-1 rounded-lg text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-500 text-white' : 'bg-white/90 text-stone-800') + '">📅 ' + new Date(d.next).toLocaleDateString(currentLang, {day: 'numeric', month: 'short'}) + '</div>';
-        }
-
-        html += '</div>';
-      } else {
-        html += '<div class="card-list-icon-box flex-shrink-0"><svg class="w-6 h-6 text-stone-300"><use href="#cat-' + d.cat + '"/></svg></div>';
-      }
-      html += '<div class="p-4 flex-grow min-w-0">';
-      html += '<span class="card-category-label text-[7px] font-black uppercase tracking-tighter text-stone-400 block">' + d.catLabel + '</span>';
-      html += '<h2 class="text-[12px] font-bold text-stone-800 truncate">' + d.title + '</h2>';
-      html += '<p class="card-desc text-[10px] text-stone-500 mt-1 ' + (isList ? 'truncate' : 'line-clamp-2') + '">' + (d.desc || '') + '</p>';
-      html += '</div></a>';
-    });
-
-    els.grid.innerHTML = html;
-    els.loadMoreCont.classList.toggle('hidden', filteredData.length <= visibleCount);
-  }
-
-  function exportBookmarks() {
-    const esc = (s) => !s ? '' : s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const categoriesGrouped = filteredData.reduce((acc, d) => {
-      const cat = d.catLabel;
-      if (!acc[cat]) acc[cat] = {};
-      
-      const subCats = taxonomy[d.cat] || [];
-      const sub = d.tags.find(t => subCats.includes(t)) || "Autre";
-      
-      if (!acc[cat][sub]) acc[cat][sub] = [];
-      acc[cat][sub].push(d);
-      return acc;
-    }, {});
-
-    const now = Math.floor(Date.now() / 1000);
-    let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
-<!-- This is an automatically generated file. -->
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-<TITLE>Bookmarks</TITLE>
-<H1>Bookmarks</H1>
-<DL><p>
-`;
-    
-    Object.entries(categoriesGrouped).forEach(([cat, subs]) => {
-      html += `    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${esc(cat)}</H3>\n    <DL><p>\n`;
-      Object.entries(subs).forEach(([sub, items]) => {
-        html += `        <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${esc(sub)}</H3>\n        <DL><p>\n`;
-        items.forEach(d => {
-          html += `            <DT><A HREF="${esc(d.link || '#')}" ADD_DATE="${now}">${esc(d.title)}</A>\n`;
-          if (d.desc) html += `            <DD>${esc(d.desc)}\n`;
-        });
-        html += `        </DL><p>\n`;
-      });
-      html += `    </DL><p>\n`;
-    });
-
-    const fileNameDate = new Date().toISOString().replace(/[:.]/g, '-');
-    download(html + '</DL><p>\n', 'numindex_bookmarks_' + fileNameDate + '.html', 'text/html');
-  }
-
-  function download(content, name, type) {
-    const blob = new Blob([content], { type });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = name;
-    link.click();
-  }
-
-  init();
+  initIndex(allData, taxonomy, currentLang, t);
 </script>
 
 <style is:global>

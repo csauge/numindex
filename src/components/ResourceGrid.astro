@@ -1,0 +1,24 @@
+---
+interface Props {
+  t: any;
+  initialCount: number;
+}
+
+const { t, initialCount } = Astro.props;
+---
+
+<div class="mb-4 px-2 text-[10px] font-black uppercase text-stone-400">
+  <span id="results-count">{initialCount}</span> {t.results}
+</div>
+
+<div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all duration-300"></div>
+
+<div id="load-more-container" class="mt-12 text-center pb-20 hidden">
+  <button id="btn-load-more" class="btn btn-sm btn-outline btn-primary rounded-xl px-8 text-[10px] font-black uppercase tracking-widest">
+    {t.loadMore}
+  </button>
+</div>
+
+<div id="no-results" class="hidden py-32 text-center text-stone-300 italic">
+  <p>{t.noResults}</p>
+</div>

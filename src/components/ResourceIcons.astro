@@ -1,0 +1,20 @@
+---
+import { CATEGORIES } from "../utils/categories";
+
+const spriteIcons = {
+  ...Object.fromEntries(Object.entries(CATEGORIES).map(([k, v]) => [`cat-${k}`, v.icon])),
+  'search': 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
+  'close': 'M6 18L18 6M6 6l12 12',
+  'export': 'M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
+  'view-list': 'M4 6h16M4 12h16M4 18h16',
+  'view-grid': 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'
+};
+---
+
+<svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+  {Object.entries(spriteIcons).map(([id, path]) => (
+    <symbol id={id} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d={path} />
+    </symbol>
+  ))}
+</svg>

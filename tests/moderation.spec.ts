@@ -192,8 +192,10 @@ test.describe('Moderation Lifecycle', () => {
     await page.fill('textarea[name="description"]', 'This will be rejected');
     await page.fill('input[name="link"]', 'https://example.com/rejected');
     await page.click('#submit-btn');
-    await page.waitForURL(/\/fr\/?$/);
-
+    // Wait for success toast instead of strict URL redirect as it has a 2.5s delay
+    await expect(page.locator('#toast-message')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#toast-message')).toContainText('Suggestion envoyée');
+    
     await page.goto('/fr/admin', { waitUntil: 'networkidle' });
     const suggestionCard = page.locator('.suggestion-card').filter({ hasText: rejectedTitle });
     
