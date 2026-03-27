@@ -15,28 +15,18 @@ test.describe('numindex.org Map Page', () => {
     await expect(title).toContainText("Carte de l'index");
   });
 
-  test('should display the "Activate map" placeholder', async ({ page }) => {
+  test('should activate the map automatically on dedicated page', async ({ page }) => {
     await page.goto('/fr/carte');
     
-    const activateBtn = page.locator('#activate-map');
-    await expect(activateBtn).toBeVisible();
-    await expect(activateBtn).toContainText("Activer la carte interactive");
-    
+    // Placeholder should be hidden eventually due to autoActivate
     const placeholder = page.locator('#map-placeholder');
-    await expect(placeholder).toBeVisible();
-  });
-
-  test('should activate the map on click', async ({ page }) => {
-    await page.goto('/fr/carte');
-    
-    const activateBtn = page.locator('#activate-map');
-    await activateBtn.click();
+    await expect(placeholder).toBeHidden();
     
     // Check for Leaflet container eventually
     const mapContainer = page.locator('#map');
     
-    // Wait for the map to be initialized (opacity-0 removed)
-    await expect(mapContainer).not.toHaveClass(/opacity-0/);
+    // Wait for the map to be initialized (opacity-100)
+    await expect(mapContainer).toHaveClass(/opacity-100/);
     
     // Check if Leaflet CSS/JS are added
     const leafletCSS = page.locator('link#leaflet-css');
@@ -52,8 +42,5 @@ test.describe('numindex.org Map Page', () => {
     await expect(page).toHaveURL(/\/en\/carte\/?$/);
     const title = page.locator('header h1').first();
     await expect(title).toContainText("Index Map");
-    
-    const activateBtn = page.locator('#activate-map');
-    await expect(activateBtn).toContainText("Activate interactive map");
   });
 });

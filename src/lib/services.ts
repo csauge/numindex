@@ -46,11 +46,14 @@ export async function searchAddresses(query: string, lang: string) {
         const p = f.properties;
         const name = [p.housenumber, p.street, p.name].filter(Boolean).join(' ');
         const sub = [p.postcode, p.city || p.town || p.village, p.state, p.country].filter(Boolean).join(', ');
+        const [lng, lat] = f.geometry.coordinates;
         
         return {
           name,
           sub,
-          label: `${name}, ${sub}`.replace(/^, /, '')
+          label: `${name}, ${sub}`.replace(/^, /, ''),
+          lat,
+          lng
         };
       })
       .slice(0, 5);

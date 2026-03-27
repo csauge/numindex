@@ -44,7 +44,7 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
     </header>
 
     <div class="mb-12">
-      <InteractiveMap resources={allResources} lang={lang as 'fr' | 'en'} />
+      <InteractiveMap resources={allResources} lang={lang as 'fr' | 'en'} autoActivate={true} />
     </div>
   </section>
 </Layout>

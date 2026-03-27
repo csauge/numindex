@@ -46,6 +46,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
   let selectedRelatedIds: string[] = [];
   let selectedOptionalTags: string[] = [];
   let occurrences: any[] = [];
+  let currentCoords: { lat: number; lng: number } | null = null;
 
   async function showToast(message: string, type: 'success' | 'error') {
     if (!toastContainer || !toastMessage || !toastText) return;
@@ -184,13 +185,17 @@ export function initSuggestionForm(form: HTMLFormElement) {
     addressTimer = setTimeout(async () => {
       const findRes = await searchAddresses(val, lang);
       elements.addressResults!.innerHTML = findRes.map(c => `
-        <button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50 border-b last:border-none" data-label="${c.label}">
+        <button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50 border-b last:border-none" data-label="${c.label}" data-lat="${c.lat}" data-lng="${c.lng}">
           <p class="font-bold text-sm">${c.name}</p><p class="text-[10px] text-stone-400">${c.sub}</p>
         </button>`).join('');
       elements.addressResults!.classList.remove('hidden');
       elements.addressResults!.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
         elements.addressSearch.value = (b as HTMLElement).dataset.label!;
         elements.addressVal.value = (b as HTMLElement).dataset.label!;
+        currentCoords = { 
+          lat: parseFloat((b as HTMLElement).dataset.lat!), 
+          lng: parseFloat((b as HTMLElement).dataset.lng!) 
+        };
         elements.addressResults!.classList.add('hidden');
         updateUI();
       }));
@@ -201,6 +206,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     if ((e.target as HTMLInputElement).checked) {
       elements.addressSearch.value = t.online;
       elements.addressVal.value = t.online;
+      currentCoords = null;
     } else {
       elements.addressSearch.value = '';
       elements.addressVal.value = '';
@@ -246,6 +252,10 @@ export function initSuggestionForm(form: HTMLFormElement) {
       elements.pubDateInput.value = metadata.published_at || '';
       elements.versionDateInput.value = metadata.version_date || '';
       
+      if (metadata.lat && metadata.lng) {
+        currentCoords = { lat: metadata.lat, lng: metadata.lng };
+      }
+
       occurrences = metadata.occurrences || [];
       selectedRelatedIds = existingData.related_ids || [];
       
@@ -320,10 +330,18 @@ export function initSuggestionForm(form: HTMLFormElement) {
       const metadata = { ...existingData?.metadata };
       
       const cat = elements.cat.value;
-      if (cat === 'acteur') metadata.address = elements.addressVal.value;
-      else if (cat === 'evenement') {
+      if (cat === 'acteur' || cat === 'evenement') {
         metadata.address = elements.addressVal.value;
-        metadata.occurrences = occurrences;
+        if (currentCoords) {
+          metadata.lat = currentCoords.lat;
+          metadata.lng = currentCoords.lng;
+        } else if (metadata.address !== existingData?.metadata?.address) {
+          // Si l'adresse a changé manuellement sans autocomplétion, on supprime les anciens lat/lng
+          delete metadata.lat;
+          delete metadata.lng;
+        }
+
+        if (cat === 'evenement') metadata.occurrences = occurrences;
       } else if (cat === 'contenu') metadata.published_at = elements.pubDateInput.value;
       else if (cat === 'outil') metadata.version_date = elements.versionDateInput.value;
 
