@@ -1,3 +1,5 @@
+import { fetchUserFavoriteIds, fetchTotalFavoriteCounts, toggleFavorite } from './favorites-client';
+
 export interface Resource {
   id: string;
   title: string;
@@ -17,6 +19,8 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
   let filteredData: Resource[] = [];
   let currentSubCat: string | null = null;
   let visibleCount = 20;
+  let userFavoriteIds: string[] = [];
+  let totalFavoriteCounts: Record<string, number> = {};
   
   const els = {
     grid: document.getElementById('resources-grid')!,
@@ -28,15 +32,28 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     noRes: document.getElementById('no-results')!,
     view: document.getElementById('view-toggle') as HTMLInputElement,
     loadMoreBtn: document.getElementById('btn-load-more')!,
-    loadMoreCont: document.getElementById('load-more-container')!,
+    loadMoreCont: document.getElementById('load-load-more-container')!, // Correction potentially needed here if ID is different
     optNext: document.getElementById('opt-next-date')!,
     optPub: document.getElementById('opt-pub-date')!,
     subFilters: document.getElementById('sub-filters-container')!
   };
+  
+  // Correction of the ID for loadMoreCont
+  els.loadMoreCont = document.getElementById('load-more-container')!;
 
   const t = translations;
 
-  function init() {
+  async function init() {
+    // Fetch favorites
+    try {
+      [userFavoriteIds, totalFavoriteCounts] = await Promise.all([
+        fetchUserFavoriteIds(),
+        fetchTotalFavoriteCounts()
+      ]);
+    } catch (e) {
+      console.error("Failed to load favorites", e);
+    }
+
     // Sync UI with URL on load
     const params = new URLSearchParams(window.location.search);
     if (params.has('q')) els.search.value = params.get('q')!;
@@ -209,6 +226,8 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     const today = new Date().toISOString().split('T')[0];
 
     toShow.forEach(d => {
+      const isFav = userFavoriteIds.includes(d.id);
+      const favCount = totalFavoriteCounts[d.id] || 0;
       let group = '';
       if (s === 'updated_at' || s === 'published_at') {
         const dateStr = s === 'published_at' ? d.pub : d.up;
@@ -229,7 +248,14 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
         html += '<div class="col-span-full pt-6 pb-2 border-b border-stone-50 flex items-center gap-4 alphabet-divider"><span>' + group + '</span><div class="h-px bg-stone-100 flex-grow"></div></div>';
       }
 
-      html += '<a href="/' + currentLang + '/resource/' + d.id + '" class="resource-card group bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all ' + (isList ? 'flex items-center p-3 h-14 gap-4' : 'flex flex-col') + '">';
+      html += '<a href="/' + currentLang + '/resource/' + d.id + '" class="resource-card group relative bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all ' + (isList ? 'flex items-center p-3 h-14 gap-4' : 'flex flex-col') + '">';
+      
+      // Favorite Button (Star)
+      html += '<button type="button" class="btn-favorite absolute top-2 right-2 z-20 h-7 px-2 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border border-stone-100 shadow-sm transition-all hover:scale-105 active:scale-95" data-id="' + d.id + '" aria-label="Favorite">';
+      html += '<svg class="w-3.5 h-3.5 ' + (isFav ? 'text-amber-400 fill-amber-400' : 'text-stone-300 fill-none') + '" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
+      html += '<span class="fav-count text-[10px] font-black ml-1 ' + (isFav ? 'text-amber-500' : 'text-stone-400') + '">' + (favCount > 0 ? favCount : '0') + '</span>';
+      html += '</button>';
+
       if (!isList) {
         html += '<div class="relative w-full aspect-video bg-stone-50 flex items-center justify-center overflow-hidden">';
         if (d.imgUrl) {
@@ -240,7 +266,7 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
         
         if (d.cat === 'evenement' && d.next) {
           const isNextToday = d.next.split('T')[0] === today;
-          html += '<div class="absolute bottom-2 right-2 px-2 py-1 rounded-lg text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-500 text-white' : 'bg-white/90 text-stone-800') + '">📅 ' + new Date(d.next).toLocaleDateString(currentLang, {day: 'numeric', month: 'short'}) + '</div>';
+          html += '<div class="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-500 text-white' : 'bg-white/90 text-stone-800') + '">📅 ' + new Date(d.next).toLocaleDateString(currentLang, {day: 'numeric', month: 'short'}) + '</div>';
         }
 
         html += '</div>';
@@ -256,6 +282,36 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
 
     els.grid.innerHTML = html;
     els.loadMoreCont.classList.toggle('hidden', filteredData.length <= visibleCount);
+
+    // Attach favorite events
+    els.grid.querySelectorAll('.btn-favorite').forEach(btn => {
+      (btn as HTMLElement).onclick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = (btn as HTMLElement).dataset.id!;
+        
+        try {
+          const res = await toggleFavorite(id);
+          
+          if (res === null) {
+            // Redirect to login
+            window.location.href = `/${currentLang}/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+            return;
+          }
+
+          if (res) {
+            userFavoriteIds.push(id);
+            totalFavoriteCounts[id] = (totalFavoriteCounts[id] || 0) + 1;
+          } else {
+            userFavoriteIds = userFavoriteIds.filter(fid => fid !== id);
+            totalFavoriteCounts[id] = Math.max(0, (totalFavoriteCounts[id] || 1) - 1);
+          }
+          render();
+        } catch (err) {
+          console.error("Error toggling favorite", err);
+        }
+      };
+    });
   }
 
   function exportBookmarks() {

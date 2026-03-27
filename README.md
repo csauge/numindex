@@ -7,6 +7,7 @@
 - **Architecture Hybride (Astro 5) :** Mixte Statique (performance) et SSR (données temps-réel pour l'admin et les détails).
 - **Filtrage & Tri Avancé :** Recherche temps-réel, filtrage par 4 grandes catégories (**Acteur, Événement, Contenu, Outil**) et tri dynamique.
 - **Système de Tags Structuré :** Chaque ressource possède une sous-catégorie obligatoire et des tags qualificatifs optionnels (ex: ESS, Open Source, Débutant).
+- **Favoris :** Possibilité pour les utilisateurs connectés de sauvegarder leurs ressources préférées avec synchronisation en temps réel et compteur global.
 - **Export de Données :** Possibilité d'exporter les ressources filtrées au format **CSV**.
 - **Flux Calendrier (ICS) :** Abonnement aux événements via un lien `.ics` gérant désormais les multi-occurrences (dates multiples pour un même événement).
 - **Bascule d'affichage :** Mode **Grille** visuel ou **Liste ultra-compacte** (type tableau) avec mémorisation de la préférence.
@@ -82,16 +83,22 @@ Le schéma est disponible dans `supabase_schema.sql`. Il inclut un trigger autom
 
 ## 🧪 Tests
 
-Le projet utilise **Playwright** pour assurer la qualité et la non-régression de l'index et du workflow de modération.
+Le projet utilise **Vitest** pour les tests unitaires et **Playwright** pour assurer la qualité et la non-régression de l'index et du workflow de modération.
 
-- **Exécuter tous les tests :**
+- **Exécuter les tests unitaires :**
+  ```bash
+  npm run test:unit
+  ```
+- **Exécuter les tests E2E :**
   ```bash
   npm run test:e2e
   ```
 - **Tests couverts :**
+  - Logique client des favoris (Mocks Supabase).
   - Navigation et redirection de langue.
   - Recherche et filtrage dynamique.
   - Cycle de vie complet des ressources (Proposition -> Modération -> Publication -> Suppression).
+  - Système de favoris (UI et Persistance).
   - Métadonnées (Villes et Dates).
   - Formulaire de Contact (Mock API).
 

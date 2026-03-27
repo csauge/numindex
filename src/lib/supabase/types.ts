@@ -34,3 +34,10 @@ export interface Suggestion extends Omit<Resource, 'updated_at'> {
   reason?: string | null;
   submitted_by?: string | null;
 }
+
+export interface Favorite {
+  id: string;
+  user_id: string;
+  resource_id: string;
+  created_at: string;
+}

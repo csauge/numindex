@@ -14,7 +14,8 @@
     "optimize-images": "node scripts/optimize-images.mjs",
     "verify-sobriety": "node scripts/verify-sobriety.mjs",
     "test:e2e": "playwright test",
-    "verify": "npm run verify-sobriety && npm run build && npm run test:e2e"
+    "test:unit": "vitest run",
+    "verify": "npm run verify-sobriety && npm run build && npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.12",
@@ -30,8 +31,10 @@
     "@playwright/test": "^1.58.2",
     "autoprefixer": "^10.4.24",
     "dotenv": "^17.3.1",
+    "happy-dom": "^20.8.9",
     "pagefind": "^1.4.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "vitest": "^4.1.2"
   }
 }

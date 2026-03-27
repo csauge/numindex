@@ -42,6 +42,16 @@ if (getCategoryType(res.category) === 'entity') {
     .in('id', res.related_ids);
   if (data) relatedResources = data as Resource[];
 }
+
+// Fetch total favorites count
+const { data: favCountData } = await supabase
+  .from('resource_favorite_counts')
+  .select('total_favorites')
+  .eq('resource_id', id)
+  .single();
+
+const totalFavorites = favCountData?.total_favorites || 0;
+
 const translations = {
   fr: {
     back: "Retour à l'index",
@@ -60,6 +70,8 @@ const translations = {
     nextEvent: "Prochain événement",
     occurrences: "Éditions / Dates",
     address: "Lieu / Adresse",
+    favorite: "Favori",
+    totalFavorites: "favoris",
   },
   en: {
     back: "Back to index",
@@ -77,6 +89,8 @@ const translations = {
     nextEvent: "Next event",
     occurrences: "Editions / Dates",
     address: "Location / Address",
+    favorite: "Favorite",
+    totalFavorites: "favorites",
   }
 };
 const t = translations[lang as keyof typeof translations] || translations.fr;
@@ -122,6 +136,14 @@ const nextEventDate = getNextEventDate(res as Resource);
             {t.visit}
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           </a>
+          
+          <button id="btn-favorite-main" class="btn btn-outline border-stone-200 hover:border-amber-300 hover:bg-amber-50 text-stone-500 hover:text-amber-600 w-full rounded-2xl font-bold gap-2 group transition-all" data-id={id}>
+            <svg id="fav-star-main" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-stone-300 fill-none transition-colors" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+            <span id="fav-count-main" class="text-sm font-black text-stone-400 transition-colors">{totalFavorites}</span>
+          </button>
+
           <div class="flex gap-2">
             <a href={`/${lang}/propose?id=${res.id}&action=update`} class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-primary gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.update} /></svg>
@@ -255,3 +277,62 @@ const nextEventDate = getNextEventDate(res as Resource);
     </div>
   </div>
 </Layout>
+
+<script>
+  import { toggleFavorite, fetchUserFavoriteIds } from '../../../lib/favorites-client';
+
+  const btn = document.getElementById('btn-favorite-main') as HTMLButtonElement;
+  const star = document.getElementById('fav-star-main') as unknown as SVGElement;
+  const countEl = document.getElementById('fav-count-main')!;
+  const resourceId = btn.dataset.id!;
+  const currentLang = document.documentElement.lang || 'fr';
+
+  function updateVisuals(isActive: boolean) {
+    if (isActive) {
+      btn.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-600');
+      star.classList.remove('text-stone-300', 'fill-none');
+      star.classList.add('text-amber-400', 'fill-amber-400');
+      countEl.classList.remove('text-stone-400');
+      countEl.classList.add('text-amber-500');
+    } else {
+      btn.classList.remove('border-amber-200', 'bg-amber-50', 'text-amber-600');
+      star.classList.add('text-stone-300', 'fill-none');
+      star.classList.remove('text-amber-400', 'fill-amber-400');
+      countEl.classList.add('text-stone-400');
+      countEl.classList.remove('text-amber-500');
+    }
+  }
+
+  async function init() {
+    const favorites = await fetchUserFavoriteIds();
+    if (favorites.includes(resourceId)) {
+      btn.dataset.active = 'true';
+      updateVisuals(true);
+    }
+  }
+
+  btn.onclick = async () => {
+    try {
+      const res = await toggleFavorite(resourceId);
+      if (res === null) {
+        window.location.href = `/${currentLang}/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
+
+      const currentCount = parseInt(countEl.innerText);
+      if (res) {
+        btn.dataset.active = 'true';
+        updateVisuals(true);
+        countEl.innerText = (currentCount + 1).toString();
+      } else {
+        delete btn.dataset.active;
+        updateVisuals(false);
+        countEl.innerText = Math.max(0, currentCount - 1).toString();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  init();
+</script>

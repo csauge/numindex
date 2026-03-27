@@ -111,6 +111,7 @@ VALUES
     'https://greenframe.io', 
     'outil', 
     ARRAY['monitoring', 'carbon-footprint', 'devops', 'Logiciel'], 
+    '{}'::uuid[], 
     '{}'::jsonb
   ),
   (
@@ -119,5 +120,6 @@ VALUES
     'https://www.websitecarbon.com/', 
     'outil', 
     ARRAY['tool', 'web', 'emissions', 'Logiciel'], 
+    '{}'::uuid[], 
     '{}'::jsonb
   );

@@ -14,6 +14,7 @@ Ce document définit les règles essentielles pour le développement de numindex
 - **Communication :** Brevo API.
 
 ## 3. Standards d'Ingénierie
+- **Tests :** Toujours modifier ou ajouter des tests (unitaires et/ou E2E) pour valider les nouvelles fonctionnalités.
 - **Code :** Clean Code, modulaire, lisible, robuste (validation client), DRY. Supprimer le code mort.
 - **Composants :** Max ~300 lignes, logique externalisée.
 
@@ -26,6 +27,6 @@ Ce document définit les règles essentielles pour le développement de numindex
 ## 5. Livraison Finale (Checklist)
 1.  **Qualité :** Nettoyer code (`console.log`, commentaires), factoriser logique métier.
 2.  **Sobriété/Perf :** `npm run verify-sobriety`, vérifier RGAA.
-3.  **Technique :** `npm run build`, `npm run test:e2e`.
+3.  **Technique :** `npm run build`, `npm run test:unit`, `npm run test:e2e`.
 4.  **Docs :** Mettre à jour `README.md`, `GEMINI.md`, `supabase_schema.sql`.
-5.  **Git :** `git status`, `git diff`, commit normé.
+5.  **Git :** `git status`, `git diff`, commit normé. **INTERDICTION :** Ne jamais commit ou push sans permission explicite, même en mode YOLO.

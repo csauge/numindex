@@ -17,49 +17,39 @@ setup('authenticate', async ({ page }) => {
 
   // Wait for login or error
   try {
-    await Promise.race([
-      page.waitForURL(/\/fr\/?$/, { timeout: 15000 }),
-      page.waitForSelector('#error-message:visible', { timeout: 15000 })
+    const success = await Promise.race([
+      page.waitForURL(/\/fr\/?$/, { timeout: 10000 }).then(() => true),
+      page.waitForSelector('#error-message:visible', { timeout: 10000 }).then(() => false)
     ]);
     
-    const errorVisible = await page.locator('#error-message').isVisible();
-    if (errorVisible) {
+    if (!success) {
       const errorText = await page.textContent('#error-message');
-      console.error(`[Auth Setup] Login failed with error: ${errorText}`);
-      throw new Error(`Login failed: ${errorText}`);
-    }
-  } catch (e) {
-    console.log('[Auth Setup] Login failed or timed out, attempting registration...');
-    await page.goto('/fr/register');
-    await page.fill('input[name="full_name"]', 'Admin Test');
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-    
-    // Check for registration error too
-    try {
-      await page.waitForURL(/\/fr\/login/, { timeout: 10000 });
-    } catch (regErr) {
-      const regErrorVisible = await page.locator('#error-message').isVisible();
-      if (regErrorVisible) {
-        const regErrorText = await page.textContent('#error-message');
-        console.error(`[Auth Setup] Registration failed with error: ${regErrorText}`);
-        // If user already exists, we might still be able to login if it was just a timeout
-        if (regErrorText?.includes('déjà inscrit') || regErrorText?.includes('already registered')) {
-          console.log('[Auth Setup] User already registered, trying login one more time...');
-        } else {
-          throw regErr;
-        }
-      } else {
-        throw regErr;
+      console.log(`[Auth Setup] Login failed with error: ${errorText}. Attempting registration...`);
+      
+      // Try unique email for registration to avoid conflicts
+      const uniqueEmail = `test-${Date.now()}@example.com`;
+      await page.goto('/fr/register');
+      await page.fill('input[name="full_name"]', 'Test User');
+      await page.fill('input[name="email"]', uniqueEmail);
+      await page.fill('input[name="password"]', password);
+      await page.click('button[type="submit"]');
+      
+      // After registration, it might redirect to /fr (auto-login) or /fr/login
+      await Promise.race([
+        page.waitForURL(/\/fr\/?$/, { timeout: 15000 }),
+        page.waitForURL(/\/fr\/login/, { timeout: 15000 })
+      ]);
+
+      if (page.url().includes('/login')) {
+        await page.fill('input[name="email"]', uniqueEmail);
+        await page.fill('input[name="password"]', password);
+        await page.click('button[type="submit"]');
+        await page.waitForURL(/\/fr\/?$/);
       }
     }
-    
-    await page.goto('/fr/login');
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/fr\/?$/);
+  } catch (e) {
+    console.error(`[Auth Setup] Critical failure during auth setup: ${e}`);
+    throw e;
   }
 
   console.log('[Auth Setup] Verifying UI elements...');
