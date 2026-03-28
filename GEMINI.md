@@ -1,32 +1,31 @@
 # Mandats numindex.org 🌿
 
-Ce document définit les règles essentielles pour le développement de numindex.org.
+Ce document définit les règles essentielles et les standards d'ingénierie pour le développement de numindex.org.
 
-## 1. Principes Clés (Sobriété & Performance)
-- **Écoconception :** Poids page léger (<50 Ko pour images AVIF), miniatures adaptées, pas de JS lourd.
-- **Accessibilité :** RGAA, HTML sémantique, aria-labels, focus clavier.
-- **Performance :** Polices système, Lighthouse > 95.
+## 1. Principes de Conception (Sobriété & Performance)
+- **Écoconception :** Poids page léger, images AVIF (<50 Ko pour les vignettes), miniatures adaptées, pas de JS lourd (Vanilla JS privilégié).
+- **Accessibilité :** Conformité RGAA, HTML sémantique, aria-labels explicites, navigation au clavier.
+- **Performance :** Polices système uniquement, score Lighthouse > 95 obligatoire.
 
-## 2. Stack Technique
-- **Frontend :** Astro (Hybride : Static/SSR). Les pages de contenu fixe sont statiques, tandis que l'accueil, les détails des ressources et l'admin utilisent le SSR pour une mise à jour instantanée des données sans rebuild. Hébergement Cloudflare Pages.
-- **Style :** Tailwind CSS + DaisyUI. Thème `garden`.
-- **Backend :** Supabase (PostgreSQL, JSONB).
-- **Communication :** Brevo API.
+## 2. Standards d'Ingénierie
+- **Tests :** Toute modification ou ajout de fonctionnalité doit être accompagné de tests (Vitest pour l'unitaire, Playwright pour l'E2E).
+- **Code :** Clean Code, modulaire, lisible, typage strict (TypeScript). Supprimer systématiquement le code mort.
+- **Composants :** Taille maximale ~300 lignes. La logique complexe doit être externalisée dans `src/lib`.
+- **SSR vs Static :** Utiliser le SSR pour les données dynamiques (Admin, Détails ressource) et le statique pour le contenu fixe.
 
-## 3. Standards d'Ingénierie
-- **Tests :** Toujours modifier ou ajouter des tests (unitaires et/ou E2E) pour valider les nouvelles fonctionnalités.
-- **Code :** Clean Code, modulaire, lisible, robuste (validation client), DRY. Supprimer le code mort.
-- **Composants :** Max ~300 lignes, logique externalisée.
+## 3. Structure des Données (Supabase)
+- **Table `resources` :** `title`, `description`, `link`, `category`, `image_url`, `tags` (text[]), `related_ids` (UUID[]).
+- **`metadata` (JSONB) :** Colonne flexible pour les attributs contextuels :
+    - `address` : String (Lieu ou adresse précise).
+    - `published_at` : Date ISO (Date de parution pour les publications).
+    - `version_date` : Date ISO (Date de mise à jour pour les outils).
+    - `occurrences` : Array d'objets `{ start, end, address }` (Dates multiples pour les événements).
+    - `online` : Boolean (Indicateur de ressource en ligne/distanciel).
+- **Triggers :** Gestion automatique de `updated_at` et des compteurs de favoris.
 
-## 4. Structure des Données
-- Table `resources` : `title`, `description`, `link`, `category`, `image_url`.
-- `tags` (text[]) : Colonne dédiée pour les tags (obligatoire et optionnels).
-- `metadata` (JSONB) : Utilisé pour des champs comme `address` (lieu précis), `published_at` (date de parution), `version_date` (date de mise à jour), `occurrences` (tableau d'objets pour l'événement : start, end, address). L'usage de ces champs est géré par la logique applicative.
-- `related_ids` (UUID[]) : Liens vers d'autres ressources (ex: une entité éditrice d'une publication).
-
-## 5. Livraison Finale (Checklist)
-1.  **Qualité :** Nettoyer code (`console.log`, commentaires), factoriser logique métier.
-2.  **Sobriété/Perf :** `npm run verify-sobriety`, vérifier RGAA.
-3.  **Technique :** `npm run build`, `npm run test:unit`, `npm run test:e2e`.
-4.  **Docs :** Mettre à jour `README.md`, `GEMINI.md`, `supabase_schema.sql`.
-5.  **Git :** `git status`, `git diff`, commit normé. **INTERDICTION :** Ne jamais commit ou push sans permission explicite, même en mode YOLO.
+## 4. Checklist de Livraison Finale
+1.  **Qualité :** Nettoyage du code (`console.log`, commentaires inutiles), factorisation.
+2.  **Sobriété/Perf :** Exécution de `npm run verify-sobriety`, vérification RGAA.
+3.  **Validation :** `npm run build`, `npm run test:unit`, `npm run test:e2e`.
+4.  **Documentation :** Mettre à jour `README.md`, `GEMINI.md` et le schéma SQL si nécessaire.
+5.  **Git :** Commit normé après vérification du `git diff`. **INTERDICTION :** Ne jamais commit ou push sans permission explicite.
