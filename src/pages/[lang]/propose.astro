@@ -16,11 +16,11 @@ const isModeration = Astro.url.searchParams.get('moderation') === 'true';
 const translations = {
   fr: {
     title: isModeration ? "Corriger la suggestion" : (action === 'delete' ? "Supprimer une ressource" : (action === 'update' ? "Modifier une ressource" : "Proposer une ressource")),
-    back: isModeration ? "Retour à la modération" : "Retour à l'accueil"
+    back: isModeration ? "Retour à la modération" : "Retour à l'index"
   },
   en: {
     title: isModeration ? "Correct suggestion" : (action === 'delete' ? "Delete resource" : (action === 'update' ? "Update resource" : "Suggest a resource")),
-    back: isModeration ? "Back to moderation" : "Back to home"
+    back: isModeration ? "Back to moderation" : "Back to index"
   }
 };
 const t = translations[lang as keyof typeof translations] || translations.fr;

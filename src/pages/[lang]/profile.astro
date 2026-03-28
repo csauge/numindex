@@ -21,7 +21,7 @@ const translations = {
     statusPending: "En attente",
     statusApproved: "Approuvé",
     statusRejected: "Refusé",
-    backHome: "Retour à l'accueil"
+    back: "Retour à l'index"
   },
   en: {
     title: "My Profile",
@@ -38,7 +38,7 @@ const translations = {
     statusPending: "Pending",
     statusApproved: "Approved",
     statusRejected: "Rejected",
-    backHome: "Back to home"
+    back: "Back to index"
   }
 };
 
@@ -47,6 +47,13 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 
 <Layout title={t.title} lang={lang as string}>
   <div id="profile-content" class="max-w-4xl mx-auto py-8 hidden">
+    <div class="mb-8">
+      <a href={`/${lang}`} class="inline-flex items-center gap-2 text-stone-400 hover:text-emerald-700 transition-colors text-sm font-bold group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+        {t.back}
+      </a>
+    </div>
+
     <div class="flex items-center gap-6 mb-12">
       <div class="w-20 h-20 rounded-3xl bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-3xl uppercase shadow-inner border border-emerald-50">
         <span id="p-initials"></span>
@@ -79,11 +86,6 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
             {t.contributions}
           </button>
         </div>
-
-        <a href={`/${lang}`} class="btn btn-ghost btn-sm w-full rounded-xl text-stone-400 font-bold gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
-          {t.backHome}
-        </a>
       </div>
 
       <div class="md:col-span-2">
