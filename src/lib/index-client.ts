@@ -30,16 +30,12 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     sort: document.getElementById('filter-sort') as HTMLSelectElement,
     count: document.getElementById('results-count')!,
     noRes: document.getElementById('no-results')!,
-    view: document.getElementById('view-toggle') as HTMLInputElement,
     loadMoreBtn: document.getElementById('btn-load-more')!,
-    loadMoreCont: document.getElementById('load-load-more-container')!, // Correction potentially needed here if ID is different
+    loadMoreCont: document.getElementById('load-more-container')!,
     optNext: document.getElementById('opt-next-date')!,
     optPub: document.getElementById('opt-pub-date')!,
     subFilters: document.getElementById('sub-filters-container')!
   };
-  
-  // Correction of the ID for loadMoreCont
-  els.loadMoreCont = document.getElementById('load-more-container')!;
 
   const t = translations;
 
@@ -63,12 +59,6 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     
     if (els.search.value) {
       els.clear.classList.remove('opacity-0', 'pointer-events-none');
-    }
-    
-    // View mode persistence
-    const savedView = localStorage.getItem('numindex_view');
-    if (savedView === 'list') {
-      els.view.checked = true;
     }
 
     els.search.oninput = () => {
@@ -109,10 +99,6 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     };
     
     els.sort.onchange = () => update(true);
-    els.view.onchange = () => {
-      localStorage.setItem('numindex_view', els.view.checked ? 'list' : 'grid');
-      render();
-    };
     els.loadMoreBtn.onclick = () => { visibleCount += 20; render(); };
 
     document.getElementById('btn-export-bookmarks')!.onclick = exportBookmarks;
@@ -216,8 +202,7 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
   }
 
   function render() {
-    const isList = els.view.checked;
-    els.grid.className = isList ? 'flex flex-col gap-1 list-mode' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+    els.grid.className = 'grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4';
     
     const toShow = filteredData.slice(0, visibleCount);
     let html = '';
@@ -248,7 +233,7 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
         html += '<div class="col-span-full pt-6 pb-2 border-b border-stone-50 flex items-center gap-4 alphabet-divider"><span>' + group + '</span><div class="h-px bg-stone-100 flex-grow"></div></div>';
       }
 
-      html += '<a href="/' + currentLang + '/resource/' + d.id + '" class="resource-card group relative bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all ' + (isList ? 'flex items-center p-3 h-14 gap-4' : 'flex flex-col') + '">';
+      html += '<a href="/' + currentLang + '/resource/' + d.id + '" class="resource-card group relative bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all flex flex-col sm:flex-row gap-0 sm:gap-3 items-stretch">';
       
       // Favorite Button (Star)
       html += '<button type="button" class="btn-favorite absolute top-2 right-2 z-20 h-7 px-2 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border border-stone-100 shadow-sm transition-all hover:scale-105 active:scale-95" data-id="' + d.id + '" aria-label="Favorite">';
@@ -256,27 +241,34 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
       html += '<span class="fav-count text-[10px] font-black ml-1 ' + (isFav ? 'text-amber-500' : 'text-stone-400') + '">' + (favCount > 0 ? favCount : '0') + '</span>';
       html += '</button>';
 
-      if (!isList) {
-        html += '<div class="relative w-full aspect-video bg-stone-50 flex items-center justify-center overflow-hidden">';
-        if (d.imgUrl) {
-          html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy"/>';
-        } else {
-          html += '<svg class="w-10 h-10 text-stone-200"><use href="#cat-' + d.cat + '"/></svg>';
-        }
-        
-        if (d.cat === 'evenement' && d.next) {
-          const isNextToday = d.next.split('T')[0] === today;
-          html += '<div class="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-500 text-white' : 'bg-white/90 text-stone-800') + '">📅 ' + new Date(d.next).toLocaleDateString(currentLang, {day: 'numeric', month: 'short'}) + '</div>';
-        }
-
-        html += '</div>';
+      // Image / Icon
+      html += '<div class="relative w-full sm:w-36 sm:h-auto aspect-video sm:aspect-square bg-stone-50 flex-shrink-0 flex items-center justify-center overflow-hidden">';
+      if (d.imgUrl) {
+        html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy"/>';
       } else {
-        html += '<div class="card-list-icon-box flex-shrink-0"><svg class="w-6 h-6 text-stone-300"><use href="#cat-' + d.cat + '"/></svg></div>';
+        html += '<svg class="w-10 h-10 text-stone-200"><use href="#cat-' + d.cat + '"/></svg>';
       }
-      html += '<div class="p-4 flex-grow min-w-0">';
-      html += '<span class="card-category-label text-[7px] font-black uppercase tracking-tighter text-stone-400 block">' + d.catLabel + '</span>';
-      html += '<h2 class="text-[12px] font-bold text-stone-800 truncate">' + d.title + '</h2>';
-      html += '<p class="card-desc text-[10px] text-stone-500 mt-1 ' + (isList ? 'truncate' : 'line-clamp-2') + '">' + (d.desc || '') + '</p>';
+      
+      if (d.cat === 'evenement' && d.next) {
+        const isNextToday = d.next.split('T')[0] === today;
+        html += '<div class="absolute bottom-2 left-2 px-2 py-1 rounded-md text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-500 text-white' : 'bg-white/90 text-stone-800') + '">📅 ' + new Date(d.next).toLocaleDateString(currentLang, {day: 'numeric', month: 'short'}) + '</div>';
+      }
+      html += '</div>';
+
+      // Text Content & Badges
+      html += '<div class="p-4 flex flex-col flex-grow min-w-0">';
+      html += '<div class="flex flex-wrap gap-1.5 mb-2.5 pr-8">';
+      html += '<span class="px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 text-[10px] font-bold uppercase tracking-wider">' + d.catLabel + '</span>';
+
+      const mandatoryTags = taxonomy[d.cat] || [];
+      const subCat = d.tags.find(t => mandatoryTags.includes(t));
+      if (subCat) {
+        html += '<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">' + subCat + '</span>';
+      }
+      html += '</div>';
+      
+      html += '<h2 class="text-sm sm:text-base font-bold text-stone-800 line-clamp-2 leading-tight mb-1 pr-6">' + d.title + '</h2>';
+      html += '<p class="text-xs sm:text-sm text-stone-500 line-clamp-2">' + (d.desc || '') + '</p>';
       html += '</div></a>';
     });
 

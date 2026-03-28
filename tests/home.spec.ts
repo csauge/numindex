@@ -51,33 +51,4 @@ test.describe('numindex.org Home Page', () => {
     await expect(header).toContainText("Sustainable Digital Index");
   });
 
-  test('should toggle between grid and list view and persist preference', async ({ page }) => {
-    await page.goto('/fr');
-    const gridContainer = page.locator('#resources-grid');
-    const viewToggleInput = page.locator('#view-toggle');
-    const viewToggleLabel = page.locator('label.swap:has(#view-toggle)');
-
-    // Default should be grid (unchecked)
-    await expect(gridContainer).not.toHaveClass(/list-mode/);
-    await expect(viewToggleInput).not.toBeChecked();
-
-    // Switch to list (Click the label since input might be hidden)
-    await viewToggleLabel.click();
-    await expect(gridContainer).toHaveClass(/list-mode/);
-    await expect(viewToggleInput).toBeChecked();
-    
-    // Verify that description is still present in list mode (even if truncated)
-    const firstDesc = page.locator('.resource-card .card-desc').first();
-    await expect(firstDesc).toBeVisible();
-
-    // Reload and check persistence
-    await page.reload();
-    await expect(gridContainer).toHaveClass(/list-mode/);
-    await expect(viewToggleInput).toBeChecked();
-
-    // Switch back to grid
-    await viewToggleLabel.click();
-    await expect(gridContainer).not.toHaveClass(/list-mode/);
-    await expect(viewToggleInput).not.toBeChecked();
-  });
 });
