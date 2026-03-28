@@ -272,13 +272,13 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
 
       // Text Content & Badges
       html += '<div class="p-4 flex flex-col flex-grow min-w-0">';
-      html += '<div class="flex flex-wrap gap-1.5 mb-2.5 pr-8">';
-      html += '<span class="px-2 py-0.5 rounded bg-stone-100 text-stone-700 text-[10px] font-black uppercase tracking-wider border border-stone-200">' + d.catLabel + '</span>';
+      html += '<div class="flex flex-wrap gap-1 mb-2 pr-8">';
+      html += '<span class="px-1.5 py-0.5 rounded bg-stone-100 text-stone-700 text-[9px] font-black uppercase tracking-tight border border-stone-200">' + d.catLabel + '</span>';
 
       const mandatoryTags = taxonomy[d.cat] || [];
       const subCat = d.tags.find(t => mandatoryTags.includes(t));
       if (subCat) {
-        html += '<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider border border-emerald-200 shadow-sm">' + subCat + '</span>';
+        html += '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-tight border border-emerald-200 shadow-sm">' + subCat + '</span>';
       }
       html += '</div>';
       

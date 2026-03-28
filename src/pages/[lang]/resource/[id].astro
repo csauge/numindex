@@ -161,16 +161,16 @@ const nextEventDate = getNextEventDate(res as Resource);
       <div class="md:col-span-2 space-y-10">
         <div>
           <div class="flex flex-wrap items-center gap-2 mb-4">
-            <span class="px-2 py-0.5 rounded bg-stone-100 text-stone-700 text-[10px] font-black uppercase tracking-wider border border-stone-200">
+            <span class="px-1.5 py-0.5 rounded bg-stone-100 text-stone-700 text-[9px] font-black uppercase tracking-tight border border-stone-200">
               {getCategoryLabel(res.category, lang as 'fr' | 'en')}
             </span>
             {subCategory && (
-              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider border border-emerald-200 shadow-sm">
+              <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-tight border border-emerald-200 shadow-sm">
                 {subCategory}
               </span>
             )}
             {res.category !== 'evenement' && res.metadata?.address && (
-              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-600 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-200 shadow-sm">
+              <span class="flex items-center gap-1 text-[9px] font-bold text-stone-600 uppercase tracking-tight bg-stone-50 px-1.5 py-1 rounded border border-stone-200 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 {res.metadata.address}
               </span>

@@ -107,9 +107,10 @@ export function initSuggestionForm(form: HTMLFormElement) {
             <input type="datetime-local" class="input input-sm input-bordered occ-end" value="${occ.end || ''}" data-index="${index}" />
           </div>
         </div>
-        <div class="form-control">
+        <div class="form-control relative">
           <label class="label p-1"><span class="label-text text-[10px] uppercase font-bold text-stone-400">${t.address}</span></label>
-          <input type="text" class="input input-sm input-bordered occ-addr" value="${occ.address || ''}" data-index="${index}" placeholder="${t.addressPlaceholder}" />
+          <input type="text" class="input input-sm input-bordered occ-addr" value="${occ.address || ''}" data-index="${index}" placeholder="${t.addressPlaceholder}" autocomplete="off" />
+          <div class="occ-addr-results absolute left-0 right-0 top-full mt-1 bg-white border rounded-lg shadow-xl z-50 hidden max-h-48 overflow-y-auto" data-index="${index}"></div>
         </div>
       </div>
     `).join('');
@@ -122,13 +123,39 @@ export function initSuggestionForm(form: HTMLFormElement) {
       });
     });
 
+    let occTimer: any;
     elements.occurrencesList!.querySelectorAll('input').forEach(input => {
-      input.addEventListener('change', (e) => {
+      input.addEventListener('input', (e) => {
         const idx = parseInt((e.target as HTMLInputElement).dataset.index!);
-        const field = (e.target as HTMLInputElement).classList.contains('occ-start') ? 'start' : 
-                      ((e.target as HTMLInputElement).classList.contains('occ-end') ? 'end' : 'address');
-        occurrences[idx][field] = (e.target as HTMLInputElement).value;
-        updateUI();
+        const isAddr = (e.target as HTMLInputElement).classList.contains('occ-addr');
+        
+        if (isAddr) {
+          clearTimeout(occTimer);
+          const val = (e.target as HTMLInputElement).value;
+          const results = (e.target as HTMLElement).nextElementSibling as HTMLElement;
+          
+          if (val.length < 2) return results.classList.add('hidden');
+          
+          occTimer = setTimeout(async () => {
+            const findRes = await searchAddresses(val, lang);
+            results.innerHTML = findRes.map(c => `
+              <button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50 border-b last:border-none" data-label="${c.label}">
+                <p class="font-bold text-xs">${c.name}</p><p class="text-[9px] text-stone-400">${c.sub}</p>
+              </button>`).join('');
+            results.classList.remove('hidden');
+            results.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+              const label = (b as HTMLElement).dataset.label!;
+              (e.target as HTMLInputElement).value = label;
+              occurrences[idx].address = label;
+              results.classList.add('hidden');
+              updateUI();
+            }));
+          }, 300);
+        } else {
+          const field = (e.target as HTMLInputElement).classList.contains('occ-start') ? 'start' : 'end';
+          occurrences[idx][field] = (e.target as HTMLInputElement).value;
+          updateUI();
+        }
       });
     });
   }
@@ -160,7 +187,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
       elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border-l border-stone-200 pl-2 ml-1">v.${year}</span>`;
     }
     selectedOptionalTags.forEach(tag => {
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border border-stone-200 px-1 rounded ml-1 bg-white shadow-sm">#${tag}</span>`;
+      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border border-stone-200 px-1 rounded ml-1 bg-white shadow-sm">${tag}</span>`;
     });
 
     if (!elements.img.files?.[0]) {

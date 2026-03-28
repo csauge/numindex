@@ -163,7 +163,7 @@ const geoData = resourcesWithLocation.map(r => ({
       geoData.forEach(item => {
         const popupContent = `
           <div class="p-2">
-            <span class="text-[10px] font-black uppercase text-primary mb-1 block tracking-wider">${item.categoryLabel}</span>
+            <span class="text-[9px] font-black uppercase text-primary mb-1 block tracking-tight">${item.categoryLabel}</span>
             <h4 class="font-black text-stone-800 mb-2 leading-tight">${item.title}</h4>
             <a href="${item.link}" class="btn btn-xs btn-primary rounded-lg no-underline text-white font-bold w-full">Détails</a>
           </div>
