@@ -108,7 +108,13 @@ const formatDateTime = (dateStr: string) => {
 const nextEventDate = getNextEventDate(res as Resource);
 ---
 
-<Layout title={res.title} lang={lang as string}>
+<Layout 
+  title={res.title} 
+  description={res.description} 
+  ogImage={res.image_url ? getImageUrl(res.image_url) : undefined}
+  type="article"
+  lang={lang as string}
+>
   <div class="max-w-4xl mx-auto px-4 py-8">
     
     {/* Navigation Retour */}

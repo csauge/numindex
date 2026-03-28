@@ -1,0 +1,71 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonicalURL?: URL;
+  type?: 'website' | 'article';
+  lang?: string;
+}
+
+const {
+  title: pageTitle,
+  description = "numindex.org — L'index du numérique responsable. Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
+  ogImage = '/logo.svg', // SVG isn't ideal for OG but is the only thing we have.
+  canonicalURL = new URL(Astro.url.pathname, Astro.site),
+  type = 'website',
+  lang = 'fr',
+} = Astro.props;
+
+const siteName = 'numindex.org';
+const fullTitle = pageTitle ? `${pageTitle} | ${siteName}` : siteName;
+
+// i18n alternate links
+const locales = ['fr', 'en'];
+const alternateLinks = locales.map((l) => {
+  // Replace current locale prefix with alternate locale
+  const alternatePath = Astro.url.pathname.replace(/^\/(fr|en)/, `/${l}`);
+  return {
+    href: new URL(alternatePath, Astro.site),
+    hreflang: l,
+  };
+});
+---
+
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
+
+<!-- Alternate Language Links (Hreflang) -->
+{alternateLinks.map(({ href, hreflang }) => (
+  <link rel="alternate" hreflang={hreflang} href={href} />
+))}
+<link rel="alternate" hreflang="x-default" href={new URL(Astro.url.pathname.replace(/^\/(fr|en)/, '/fr'), Astro.site)} />
+
+<!-- Primary Meta Tags -->
+<title>{fullTitle}</title>
+<meta name="title" content={fullTitle} />
+<meta name="description" content={description} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={new URL(ogImage, Astro.url)} />
+<meta property="og:site_name" content={siteName} />
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={fullTitle} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={new URL(ogImage, Astro.url)} />
+
+<!-- Robots -->
+<meta name="robots" content="index, follow" />

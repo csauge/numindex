@@ -1,9 +1,11 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import cloudflare from '@astrojs/cloudflare';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  integrations: [tailwind()],
+  site: 'https://numindex.org',
+  integrations: [tailwind(), sitemap()],
   output: 'static',
   adapter: cloudflare({
     imageService: 'compile', // Optimizes images at build time, avoids sharp at runtime

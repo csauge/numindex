@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://numindex.org/sitemap-index.xml
+
+# Disallow admin and auth pages
+Disallow: /fr/admin
+Disallow: /en/admin
+Disallow: /fr/profile
+Disallow: /en/profile
+Disallow: /fr/login
+Disallow: /en/login
+Disallow: /fr/register
+Disallow: /en/register

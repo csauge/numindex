@@ -1,11 +1,16 @@
 ---
 import { ACTION_ICONS } from '../utils/categories';
+import SEO from '../components/SEO.astro';
 
 interface Props {
   title: string;
+  description?: string;
+  ogImage?: string;
+  canonicalURL?: URL;
+  type?: 'website' | 'article';
   lang?: string;
 }
-const { title, lang = 'fr' } = Astro.props;
+const { title, description, ogImage, canonicalURL, type, lang = 'fr' } = Astro.props;
 
 const translations = {
   fr: { propose: "Ajouter", skip: "Passer au contenu", admin: "Modérer", login: "Connexion", logout: "Déconnexion" },
@@ -17,11 +22,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 <!doctype html>
 <html lang={lang} data-theme="numindex">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{title} | numindex.org</title>
+    <SEO {title} {description} {ogImage} {canonicalURL} {type} {lang} />
     <style is:global>
       /* Style pour le lien d'évitement (Accessibilité) */
       .skip-link {
