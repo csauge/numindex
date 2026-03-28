@@ -1,0 +1,75 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase/client';
+import { marked } from 'marked';
+
+const { lang } = Astro.params as { lang: 'fr' | 'en' };
+
+const title = lang === 'en' ? 'Submission Guide' : "Guide d'usage et critères";
+const subtitle = lang === 'en' 
+  ? 'Rules and criteria for accepting resources on numindex.' 
+  : 'Règles et critères d\'acceptation des ressources sur le portail.';
+const fallbackText = lang === 'en'
+  ? 'The guide is currently unavailable.'
+  : 'Le guide est temporairement indisponible.';
+
+// Fetch markdown from Supabase Storage
+// Try to fetch 'guide-{lang}.md', if not found fallback to 'guide-fr.md'
+let markdownContent = '';
+let htmlContent = '';
+
+if (supabase) {
+  try {
+    const filename = `guide-${lang}.md`;
+    const { data: fileData, error } = await supabase.storage
+      .from('content')
+      .download(filename);
+      
+    if (error && lang !== 'fr') {
+      // Fallback to French if English version doesn't exist
+      const { data: fallbackData } = await supabase.storage
+        .from('content')
+        .download('guide-fr.md');
+      
+      if (fallbackData) {
+        markdownContent = await fallbackData.text();
+      }
+    } else if (fileData) {
+      markdownContent = await fileData.text();
+    }
+  } catch (e) {
+    console.error('Error fetching guide content:', e);
+  }
+}
+
+if (!markdownContent) {
+  htmlContent = `<p class="text-stone-500 italic text-center py-10">${fallbackText}</p>`;
+} else {
+  htmlContent = marked.parse(markdownContent);
+}
+---
+
+<Layout title={title} lang={lang}>
+  <main class="max-w-4xl mx-auto px-4 py-8 md:py-12 flex-1 w-full" id="main-content">
+    
+    <div class="mb-8 md:mb-12">
+      <h1 class="text-3xl md:text-5xl font-black text-stone-900 tracking-tight mb-4 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 md:h-10 md:w-10 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        {title}
+      </h1>
+      <p class="text-lg md:text-xl text-stone-600 max-w-2xl font-medium">
+        {subtitle}
+      </p>
+    </div>
+
+    <!-- Conteneur pour le Markdown converti -->
+    <article class="prose prose-stone prose-emerald md:prose-lg max-w-none bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-emerald-100">
+      <div set:html={htmlContent} />
+    </article>
+    
+  </main>
+</Layout>

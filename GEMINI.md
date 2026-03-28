@@ -27,5 +27,5 @@ Ce document définit les règles essentielles et les standards d'ingénierie pou
 1.  **Qualité :** Nettoyage du code (`console.log`, commentaires inutiles), factorisation.
 2.  **Sobriété/Perf :** Exécution de `npm run verify-sobriety`, vérification RGAA.
 3.  **Validation :** `npm run build`, `npm run test:unit`, `npm run test:e2e`.
-4.  **Documentation :** Mettre à jour `README.md`, `GEMINI.md` et le schéma SQL si nécessaire.
+4.  **Documentation :** Mettre à jour `README.md`, `GEMINI.md` et le schéma SQL (`supabase_schema.sql`) si nécessaire.
 5.  **Git :** Commit normé après vérification du `git diff`. **INTERDICTION :** Ne jamais commit ou push sans permission explicite.

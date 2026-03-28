@@ -122,6 +122,12 @@ const initial = {
       </svg>
     </div>
     <span id="form-title-text" class="truncate text-stone-800">{title}</span>
+    <a href={`/${lang}/guide`} class="ml-auto text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-100" target="_blank">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      {lang === 'fr' ? 'Consulter le guide' : 'Read guide'}
+    </a>
   </h2>
 
   <SuggestionPreview t={t} initialTitle={initial.title} />
