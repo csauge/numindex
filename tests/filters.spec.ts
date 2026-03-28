@@ -14,7 +14,7 @@ test.describe('Filters, Sorting and Grouping', () => {
     await catFilter.selectOption('acteur');
     await expect(sortFilter).toHaveValue('title');
 
-    // Select "Événement" (should sync to Next Date)
+    // Select "Événement" (should sync to A venir)
     await catFilter.selectOption('evenement');
     await expect(sortFilter).toHaveValue('next_date');
 
@@ -23,7 +23,7 @@ test.describe('Filters, Sorting and Grouping', () => {
     await expect(sortFilter).toHaveValue('updated_at');
   });
 
-  test('should display alphabetical dividers for entity categories', async ({ page }) => {
+  test('should display alphabetical dividers for actors', async ({ page }) => {
     const catFilter = page.locator('#filter-category');
     
     // Select "Entreprise"
@@ -56,17 +56,21 @@ test.describe('Filters, Sorting and Grouping', () => {
     }
   });
 
-  test('should persist filters in URL and session storage', async ({ page }) => {
+  test('should persist filters in URL when navigating back', async ({ page }) => {
     const searchInput = page.locator('#search-input');
     const catFilter = page.locator('#filter-category');
+    const favLabel = page.locator('label[title="Favoris"]');
+    const favToggle = page.locator('#filter-favorites');
 
     await searchInput.fill('test');
     await catFilter.selectOption('acteur');
+    await favLabel.click();
     await page.waitForTimeout(300); // Wait for debounce and state sync
 
     // Verify URL params
     await expect(page).toHaveURL(/q=test/);
     await expect(page).toHaveURL(/cat=acteur/);
+    await expect(page).toHaveURL(/fav=true/);
 
     // Click on a resource card (if any)
     const firstCard = page.locator('.resource-card').first();
@@ -80,6 +84,7 @@ test.describe('Filters, Sorting and Grouping', () => {
       // Verify filters are restored
       await expect(searchInput).toHaveValue('test');
       await expect(catFilter).toHaveValue('acteur');
+      await expect(favToggle).toBeChecked();
     }
   });
 
@@ -103,11 +108,44 @@ test.describe('Filters, Sorting and Grouping', () => {
     await expect(catFilter).toHaveValue('acteur');
   });
 
+  test('should filter by favorites (star icon toggle)', async ({ page }) => {
+    const favToggle = page.locator('#filter-favorites');
+    const favLabel = page.locator('label[title="Favoris"]');
+
+    // Wait for the initial grid to load
+    await page.waitForSelector('.resource-card');
+    const initialCountText = await page.locator('#results-count').innerText();
+    const initialCount = parseInt(initialCountText, 10);
+
+    // Initially not checked
+    await expect(favToggle).not.toBeChecked();
+
+    // Toggle on
+    await favLabel.click();
+    await expect(favToggle).toBeChecked();
+    await expect(page).toHaveURL(/fav=true/);
+    
+    // Check that results count has updated (should be fewer or equal to initial count)
+    await page.waitForTimeout(300); // Wait for debounce and state sync
+    const favCountText = await page.locator('#results-count').innerText();
+    const favCount = parseInt(favCountText, 10);
+    expect(favCount).toBeLessThanOrEqual(initialCount);
+
+    // Toggle off
+    await favLabel.click();
+    await expect(favToggle).not.toBeChecked();
+    await expect(page).not.toHaveURL(/fav=true/);
+    
+    await page.waitForTimeout(300); // Wait for debounce and state sync
+    const finalCountText = await page.locator('#results-count').innerText();
+    expect(parseInt(finalCountText, 10)).toBe(initialCount);
+  });
+
   test('should clear search input when clear button is clicked', async ({ page }) => {
     const searchInput = page.locator('#search-input');
     const clearBtn = page.locator('#clear-search');
 
-    // Initially hidden
+    // Initially hidden (opacity-0 class)
     await expect(clearBtn).toHaveClass(/opacity-0/);
 
     // Type something
@@ -133,10 +171,12 @@ test.describe('Filters, Sorting and Grouping', () => {
       await expect(divider.first()).toBeVisible();
       const text = await divider.first().innerText();
       
-      // Should match one of the relative time labels
-      // Note: CSS text-transform: capitalize makes "Cette semaine" -> "Cette Semaine"
-      const validLabels = ["Cette Semaine", "Ce Mois-ci", "Cette Année", "Plus Ancien", "This Week", "This Month", "This Year", "Older"];
-      expect(validLabels).toContain(text);
+      // Note: text-transform: uppercase is applied via CSS, so innerText returns it in uppercase
+      const validLabels = [
+        "CETTE SEMAINE", "CE MOIS-CI", "CETTE ANNÉE", "PLUS ANCIEN", "SANS DATE", "PASSÉ",
+        "THIS WEEK", "THIS MONTH", "THIS YEAR", "OLDER", "NO DATE", "PAST"
+      ];
+      expect(validLabels).toContain(text.toUpperCase());
     }
   });
 });

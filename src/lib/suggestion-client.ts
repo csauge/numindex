@@ -144,23 +144,23 @@ export function initSuggestionForm(form: HTMLFormElement) {
     elements.preview.title!.innerText = elements.title.value || '...';
     elements.preview.cat!.innerText = CATEGORIES[cat][lang];
     
-    elements.preview.badges!.innerHTML = `<span id="badge-cat" class="text-[9px] font-bold uppercase text-stone-400">${CATEGORIES[cat][lang]}</span>`;
+    elements.preview.badges!.innerHTML = `<span id="badge-cat" class="text-[9px] font-black uppercase text-stone-600 px-1.5 py-0.5 rounded bg-stone-100 border border-stone-200">${CATEGORIES[cat][lang]}</span>`;
     if (elements.mandatoryTag.value) {
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-primary">${elements.mandatoryTag.value}</span>`;
+      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-black uppercase text-emerald-800 px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-200 ml-1">${elements.mandatoryTag.value}</span>`;
     }
-    if (elements.addressVal.value) {
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-400 border-l border-stone-200 pl-2 ml-1">${elements.addressVal.value}</span>`;
+    if (elements.addressVal.value && isActeur) {
+      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border-l border-stone-200 pl-2 ml-1">${elements.addressVal.value}</span>`;
     }
     if (elements.pubDateInput.value) {
       const year = elements.pubDateInput.value.split('-')[0];
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-400 border-l border-stone-200 pl-2 ml-1">${year}</span>`;
+      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border-l border-stone-200 pl-2 ml-1">${year}</span>`;
     }
     if (elements.versionDateInput.value) {
       const year = elements.versionDateInput.value.split('-')[0];
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-400 border-l border-stone-200 pl-2 ml-1">v.${year}</span>`;
+      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border-l border-stone-200 pl-2 ml-1">v.${year}</span>`;
     }
     selectedOptionalTags.forEach(tag => {
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-400 border border-stone-200 px-1 rounded">#${tag}</span>`;
+      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border border-stone-200 px-1 rounded ml-1 bg-white shadow-sm">#${tag}</span>`;
     });
 
     if (!elements.img.files?.[0]) {
@@ -169,7 +169,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
         `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-stone-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="${CATEGORIES[cat].icon}" stroke-width="2"/></svg>`;
     }
 
-    document.getElementById('address-container')?.classList.toggle('hidden', (!isActeur && !isEvenement) || isDelete);
+    document.getElementById('address-container')?.classList.toggle('hidden', !isActeur || isDelete);
     document.getElementById('online-toggle-container')?.classList.toggle('hidden', !isEvenement);
     document.getElementById('occurrences-container')?.classList.toggle('hidden', !isEvenement || isDelete);
     document.getElementById('pub-date-container')?.classList.toggle('hidden', !isContenu || isDelete);
@@ -330,18 +330,26 @@ export function initSuggestionForm(form: HTMLFormElement) {
       const metadata = { ...existingData?.metadata };
       
       const cat = elements.cat.value;
-      if (cat === 'acteur' || cat === 'evenement') {
+      if (cat === 'acteur') {
         metadata.address = elements.addressVal.value;
         if (currentCoords) {
           metadata.lat = currentCoords.lat;
           metadata.lng = currentCoords.lng;
         } else if (metadata.address !== existingData?.metadata?.address) {
-          // Si l'adresse a changé manuellement sans autocomplétion, on supprime les anciens lat/lng
           delete metadata.lat;
           delete metadata.lng;
         }
-
-        if (cat === 'evenement') metadata.occurrences = occurrences;
+      } else if (cat === 'evenement') {
+        // Pour les événements, on ne garde l'adresse que si c'est "En ligne / Online"
+        // Le reste est dans occurrences
+        if (elements.addressVal.value === t.online) {
+          metadata.address = t.online;
+        } else {
+          delete metadata.address;
+          delete metadata.lat;
+          delete metadata.lng;
+        }
+        metadata.occurrences = occurrences;
       } else if (cat === 'contenu') metadata.published_at = elements.pubDateInput.value;
       else if (cat === 'outil') metadata.version_date = elements.versionDateInput.value;
 

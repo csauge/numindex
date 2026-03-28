@@ -12,7 +12,7 @@ test.describe('numindex.org Map Page', () => {
     
     await expect(page).toHaveURL(/\/fr\/carte\/?$/);
     const title = page.locator('header h1').first();
-    await expect(title).toContainText("Carte de l'index");
+    await expect(title).toContainText("Carte des acteurs");
   });
 
   test('should activate the map automatically on dedicated page', async ({ page }) => {
@@ -41,6 +41,6 @@ test.describe('numindex.org Map Page', () => {
     
     await expect(page).toHaveURL(/\/en\/carte\/?$/);
     const title = page.locator('header h1').first();
-    await expect(title).toContainText("Index Map");
+    await expect(title).toContainText("Actors Map");
   });
 });

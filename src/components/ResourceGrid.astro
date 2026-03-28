@@ -1,15 +1,6 @@
 ---
-interface Props {
-  t: any;
-  initialCount: number;
-}
-
-const { t, initialCount } = Astro.props;
+const { t } = Astro.props;
 ---
-
-<div class="mb-4 px-2 text-[10px] font-black uppercase text-stone-400">
-  <span id="results-count">{initialCount}</span> {t.results}
-</div>
 
 <div id="resources-grid" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 transition-all duration-300"></div>
 

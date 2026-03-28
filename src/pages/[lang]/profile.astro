@@ -166,12 +166,12 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         <div class="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 hover:border-emerald-100 transition-colors">
           <div>
             <p class="font-bold text-stone-800">${s.title}</p>
-            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">${s.category}</p>
+            <p class="text-[10px] font-black uppercase text-stone-400 tracking-widest border border-stone-200 bg-white px-1.5 py-0.5 rounded mt-1 inline-block">${s.category}</p>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-[10px] font-black uppercase px-2 py-1 rounded-lg ${
-              s.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 
-              s.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+            <span class="text-[10px] font-black uppercase px-2 py-1 rounded border ${
+              s.status === 'approved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 
+              s.status === 'rejected' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-amber-50 text-amber-800 border-amber-200'
             }">${s.status}</span>
           </div>
         </div>
@@ -187,9 +187,9 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         <div class="favorite-item flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 hover:border-amber-100 transition-colors" data-id="${f.resource_id}">
           <a href="/${lang}/resource/${f.resource_id}" class="flex-grow">
             <p class="font-bold text-stone-800">${f.resources.title}</p>
-            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">${f.resources.category}</p>
+            <p class="text-[10px] font-black uppercase text-stone-400 tracking-widest border border-stone-200 bg-white px-1.5 py-0.5 rounded mt-1 inline-block">${f.resources.category}</p>
           </a>
-          <button class="btn-unfavorite btn btn-ghost btn-circle btn-sm text-amber-400 hover:bg-amber-50" data-id="${f.resource_id}">
+          <button class="btn-unfavorite btn btn-ghost btn-circle btn-sm text-amber-500 hover:bg-amber-50" data-id="${f.resource_id}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
           </button>
         </div>
@@ -219,16 +219,16 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     const t = lang === 'en' ? translations.en : translations.fr;
 
     tabFav.onclick = () => {
-      tabFav.classList.add('bg-emerald-50', 'text-emerald-700');
-      tabContrib.classList.remove('bg-emerald-50', 'text-emerald-700');
+      tabFav.classList.add('bg-stone-100', 'text-stone-800');
+      tabContrib.classList.remove('bg-stone-100', 'text-stone-800');
       favList.classList.remove('hidden');
       contribList.classList.add('hidden');
       sectionTitle.innerText = t.favorites;
     };
 
     tabContrib.onclick = () => {
-      tabContrib.classList.add('bg-emerald-50', 'text-emerald-700');
-      tabFav.classList.remove('bg-emerald-50', 'text-emerald-700');
+      tabContrib.classList.add('bg-stone-100', 'text-stone-800');
+      tabFav.classList.remove('bg-stone-100', 'text-stone-800');
       contribList.classList.remove('hidden');
       favList.classList.add('hidden');
       sectionTitle.innerText = t.contributions;

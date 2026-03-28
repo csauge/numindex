@@ -112,8 +112,8 @@ const nextEventDate = getNextEventDate(res as Resource);
   <div class="max-w-4xl mx-auto px-4 py-8">
     
     {/* Navigation Retour */}
-    <a href={`/${lang}`} class="inline-flex items-center gap-2 text-stone-400 hover:text-primary transition-colors text-sm font-bold mb-12 group">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+    <a href={`/${lang}`} class="inline-flex items-center gap-2 text-stone-500 hover:text-primary transition-colors text-sm font-black mb-12 group">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
       {t.back}
     </a>
 
@@ -161,28 +161,28 @@ const nextEventDate = getNextEventDate(res as Resource);
       <div class="md:col-span-2 space-y-10">
         <div>
           <div class="flex flex-wrap items-center gap-2 mb-4">
-            <span class="badge badge-outline text-[10px] font-black uppercase tracking-wider h-6 border-stone-200 text-stone-400">
+            <span class="px-2 py-0.5 rounded bg-stone-100 text-stone-700 text-[10px] font-black uppercase tracking-wider border border-stone-200">
               {getCategoryLabel(res.category, lang as 'fr' | 'en')}
             </span>
             {subCategory && (
-              <span class="badge badge-primary text-[10px] font-black uppercase tracking-wider h-6 border-none">
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider border border-emerald-200 shadow-sm">
                 {subCategory}
               </span>
             )}
-            {res.metadata?.address && (
-              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-100">
+            {res.category !== 'evenement' && res.metadata?.address && (
+              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-600 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-200 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 {res.metadata.address}
               </span>
             )}
             {res.metadata?.published_at && (
-              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-100">
+              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-600 uppercase tracking-wider bg-stone-100 px-2 py-1 rounded border border-stone-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 {t.published} {formatDate(res.metadata.published_at)}
               </span>
             )}
             {res.metadata?.version_date && (
-              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-50 px-2 py-1 rounded border border-stone-100">
+              <span class="flex items-center gap-1 text-[10px] font-bold text-stone-600 uppercase tracking-wider bg-stone-100 px-2 py-1 rounded border border-stone-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 {t.version} : {formatDate(res.metadata.version_date)}
               </span>
@@ -291,15 +291,15 @@ const nextEventDate = getNextEventDate(res as Resource);
     if (isActive) {
       btn.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-600');
       star.classList.remove('text-stone-300', 'fill-none');
-      star.classList.add('text-amber-400', 'fill-amber-400');
+      star.classList.add('text-amber-500', 'fill-amber-500');
       countEl.classList.remove('text-stone-400');
-      countEl.classList.add('text-amber-500');
+      countEl.classList.add('text-amber-600');
     } else {
       btn.classList.remove('border-amber-200', 'bg-amber-50', 'text-amber-600');
       star.classList.add('text-stone-300', 'fill-none');
-      star.classList.remove('text-amber-400', 'fill-amber-400');
+      star.classList.remove('text-amber-500', 'fill-amber-500');
       countEl.classList.add('text-stone-400');
-      countEl.classList.remove('text-amber-500');
+      countEl.classList.remove('text-amber-600');
     }
   }
 

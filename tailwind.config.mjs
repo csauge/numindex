@@ -13,15 +13,17 @@ export default {
     themes: [
       {
         numindex: {
-          "primary": "#40916c",        /* Vert Sauge - Contraste RGAA OK */
+          "primary": "#133F1A",        /* Vert Forêt très profond - Logo */
           "primary-content": "#ffffff",
-          "secondary": "#b7e4c7",      /* Vert Menthe douce */
-          "accent": "#1b4332",         /* Vert Forêt profond */
+          "secondary": "#2D6A4F",      /* Vert émeraude sombre pour contraste */
+          "secondary-content": "#ffffff",
+          "accent": "#40916C",         /* Vert sauge soutenu */
+          "accent-content": "#ffffff",
           "neutral": "#2d3e40",
           "base-100": "#fdfcfb",       /* Papier chaud */
           "base-200": "#f1f5f2",       /* Gris-vert très clair */
           "base-300": "#d8e2dc",
-          "info": "#40916c",
+          "info": "#1b4332",
           "success": "#2d6a4f",
           "warning": "#ffb703",
           "error": "#d90429",

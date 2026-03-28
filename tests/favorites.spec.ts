@@ -19,7 +19,9 @@ test.describe('Favorites Functionality', () => {
     // Get initial count
     const initialCountText = await favCount.textContent();
     const initialCount = parseInt(initialCountText || '0');
-    const isInitiallyFav = await starIcon.evaluate(el => el.classList.contains('fill-amber-400'));
+    
+    // Check if initially favorited (amber-500 class)
+    const isInitiallyFav = await starIcon.evaluate(el => el.classList.contains('text-amber-500'));
 
     // Click to toggle
     await favBtn.click();
@@ -27,13 +29,13 @@ test.describe('Favorites Functionality', () => {
     // Check if count updated and icon color changed
     if (isInitiallyFav) {
       await expect(favCount).toHaveText((initialCount - 1).toString());
-      await expect(starIcon).not.toHaveClass(/fill-amber-400/);
+      await expect(starIcon).not.toHaveClass(/text-amber-500/);
     } else {
       await expect(favCount).toHaveText((initialCount + 1).toString());
-      await expect(starIcon).toHaveClass(/fill-amber-400/);
+      await expect(starIcon).toHaveClass(/text-amber-500/);
     }
 
-    // Toggle back to restore state (optional but good for repeatability if needed)
+    // Toggle back to restore state (optional but good for repeatability)
     await favBtn.click();
     await expect(favCount).toHaveText(initialCount.toString());
   });
@@ -51,7 +53,7 @@ test.describe('Favorites Functionality', () => {
     // Get initial state
     const initialCountText = await favCount.textContent();
     const initialCount = parseInt(initialCountText || '0');
-    const isInitiallyFav = await starIcon.evaluate(el => el.classList.contains('fill-amber-400'));
+    const isInitiallyFav = await starIcon.evaluate(el => el.classList.contains('text-amber-500'));
 
     // Click to toggle
     await favBtn.click();
@@ -59,10 +61,10 @@ test.describe('Favorites Functionality', () => {
     // Check updates
     if (isInitiallyFav) {
       await expect(favCount).toHaveText((initialCount - 1).toString());
-      await expect(starIcon).not.toHaveClass(/fill-amber-400/);
+      await expect(starIcon).not.toHaveClass(/text-amber-500/);
     } else {
       await expect(favCount).toHaveText((initialCount + 1).toString());
-      await expect(starIcon).toHaveClass(/fill-amber-400/);
+      await expect(starIcon).toHaveClass(/text-amber-500/);
     }
   });
 
@@ -71,7 +73,7 @@ test.describe('Favorites Functionality', () => {
     await page.goto('/fr');
     const favBtn = page.locator('.btn-favorite').first();
     const starIcon = favBtn.locator('svg');
-    const isFav = await starIcon.evaluate(el => el.classList.contains('fill-amber-400'));
+    const isFav = await starIcon.evaluate(el => el.classList.contains('text-amber-500'));
     
     let resourceTitle = '';
     if (!isFav) {

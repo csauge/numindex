@@ -10,19 +10,19 @@ interface Props {
 
 const { resources, lang, autoActivate = false } = Astro.props;
 
-// Filtrer les ressources qui ont des coordonnées
-const resourcesWithLocation = resources.filter(r => r.metadata?.lat && r.metadata?.lng);
+// Filtrer les ressources qui ont des coordonnées et sont des acteurs
+const resourcesWithLocation = resources.filter(r => r.category === 'acteur' && r.metadata?.lat && r.metadata?.lng);
 
 const translations = {
   fr: {
     activate: "Activer la carte interactive",
     loading: "Chargement de la carte...",
-    description: "Visualisez les acteurs et événements sur la carte. Les données de localisation sont chargées uniquement à votre demande pour économiser de la bande passante."
+    description: "Visualisez les acteurs sur la carte. Les données de localisation sont chargées uniquement à votre demande pour économiser de la bande passante."
   },
   en: {
     activate: "Activate interactive map",
     loading: "Loading map...",
-    description: "Visualize actors and events on the map. Location data is only loaded upon your request to save bandwidth."
+    description: "Visualize actors on the map. Location data is only loaded upon your request to save bandwidth."
   }
 };
 
@@ -176,6 +176,10 @@ const geoData = resourcesWithLocation.map(r => ({
       });
 
       markers.addTo(map);
+
+      // Exposer pour le filtrage dynamique
+      window.mapInstance = map;
+      window.markerGroup = markers;
 
       // Ajuster la vue pour voir tous les marqueurs
       if (geoData.length > 0) {

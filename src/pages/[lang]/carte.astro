@@ -5,19 +5,24 @@ import Layout from "../../layouts/Layout.astro";
 import ResourceIcons from "../../components/ResourceIcons.astro";
 import InteractiveMap from "../../components/InteractiveMap.astro";
 import { fetchAllResources } from "../../lib/services";
+import { CATEGORIES } from "../../utils/categories";
 
 const { lang } = Astro.params;
 const allResources = await fetchAllResources();
 
+const taxonomy = Object.fromEntries(
+  Object.entries(CATEGORIES).map(([k, v]) => [k, v.mandatoryTags])
+);
+
 const translations = {
   fr: {
-    title: "Carte de l'index",
-    desc: "Découvrez géographiquement les acteurs et événements du numérique responsable.",
+    title: "Carte des acteurs",
+    desc: "Découvrez géographiquement les acteurs du numérique responsable.",
     back: "Retour à l'index",
   },
   en: {
-    title: "Index Map",
-    desc: "Geographically discover sustainable digital actors and events.",
+    title: "Actors Map",
+    desc: "Geographically discover sustainable digital actors.",
     back: "Back to index",
   }
 };
@@ -30,21 +35,116 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
 
   <section class="max-w-7xl mx-auto px-4">
     <div class="mb-8 pt-8">
-      <a href={`/${lang}`} class="inline-flex items-center gap-2 text-stone-400 hover:text-emerald-700 transition-colors text-sm font-bold group">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+      <a href={`/${lang}`} class="inline-flex items-center gap-2 text-stone-500 hover:text-primary transition-colors text-sm font-black group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
         {t.back}
       </a>
     </div>
 
-    <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-stone-100 pb-6">
       <div>
-        <h1 class="text-3xl font-black text-stone-800 mb-2">{t.title}</h1>
-        <p class="text-stone-500 italic text-sm">{t.desc}</p>
+        <h1 class="text-3xl font-black text-stone-800 mb-1 leading-tight tracking-tighter">{t.title}</h1>
+        <p class="text-stone-500 italic text-sm font-medium">{t.desc}</p>
       </div>
     </header>
 
+    <div id="sub-filters-container" class="mb-6 px-1 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap"></div>
+
     <div class="mb-12">
-      <InteractiveMap resources={allResources} lang={lang as 'fr' | 'en'} autoActivate={true} />
+      <div id="map-wrapper">
+        <InteractiveMap resources={allResources} lang={lang as 'fr' | 'en'} autoActivate={true} />
+      </div>
     </div>
   </section>
+
+  <script id="taxonomy-data" type="application/json" is:inline set:html={JSON.stringify(taxonomy)} />
+  <script id="resource-data" type="application/json" is:inline set:html={JSON.stringify(allResources)} />
 </Layout>
+
+<script>
+  const taxonomy = JSON.parse(document.getElementById('taxonomy-data')?.textContent || '{}');
+  const allResources = JSON.parse(document.getElementById('resource-data')?.textContent || '[]');
+  const container = document.getElementById('sub-filters-container');
+  let currentSubCat: string | null = null;
+
+  function renderFilters() {
+    if (!container) return;
+    const subCats = taxonomy['acteur'] || [];
+    const lang = document.documentElement.lang || 'fr';
+    const filterAll = lang === 'en' ? 'All types' : 'Tous types';
+    
+    let html = `<button class="pill ${!currentSubCat ? 'active' : ''}" data-sub="all">${filterAll}</button>`;
+    subCats.forEach((s: string) => {
+      html += `<button class="pill ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
+    });
+    container.innerHTML = html;
+
+    container.querySelectorAll('.pill').forEach(btn => {
+      (btn as HTMLElement).onclick = () => {
+        const sub = btn.getAttribute('data-sub');
+        currentSubCat = sub === 'all' ? null : sub;
+        updateMap();
+        renderFilters();
+      };
+    });
+  }
+
+  async function updateMap() {
+    const filtered = allResources.filter((r: any) => 
+      r.category === 'acteur' && (!currentSubCat || r.tags?.includes(currentSubCat))
+    );
+
+    if ((window as any).L && (window as any).mapInstance) {
+      const map = (window as any).mapInstance;
+      const markers = (window as any).markerGroup;
+      if (markers) {
+        markers.clearLayers();
+        const customIcon = (window as any).L.divIcon({
+          className: 'numindex-marker',
+          html: `<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  </svg>
+                </div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32]
+        });
+
+        filtered.forEach((item: any) => {
+          if (item.metadata?.lat && item.metadata?.lng) {
+            const popupContent = `
+              <div class="p-2">
+                <span class="text-[10px] font-black uppercase text-primary mb-1 block tracking-wider">${item.category === 'acteur' ? (document.documentElement.lang === 'fr' ? 'Acteur' : 'Actor') : ''}</span>
+                <h4 class="font-black text-stone-800 mb-2 leading-tight">${item.title}</h4>
+                <a href="/${document.documentElement.lang}/resource/${item.id}" class="btn btn-xs btn-primary rounded-lg no-underline text-white font-bold w-full">Détails</a>
+              </div>
+            `;
+            (window as any).L.marker([item.metadata.lat, item.metadata.lng], { icon: customIcon })
+              .bindPopup(popupContent)
+              .addTo(markers);
+          }
+        });
+        
+        if (filtered.length > 0) {
+          map.fitBounds(markers.getBounds(), { padding: [50, 50] });
+        }
+      }
+    } else {
+      const url = new URL(window.location.href);
+      if (currentSubCat) url.searchParams.set('type', currentSubCat);
+      else url.searchParams.delete('type');
+      window.location.href = url.toString();
+    }
+  }
+
+  renderFilters();
+</script>
+
+<style is:global>
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .pill { cursor: pointer; border-radius: 9999px; padding: 4px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid #e7e5e4; transition: all 0.2s; background: #fafaf9; color: #78716c; }
+  .pill:hover { border-color: #d6d3d1; background: #f5f5f4; }
+  .pill.active { background: #133F1A !important; color: white !important; border-color: #133F1A !important; }
+</style>

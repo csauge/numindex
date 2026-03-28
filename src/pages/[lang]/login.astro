@@ -54,8 +54,8 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       </form>
 
       <div class="mt-8 pt-8 border-t border-stone-100 text-center text-sm">
-        <p class="text-stone-400 font-medium">{t.noAccount}</p>
-        <a href={`/${lang}/register`} class="text-primary font-bold hover:underline mt-2 inline-block">
+        <p class="text-stone-500 font-black uppercase text-[10px] tracking-widest mb-1">{t.noAccount}</p>
+        <a href={`/${lang}/register`} class="text-primary font-black hover:underline uppercase text-xs">
           {t.register}
         </a>
       </div>

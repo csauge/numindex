@@ -93,24 +93,17 @@ test.describe('Moderation Lifecycle', () => {
   });
 
   test('should handle metadata fields (Address, Dates) for specific categories', async ({ page }) => {
-    // 1. Check Event fields (Address and Occurrences)
+    // 1. Check Event fields (Occurrences)
     await page.goto('/fr/propose');
     await page.selectOption('select[name="category"]', 'evenement');
     
-    await expect(page.locator('#address-container')).toBeVisible();
     await expect(page.locator('#occurrences-container')).toBeVisible();
+    await expect(page.locator('#address-container')).toBeHidden();
     await expect(page.locator('#pub-date-container')).toBeHidden();
-
-    // Fill Address
-    await page.fill('#address-search', 'Lyon');
-    await page.waitForTimeout(500);
-    await page.click('#address-results button:first-child'); 
-    await expect(page.locator('#preview-badges')).toContainText('Lyon');
 
     // Add an occurrence
     await page.click('#add-occurrence');
     await page.fill('.occ-start', '2026-12-31T20:00');
-    // The preview doesn't show occurrences yet, but we can check if the field is there
     await expect(page.locator('.occ-start')).toBeVisible();
 
     // 2. Check Content fields (Publication Date)
