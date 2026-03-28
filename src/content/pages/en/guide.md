@@ -1,4 +1,8 @@
-# General Principles
+---
+title: "Submission Guide"
+subtitle: "Rules and criteria for accepting resources on numindex."
+---
+## General Principles
 
 Any proposal must provide genuine value to the Sustainable IT (NR - Numérique Responsable) community. Purely commercial content, greenwashing, or initiatives where Sustainable IT is only a secondary sales argument will be rejected.
 

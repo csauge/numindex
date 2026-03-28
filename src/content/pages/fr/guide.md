@@ -1,4 +1,8 @@
-# Principes Généraux
+---
+title: "Guide d'usage et critères"
+subtitle: "Règles et critères d'acceptation des ressources sur le portail."
+---
+## Principes Généraux
 
 Toute proposition doit apporter une réelle valeur à la communauté du Numérique Responsable (NR). Le contenu purement commercial, le *greenwashing* ou les initiatives dont le NR n'est qu'un argument de vente secondaire seront refusés.
 
