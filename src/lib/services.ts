@@ -11,6 +11,19 @@ export async function getCurrentSession() {
 }
 
 /**
+ * Check if the current user is an admin
+ */
+export async function isUserAdmin() {
+  if (!supabase) return false;
+  const { data, error } = await supabase.rpc('is_admin');
+  if (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
+  return !!data;
+}
+
+/**
  * Get current user profile
  */
 export async function getProfile(userId: string) {

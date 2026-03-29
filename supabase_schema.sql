@@ -14,6 +14,20 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    );
+END;
+$$;
+
 -- 1. Profiles Table (Linked to Auth)
 CREATE TABLE IF NOT EXISTS public.profiles (
     id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL PRIMARY KEY,
@@ -82,13 +96,17 @@ FROM public.favorites
 GROUP BY resource_id;
 -- 6. Triggers for New Users
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql 
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
     INSERT INTO public.profiles (id, full_name, role)
     VALUES (new.id, new.raw_user_meta_data->>'full_name', 'user');
     RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
@@ -124,13 +142,13 @@ CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE
 -- 11. Resources Policies
 CREATE POLICY "Public can read resources" ON public.resources FOR SELECT USING (true);
 CREATE POLICY "Only admins can insert resources" ON public.resources FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
 );
 CREATE POLICY "Only admins can update resources" ON public.resources FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
 );
 CREATE POLICY "Only admins can delete resources" ON public.resources FOR DELETE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
 );
 
 -- 12. Suggestions Policies
@@ -138,11 +156,11 @@ CREATE POLICY "Users and Admins can submit suggestions" ON public.suggestions FO
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid())
 );
 CREATE POLICY "Admins and Owners can see all" ON public.suggestions FOR SELECT USING (
-    auth.uid() = submitted_by OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    auth.uid() = submitted_by OR public.is_admin()
 );
 CREATE POLICY "Public can see approved suggestions" ON public.suggestions FOR SELECT USING (status = 'approved');
 CREATE POLICY "Users can update their own pending suggestions" ON public.suggestions FOR UPDATE USING (
-    (auth.uid() = submitted_by AND status = 'pending') OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    (auth.uid() = submitted_by AND status = 'pending') OR public.is_admin()
 );
 
 -- 13. Favorites Policies

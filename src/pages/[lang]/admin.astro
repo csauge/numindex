@@ -86,7 +86,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 <script>
   import { supabase, getImageUrl } from '../../lib/supabase/client';
   import { getCategoryLabel, getCategoryIcon, ACTION_ICONS } from '../../utils/categories';
-  import { fetchAllProfiles } from '../../lib/services';
+  import { fetchAllProfiles, isUserAdmin } from '../../lib/services';
   import type { Suggestion, Resource, Profile } from '../../lib/supabase/types';
 
   const lang = (document.documentElement.lang || 'fr') as 'fr' | 'en';
@@ -116,17 +116,13 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         return;
       }
 
-      // Check role via profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
+      // Check role via helper
+      const isAdmin = await isUserAdmin();
       
       // Special bypass for test users in E2E environment
       const isTestUser = session.user.email?.endsWith('@example.com') || session.user.email === 'admin@numindex.org';
 
-      if (profile?.role !== 'admin' && !isTestUser) {
+      if (!isAdmin && !isTestUser) {
         loadingState?.classList.add('hidden');
         accessDenied?.classList.remove('hidden');
         document.querySelector('h1')?.classList.add('hidden');
@@ -255,43 +251,13 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         const id = btn.getAttribute('data-id');
         btn.classList.add('loading');
 
-        const { data, error: fetchError } = await supabase!.from('suggestions').select('*').eq('id', id).single();
-        if (fetchError || !data) {
-          btn.classList.remove('loading');
-          return;
-        }
-
-        const payload: any = {
-          title: data.title,
-          description: data.description,
-          link: data.link,
-          category: data.category,
-          image_url: data.image_url,
-          metadata: data.metadata,
-          tags: data.tags,
-          related_ids: data.related_ids
-        };
-
-        let resError = null;
-        if (data.action === 'create') {
-          payload.created_by = data.submitted_by;
-          const { error } = await supabase!.from('resources').insert([payload]);
-          resError = error;
-        } else if (data.action === 'update') {
-          payload.updated_by = data.submitted_by;
-          const { error } = await supabase!.from('resources').update(payload).eq('id', data.resource_id);
-          resError = error;
-        } else if (data.action === 'delete') {
-          const { error } = await supabase!.from('resources').delete().eq('id', data.resource_id);
-          resError = error;
-        }
+        const { error: resError } = await supabase!.rpc('approve_suggestion', { suggestion_id: id });
 
         if (resError) {
           console.error("Erreur lors de l'approbation :", resError);
           alert(`Erreur : ${resError.message}`);
           btn.classList.remove('loading');
         } else {
-          await supabase!.from('suggestions').update({ status: 'approved' }).eq('id', id);
           location.reload();
         }
       });
