@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://numindex.org/sitemap-index.xml
+Sitemap: https://numindex.org/sitemap.xml
 
 # Disallow admin and auth pages
 Disallow: /fr/admin
