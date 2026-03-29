@@ -6,6 +6,7 @@ interface Props {
   canonicalURL?: URL;
   type?: 'website' | 'article';
   lang?: string;
+  jsonLd?: string;
 }
 
 const {
@@ -15,6 +16,7 @@ const {
   canonicalURL = new URL(Astro.url.pathname, Astro.site),
   type = 'website',
   lang = 'fr',
+  jsonLd,
 } = Astro.props;
 
 const siteName = 'numindex.org';
@@ -69,3 +71,7 @@ const alternateLinks = locales.map((l) => {
 
 <!-- Robots -->
 <meta name="robots" content="index, follow" />
+
+{jsonLd && (
+  <script type="application/ld+json" set:html={jsonLd} />
+)}

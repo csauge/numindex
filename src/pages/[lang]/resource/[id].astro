@@ -106,14 +106,49 @@ const formatDateTime = (dateStr: string) => {
 };
 
 const nextEventDate = getNextEventDate(res as Resource);
+
+const categoryLabel = getCategoryLabel(res.category, lang as 'fr' | 'en');
+const pageTitle = `${res.title} — ${categoryLabel} Numérique Responsable`;
+
+// JSON-LD
+const baseJsonLd = {
+  "@context": "https://schema.org",
+  "@type": res.category === 'outil' ? "SoftwareApplication" : 
+           res.category === 'evenement' ? "Event" :
+           res.category === 'acteur' ? "Organization" : "Article",
+  "name": res.title,
+  "description": res.description,
+  "url": Astro.url.href,
+};
+
+if (res.category === 'evenement' && nextEventDate) {
+  Object.assign(baseJsonLd, {
+    "startDate": nextEventDate,
+    "location": {
+      "@type": "Place",
+      "name": res.metadata?.address || "Online",
+      "address": res.metadata?.address
+    }
+  });
+}
+
+if (res.category === 'outil') {
+  Object.assign(baseJsonLd, {
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web"
+  });
+}
+
+const jsonLd = JSON.stringify(baseJsonLd);
 ---
 
 <Layout 
-  title={res.title} 
+  title={pageTitle} 
   description={res.description} 
   ogImage={res.image_url ? getImageUrl(res.image_url) : undefined}
   type="article"
   lang={lang as string}
+  jsonLd={jsonLd}
 >
   <div class="max-w-4xl mx-auto px-4 py-8">
     

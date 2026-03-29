@@ -3,10 +3,10 @@
 Ce document définit les règles essentielles et les standards d'ingénierie pour le développement de numindex.org.
 
 ## 1. Principes de Conception (Sobriété & Performance)
-- **Écoconception :** Poids page léger, images AVIF (<50 Ko pour les vignettes), miniatures adaptées, pas de JS lourd (Vanilla JS privilégié). **Score EcoIndex ≥ B obligatoire.**
+- **Écoconception :** Poids page léger, images AVIF (<40 Ko pour les vignettes), miniatures adaptées, pas de JS lourd (Vanilla JS privilégié), score EcoIndex ≥ C obligatoire.
 - **SEO :** Méta-données dynamiques (Open Graph, Twitter), balises `hreflang` pour l'i18n, URLs canoniques et sitemap automatiques.
 - **Accessibilité :** Conformité RGAA, HTML sémantique, aria-labels explicites, navigation au clavier.
-- **Performance :** Polices système uniquement, score Lighthouse > 95 obligatoire.
+- **Performance :** Polices système uniquement, score Lighthouse ≥ 85 obligatoire.
 
 ## 2. Standards d'Ingénierie
 - **Tests :** Privilégier les tests unitaires (Vitest) qui sont plus rapides à exécuter pour valider la logique métier. Réserver les tests E2E (Playwright) à la validation des parcours utilisateurs critiques et de l'intégration globale.

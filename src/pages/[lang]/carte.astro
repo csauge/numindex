@@ -48,7 +48,7 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
       </div>
     </header>
 
-    <div id="sub-filters-container" class="mb-6 px-1 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap"></div>
+    <div id="sub-filters-container" class="mb-6 px-1 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap"></div>
 
     <div class="mb-12">
       <div id="map-wrapper">
@@ -73,13 +73,13 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
     const lang = document.documentElement.lang || 'fr';
     const filterAll = lang === 'en' ? 'All types' : 'Tous types';
     
-    let html = `<button class="pill ${!currentSubCat ? 'active' : ''}" data-sub="all">${filterAll}</button>`;
+    let html = `<button class="pill-chip ${!currentSubCat ? 'active' : ''}" data-sub="all">${filterAll}</button>`;
     subCats.forEach((s: string) => {
-      html += `<button class="pill ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
+      html += `<button class="pill-chip ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
     });
     container.innerHTML = html;
 
-    container.querySelectorAll('.pill').forEach(btn => {
+    container.querySelectorAll('.pill-chip').forEach(btn => {
       (btn as HTMLElement).onclick = () => {
         const sub = btn.getAttribute('data-sub');
         currentSubCat = sub === 'all' ? null : sub;
@@ -142,9 +142,5 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
 </script>
 
 <style is:global>
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  .pill { cursor: pointer; border-radius: 9999px; padding: 4px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid #e7e5e4; transition: all 0.2s; background: #fafaf9; color: #78716c; }
-  .pill:hover { border-color: #d6d3d1; background: #f5f5f4; }
-  .pill.active { background: #133F1A !important; color: white !important; border-color: #133F1A !important; }
+  /* Les styles .pill-chip sont déjà dans Layout.astro */
 </style>

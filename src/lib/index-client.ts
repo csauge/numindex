@@ -26,7 +26,7 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     grid: document.getElementById('resources-grid')!,
     search: document.getElementById('search-input') as HTMLInputElement,
     clear: document.getElementById('clear-search')!,
-    cat: document.getElementById('filter-category') as HTMLSelectElement,
+    filterBarCont: document.getElementById('filter-bar-container')!,
     sort: document.getElementById('filter-sort') as HTMLSelectElement,
     favToggle: document.getElementById('filter-favorites') as HTMLInputElement,
     count: document.getElementById('results-count')!,
@@ -35,10 +35,12 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     loadMoreCont: document.getElementById('load-more-container')!,
     optNext: document.getElementById('opt-next-date')!,
     optPub: document.getElementById('opt-pub-date')!,
+    optCat: document.getElementById('opt-cat')!,
     subFilters: document.getElementById('sub-filters-container')!
   };
 
   const t = translations;
+  let currentCat = els.filterBarCont.dataset.activeCategory || 'all';
 
   async function init() {
     // Fetch favorites
@@ -54,7 +56,6 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     // Sync UI with URL on load
     const params = new URLSearchParams(window.location.search);
     if (params.has('q')) els.search.value = params.get('q')!;
-    if (params.has('cat')) els.cat.value = params.get('cat')!;
     if (params.has('sort')) els.sort.value = params.get('sort')!;
     if (params.has('type')) currentSubCat = params.get('type')!;
     if (params.has('fav')) els.favToggle.checked = params.get('fav') === 'true';
@@ -76,29 +77,32 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
       update(true); 
     };
 
-    els.cat.onchange = () => {
-      const isEvent = els.cat.value === 'evenement';
-      const isContenu = els.cat.value === 'contenu';
-      const isOutil = els.cat.value === 'outil';
-      const isActeur = els.cat.value === 'acteur';
+    // Initial setup for sort options based on currentCat
+    const setupSort = () => {
+      const isEvent = currentCat === 'evenement';
+      const isContenu = currentCat === 'contenu';
+      const isOutil = currentCat === 'outil';
+      const isActeur = currentCat === 'acteur';
       
       els.optNext.classList.toggle('hidden', !isEvent);
       els.optPub.classList.toggle('hidden', !isContenu);
+      els.optCat.classList.toggle('hidden', currentCat !== 'all');
 
-      if (isEvent) {
-        els.sort.value = 'next_date';
-      } else if (isContenu) {
-        els.sort.value = 'published_at';
-      } else if (isOutil || isActeur) {
-        els.sort.value = 'title';
-      } else {
-        els.sort.value = 'updated_at';
+      if (!params.has('sort')) {
+        if (isEvent) {
+          els.sort.value = 'next_date';
+        } else if (isContenu) {
+          els.sort.value = 'published_at';
+        } else if (isOutil || isActeur) {
+          els.sort.value = 'title';
+        } else {
+          els.sort.value = 'updated_at';
+        }
       }
-      
-      currentSubCat = null;
-      renderSubFilters();
-      update(true);
     };
+    
+    setupSort();
+    renderSubFilters();
     
     els.sort.onchange = () => update(true);
     els.favToggle.onchange = () => update(true);
@@ -107,16 +111,11 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     document.getElementById('btn-export-bookmarks')!.onclick = exportBookmarks;
     document.getElementById('btn-export-calendar')!.onclick = copyCalendarLink;
 
-    // Trigger initial visibility of sort options
-    els.cat.dispatchEvent(new Event('change'));
-    if (currentSubCat) {
-      renderSubFilters();
-    }
     update();
   }
 
   function renderSubFilters() {
-    const cat = els.cat.value;
+    const cat = currentCat;
     const subCats = taxonomy[cat] || [];
     
     if (subCats.length === 0) {
@@ -125,24 +124,25 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     }
     
     els.subFilters.classList.remove('hidden');
-    let html = `<button class="pill ${!currentSubCat ? 'active' : ''}" data-sub="all">${t.filterSub}</button>`;
+    let html = `<button class="pill-chip ${!currentSubCat ? 'active' : ''}" data-sub="all">${t.filterSub}</button>`;
     subCats.forEach(s => {
-      html += `<button class="pill ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
+      html += `<button class="pill-chip ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
     });
     els.subFilters.innerHTML = html;
     
-    els.subFilters.querySelectorAll('.pill').forEach(btn => {
+    els.subFilters.querySelectorAll('.pill-chip').forEach(btn => {
       (btn as HTMLElement).onclick = () => {
         const sub = btn.getAttribute('data-sub');
         currentSubCat = sub === 'all' ? null : sub;
         
-        els.subFilters.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+        els.subFilters.querySelectorAll('.pill-chip').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
         update(true);
       };
     });
   }
+
 
   function copyCalendarLink() {
     const url = 'webcal://' + window.location.host + '/api/events.ics';
@@ -161,7 +161,7 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
   function update(reset = false) {
     if (reset) visibleCount = 20;
     const q = els.search.value.toLowerCase().trim();
-    const c = els.cat.value;
+    const c = currentCat;
     const s = els.sort.value;
     const sub = currentSubCat;
     const showFavOnly = els.favToggle.checked;
