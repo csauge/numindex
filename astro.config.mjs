@@ -5,7 +5,15 @@ import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://numindex.org',
-  integrations: [tailwind(), sitemap()],
+  integrations: [tailwind(), sitemap({
+    i18n: {
+      defaultLocale: 'fr',
+      locales: {
+        fr: 'fr',
+        en: 'en'
+      }
+    }
+  })],
   output: 'static',
   adapter: cloudflare({
     imageService: 'compile', // Optimizes images at build time, avoids sharp at runtime
