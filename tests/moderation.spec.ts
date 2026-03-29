@@ -132,9 +132,9 @@ test.describe('Moderation Lifecycle', () => {
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
 
-    // 2. Approve Entity
+    // Approve Entity 8
     await page.goto('/fr/admin', { waitUntil: 'networkidle' });
-    const entityCard = page.locator('.suggestion-card').filter({ hasText: entityTitle });
+    const entityCard = page.locator('.suggestion-card').filter({ hasText: new RegExp(`^${entityTitle}$`, 'm') }).or(page.locator('.suggestion-card').filter({ hasText: entityTitle }).first());
     await expect(entityCard).toBeVisible();
     await entityCard.locator('.approve-btn').click();
     await expect(entityCard).not.toBeVisible();
