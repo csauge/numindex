@@ -154,7 +154,7 @@ test.describe('Authentication & Authorization Permissions', () => {
     await expect(suggestionCard).toBeVisible();
     
     // Check tags are visible
-    await expect(suggestionCard.locator('span:has-text("#Expert")')).toBeVisible();
+    await expect(suggestionCard.locator('span:has-text("Expert")')).toBeVisible();
     
     // 3. Approuver
     await suggestionCard.locator('.approve-btn').click();

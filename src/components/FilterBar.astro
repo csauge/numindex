@@ -8,23 +8,33 @@ interface Props {
 
 const { lang, t } = Astro.props;
 
-const categoryMapping: Record<string, string> = {
-  'acteur': 'acteurs',
-  'evenement': 'evenements',
-  'contenu': 'contenus',
-  'outil': 'outils'
+const categoryMapping: Record<string, Record<string, string>> = {
+  'fr': {
+    'acteur': 'acteurs',
+    'evenement': 'evenements',
+    'contenu': 'contenus',
+    'outil': 'outils'
+  },
+  'en': {
+    'acteur': 'actors',
+    'evenement': 'events',
+    'contenu': 'contents',
+    'outil': 'tools'
+  }
 };
+
+const mapping = categoryMapping[lang as 'fr' | 'en'] || categoryMapping.fr;
 
 const categoryLinks = Object.keys(CATEGORIES).map(k => ({
   key: k,
   label: getCategoryLabel(k, lang as any),
-  href: `/${lang}/${categoryMapping[k]}`
+  href: `/${lang}/${mapping[k]}`
 }));
 
 // Déterminer la catégorie active pour le JS
 const currentPath = Astro.url.pathname;
 let currentCat = 'all';
-for (const [key, slug] of Object.entries(categoryMapping)) {
+for (const [key, slug] of Object.entries(mapping)) {
   if (currentPath.includes(`/${lang}/${slug}`)) {
     currentCat = key;
     break;
@@ -34,10 +44,11 @@ for (const [key, slug] of Object.entries(categoryMapping)) {
 
 <div class="sticky top-20 z-30 mb-6 flex flex-col gap-4" id="filter-bar-container" data-active-category={currentCat}>
   {/* Navigation par Onglets (Tabs) */}
-  <nav class="flex items-center border-b border-stone-100 overflow-x-auto no-scrollbar gap-1 md:gap-2 px-1" aria-label="Categories">
+  <nav class="flex items-center border-b border-stone-100 overflow-x-auto no-scrollbar gap-1 md:gap-2 px-1" aria-label="Categories" id="category-nav">
     <a 
       href={`/${lang}`} 
       class={`px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${currentCat === 'all' ? 'border-primary text-primary bg-emerald-50/30' : 'border-transparent text-stone-400 hover:text-stone-600 hover:bg-stone-50/50'}`}
+      data-base-href={`/${lang}`}
     >
       {lang === 'fr' ? 'Tout' : 'All'}
     </a>
@@ -45,6 +56,7 @@ for (const [key, slug] of Object.entries(categoryMapping)) {
       <a 
         href={link.href}
         class={`px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${currentCat === link.key ? 'border-primary text-primary bg-emerald-50/30' : 'border-transparent text-stone-400 hover:text-stone-600 hover:bg-stone-50/50'}`}
+        data-base-href={link.href}
       >
         {link.label}s
       </a>
@@ -130,4 +142,30 @@ for (const [key, slug] of Object.entries(categoryMapping)) {
       }
     });
   }
+
+  // Preserve query params in category links
+  function updateCategoryLinks() {
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const favToggle = document.getElementById('filter-favorites') as HTMLInputElement;
+    const navLinks = document.querySelectorAll('#category-nav a');
+
+    const params = new URLSearchParams();
+    if (searchInput?.value) params.set('q', searchInput.value);
+    if (favToggle?.checked) params.set('fav', 'true');
+    
+    const queryString = params.toString();
+    navLinks.forEach(link => {
+      const baseHref = link.getAttribute('data-base-href');
+      if (baseHref) {
+        (link as HTMLAnchorElement).href = baseHref + (queryString ? '?' + queryString : '');
+      }
+    });
+  }
+
+  // Listen to changes
+  document.getElementById('search-input')?.addEventListener('input', updateCategoryLinks);
+  document.getElementById('filter-favorites')?.addEventListener('change', updateCategoryLinks);
+  
+  // Initial run
+  updateCategoryLinks();
 </script>

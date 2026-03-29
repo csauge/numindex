@@ -66,7 +66,7 @@ test.describe('Export Functionality', () => {
     await page.goto('/fr');
     
     // Filter by a category that has items
-    await page.selectOption('#filter-category', 'acteur');
+    await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
     await page.waitForTimeout(800);
     
     const countText = await page.locator('#results-count').textContent();

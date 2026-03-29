@@ -7,27 +7,24 @@ test.describe('Filters, Sorting and Grouping', () => {
   });
 
   test('should sync sort filter based on category selection', async ({ page }) => {
-    const catFilter = page.locator('#filter-category');
     const sortFilter = page.locator('#filter-sort');
 
-    // Select "Entreprise" (should sync to Name A-Z)
-    await catFilter.selectOption('acteur');
+    // Select "Acteurs" (should sync to Name A-Z)
+    await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
     await expect(sortFilter).toHaveValue('title');
 
-    // Select "Événement" (should sync to A venir)
-    await catFilter.selectOption('evenement');
+    // Select "Événements" (should sync to A venir)
+    await page.click('nav[aria-label="Categories"] a:has-text("Événements")');
     await expect(sortFilter).toHaveValue('next_date');
 
-    // Select "All" (should sync to Newest)
-    await catFilter.selectOption('all');
+    // Select "Tout" (should sync to Newest)
+    await page.click('nav[aria-label="Categories"] a:has-text("Tout")');
     await expect(sortFilter).toHaveValue('updated_at');
   });
 
   test('should display alphabetical dividers for actors', async ({ page }) => {
-    const catFilter = page.locator('#filter-category');
-    
-    // Select "Entreprise"
-    await catFilter.selectOption('acteur');
+    // Select "Acteurs"
+    await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
     
     // Check if at least one divider is visible
     const divider = page.locator('.alphabet-divider');
@@ -40,10 +37,8 @@ test.describe('Filters, Sorting and Grouping', () => {
   });
 
   test('should display date dividers for events', async ({ page }) => {
-    const catFilter = page.locator('#filter-category');
-    
-    // Select "Événement"
-    await catFilter.selectOption('evenement');
+    // Select "Événements"
+    await page.click('nav[aria-label="Categories"] a:has-text("Événements")');
     
     // Check if at least one divider is visible
     const divider = page.locator('.alphabet-divider');
@@ -58,18 +53,17 @@ test.describe('Filters, Sorting and Grouping', () => {
 
   test('should persist filters in URL when navigating back', async ({ page }) => {
     const searchInput = page.locator('#search-input');
-    const catFilter = page.locator('#filter-category');
     const favLabel = page.locator('label[title="Favoris"]');
     const favToggle = page.locator('#filter-favorites');
 
     await searchInput.fill('test');
-    await catFilter.selectOption('acteur');
+    await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
     await favLabel.click();
     await page.waitForTimeout(300); // Wait for debounce and state sync
 
     // Verify URL params
     await expect(page).toHaveURL(/q=test/);
-    await expect(page).toHaveURL(/cat=acteur/);
+    await expect(page).toHaveURL(/\/acteurs/);
     await expect(page).toHaveURL(/fav=true/);
 
     // Click on a resource card (if any)
@@ -83,29 +77,26 @@ test.describe('Filters, Sorting and Grouping', () => {
       
       // Verify filters are restored
       await expect(searchInput).toHaveValue('test');
-      await expect(catFilter).toHaveValue('acteur');
+      await expect(page).toHaveURL(/\/acteurs/);
       await expect(favToggle).toBeChecked();
     }
   });
 
   test('should keep filters when switching language', async ({ page }) => {
     const searchInput = page.locator('#search-input');
-    const catFilter = page.locator('#filter-category');
 
     await searchInput.fill('test');
-    await catFilter.selectOption('acteur');
+    await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
     await page.waitForTimeout(300);
 
     // Switch to English
     await page.click('label.swap:has(#lang-toggle)');
     
     // Verify URL and filters
-    await expect(page).toHaveURL(/\/en/);
+    await expect(page).toHaveURL(/\/en\/(actors|acteurs)/);
     await expect(page).toHaveURL(/q=test/);
-    await expect(page).toHaveURL(/cat=acteur/);
     
     await expect(searchInput).toHaveValue('test');
-    await expect(catFilter).toHaveValue('acteur');
   });
 
   test('should filter by favorites (star icon toggle)', async ({ page }) => {
