@@ -72,13 +72,14 @@ CREATE TABLE IF NOT EXISTS public.favorites (
 );
 
 -- 5. View for Favorite Counts
-CREATE OR REPLACE VIEW public.resource_favorite_counts AS
+CREATE OR REPLACE VIEW public.resource_favorite_counts 
+WITH (security_invoker = true)
+AS
 SELECT 
     resource_id,
     COUNT(*) as total_favorites
 FROM public.favorites
 GROUP BY resource_id;
-
 -- 6. Triggers for New Users
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
