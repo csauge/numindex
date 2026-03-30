@@ -14,7 +14,8 @@ const translations = {
     hasAccount: "Déjà un compte ?",
     login: "Se connecter",
     error: "Erreur lors de la création du compte.",
-    success: "Compte créé ! Vous pouvez maintenant vous connecter."
+    success: "Compte créé ! Redirection...",
+    checkEmail: "Vérifiez vos emails ! Un lien de confirmation vous a été envoyé."
   },
   en: {
     title: "Create an account",
@@ -25,7 +26,8 @@ const translations = {
     hasAccount: "Already have an account?",
     login: "Login",
     error: "Error creating account.",
-    success: "Account created! You can now login."
+    success: "Account created! Redirecting...",
+    checkEmail: "Check your emails! A confirmation link has been sent to you."
   }
 };
 const t = translations[lang as keyof typeof translations] || translations.fr;
@@ -62,7 +64,18 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         </button>
       </form>
 
-      <div class="mt-8 pt-8 border-t border-stone-100 text-center text-sm">
+      <div id="check-email-message" class="hidden text-center py-8">
+        <div class="text-5xl mb-6">📧</div>
+        <h2 class="text-2xl font-black mb-4">{lang === 'fr' ? 'Presque fini !' : 'Almost there!'}</h2>
+        <p class="text-stone-600 font-bold mb-8">
+          {t.checkEmail}
+        </p>
+        <p class="text-sm text-stone-400">
+          {lang === 'fr' ? 'Vous pouvez fermer cette fenêtre une fois le lien cliqué.' : 'You can close this window once the link is clicked.'}
+        </p>
+      </div>
+
+      <div class="mt-8 pt-8 border-t border-stone-100 text-center text-sm" id="login-footer">
         <p class="text-stone-500 font-black uppercase text-[10px] tracking-widest mb-1">{t.hasAccount}</p>
         <a href={`/${lang}/login`} class="text-primary font-black hover:underline uppercase text-xs">
           {t.login}
@@ -150,14 +163,22 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       
       // Update success message based on whether session exists (auto-login enabled or not)
       if (data.session) {
-        const successText = lang === 'fr' ? 'Compte créé ! Redirection...' : 'Account created! Redirecting...';
-        if (successMsg) successMsg.innerText = successText;
+        if (successMsg) {
+          successMsg.innerText = lang === 'fr' ? 'Compte créé ! Redirection...' : 'Account created! Redirecting...';
+          successMsg.classList.remove('hidden');
+        }
+        setTimeout(() => {
+          window.location.href = target;
+        }, 1500);
+      } else {
+        // Confirmation is enabled! (Session is null)
+        if (form) form.classList.add('hidden');
+        const loginFooter = document.getElementById('login-footer');
+        if (loginFooter) loginFooter.classList.add('hidden');
+        
+        const checkEmailMsg = document.getElementById('check-email-message');
+        if (checkEmailMsg) checkEmailMsg.classList.remove('hidden');
       }
-      successMsg?.classList.remove('hidden');
-      
-      setTimeout(() => {
-        window.location.href = target;
-      }, 1500);
     }
   });
 </script>
