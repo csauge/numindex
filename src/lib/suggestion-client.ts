@@ -1,6 +1,7 @@
 import { supabase, getImageUrl } from './supabase/client';
 import { ACTION_ICONS } from '../utils/categories';
 import { searchAddresses, uploadCompressedImage, fetchEntities, fetchResourceById, fetchSuggestionById } from './services';
+import { renderResourcePreview } from './preview-utils';
 import type { Resource, Suggestion } from './supabase/types';
 
 export function initSuggestionForm(form: HTMLFormElement) {
@@ -34,12 +35,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     relatedResults: document.getElementById('related-results'),
     selectedRelated: document.getElementById('selected-related'),
     submitBtn: document.getElementById('submit-btn') as HTMLButtonElement,
-    preview: {
-      title: document.getElementById('preview-title'),
-      cat: document.getElementById('badge-cat'),
-      img: document.getElementById('preview-img'),
-      badges: document.getElementById('preview-badges')
-    }
+    previewContainer: document.getElementById('resource-preview-container')
   };
 
   let entities: Resource[] = [];
@@ -47,6 +43,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
   let selectedOptionalTags: string[] = [];
   let occurrences: any[] = [];
   let currentCoords: { lat: number; lng: number } | null = null;
+  let currentImageUrl: string | null = null;
+  let originalData: Resource | null = null;
 
   async function showToast(message: string, type: 'success' | 'error') {
     if (!toastContainer || !toastMessage || !toastText) return;
@@ -168,32 +166,41 @@ export function initSuggestionForm(form: HTMLFormElement) {
     const isOutil = cat === 'outil';
     const isDelete = (elements.reason.closest('#delete-fields') as HTMLElement)?.classList.contains('hidden') === false;
 
-    elements.preview.title!.innerText = elements.title.value || '...';
-    elements.preview.cat!.innerText = CATEGORIES[cat][lang];
+    // Build the data object for preview
+    const tags = [elements.mandatoryTag.value, ...selectedOptionalTags].filter(Boolean);
+    const metadata: any = { ...existingData?.metadata };
     
-    elements.preview.badges!.innerHTML = `<span id="badge-cat" class="text-[9px] font-black uppercase text-stone-600 px-1.5 py-0.5 rounded bg-stone-100 border border-stone-200">${CATEGORIES[cat][lang]}</span>`;
-    if (elements.mandatoryTag.value) {
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-black uppercase text-emerald-800 px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-200 ml-1">${elements.mandatoryTag.value}</span>`;
+    if (isActeur) metadata.address = elements.addressVal.value;
+    else if (isEvenement) {
+       metadata.address = elements.addressVal.value === t.online ? t.online : undefined;
+       metadata.occurrences = occurrences;
     }
-    if (elements.addressVal.value && isActeur) {
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border-l border-stone-200 pl-2 ml-1">${elements.addressVal.value}</span>`;
-    }
-    if (elements.pubDateInput.value) {
-      const year = elements.pubDateInput.value.split('-')[0];
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border-l border-stone-200 pl-2 ml-1">${year}</span>`;
-    }
-    if (elements.versionDateInput.value) {
-      const year = elements.versionDateInput.value.split('-')[0];
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border-l border-stone-200 pl-2 ml-1">v.${year}</span>`;
-    }
-    selectedOptionalTags.forEach(tag => {
-      elements.preview.badges!.innerHTML += `<span class="text-[9px] font-bold uppercase text-stone-500 border border-stone-200 px-1 rounded ml-1 bg-white shadow-sm">${tag}</span>`;
-    });
+    else if (isContenu) metadata.published_at = elements.pubDateInput.value;
+    else if (isOutil) metadata.version_date = elements.versionDateInput.value;
 
-    if (!elements.img.files?.[0]) {
-      const url = getImageUrl(existingData?.image_url);
-      elements.preview.img!.innerHTML = url ? `<img src="${url}" class="w-full h-full object-contain" />` : 
-        `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-stone-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="${CATEGORIES[cat].icon}" stroke-width="2"/></svg>`;
+    const previewData: any = {
+      title: elements.title.value,
+      description: elements.desc.value,
+      category: cat,
+      link: elements.link.value,
+      tags,
+      related_ids: selectedRelatedIds,
+      metadata,
+      image_url: currentImageUrl || (existingData as Resource)?.image_url,
+      action: (existingData as Suggestion)?.action || 'create',
+      resource_id: (existingData && 'id' in existingData && !('action' in existingData)) ? existingData.id : (existingData as Suggestion)?.resource_id || null,
+      reason: elements.reason.value,
+      submitted_by: (existingData as Suggestion)?.submitted_by || null
+    };
+
+    if (elements.previewContainer) {
+      elements.previewContainer.innerHTML = renderResourcePreview(previewData, {
+        lang,
+        categoriesData: CATEGORIES,
+        allResources: entities,
+        isModeration, 
+        diffWith: originalData
+      });
     }
 
     document.getElementById('address-container')?.classList.toggle('hidden', !isActeur || isDelete);
@@ -268,6 +275,14 @@ export function initSuggestionForm(form: HTMLFormElement) {
     }
 
     if (existingData) {
+      // If it's a suggestion that updates an existing resource, fetch the original for diffing
+      if ('action' in existingData && (existingData as Suggestion).action === 'update' && (existingData as Suggestion).resource_id) {
+        originalData = await fetchResourceById((existingData as Suggestion).resource_id!);
+      } else if (!('action' in existingData)) {
+        // If it's a resource (action=update or action=delete from resource page), it IS the original
+        originalData = existingData as Resource;
+      }
+
       elements.title.value = existingData.title || '';
       elements.desc.value = existingData.description || '';
       elements.cat.value = existingData.category || 'acteur';
@@ -303,7 +318,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
       if (elements.img.files?.[0]) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          elements.preview.img!.innerHTML = `<img src="${e.target?.result}" class="w-full h-full object-contain" />`;
+          currentImageUrl = e.target?.result as string;
+          updateUI();
         };
         reader.readAsDataURL(elements.img.files[0]);
       }
@@ -335,6 +351,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
         renderRelated();
       });
     });
+    updateUI();
   }
 
   form.addEventListener('submit', async (e) => {

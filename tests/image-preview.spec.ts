@@ -14,7 +14,7 @@ test.describe('Image Preview', () => {
 
     try {
       // 1. Initially, no image preview
-      const previewImgContainer = page.locator('#preview-img');
+      const previewImgContainer = page.locator('#resource-preview-container');
       await expect(previewImgContainer).toBeVisible();
       // Initially it contains an SVG icon
       await expect(previewImgContainer.locator('svg')).toBeVisible();

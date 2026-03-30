@@ -27,7 +27,7 @@ test.describe('Resource Image Flow', () => {
       await fileChooser.setFiles(testImagePath);
       
       // Wait for preview to confirm upload is ready
-      await expect(page.locator('#preview-img img')).toBeVisible();
+      await expect(page.locator('#resource-preview-container img')).toBeVisible();
 
       await page.click('#submit-btn');
       await page.waitForURL(/\/fr\/?$/);

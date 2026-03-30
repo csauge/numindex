@@ -11,34 +11,14 @@ const translations = {
     title: "Modération", 
     noPending: "Aucune suggestion en attente.", 
     loading: "Chargement des suggestions...",
-    approve: "Approuver", 
-    correct: "Corriger",
-    reject: "Rejeter",
-    action_create: "Nouveau",
-    action_update: "Modification",
-    action_delete: "Suppression",
-    reason_label: "Motif de suppression :",
-    target_id: "ID cible :",
     back: "Retour à l'index",
-    by: "Par",
-    submittedBy: "Proposé par :",
     diff_notice: "Champs modifiés entourés en rouge."
   },
   en: { 
     title: "Moderation", 
     noPending: "No pending suggestions.", 
     loading: "Loading suggestions...",
-    approve: "Approve", 
-    correct: "Correct",
-    reject: "Reject",
-    action_create: "New",
-    action_update: "Update",
-    action_delete: "Delete",
-    reason_label: "Deletion reason:",
-    target_id: "Target ID:",
     back: "Back to index",
-    by: "By",
-    submittedBy: "Submitted by:",
     diff_notice: "Modified fields highlighted in red."
   }
 };
@@ -87,6 +67,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
   import { supabase, getImageUrl } from '../../lib/supabase/client';
   import { getCategoryLabel, getCategoryIcon, ACTION_ICONS } from '../../utils/categories';
   import { fetchAllProfiles, isUserAdmin } from '../../lib/services';
+  import { renderResourcePreview } from '../../lib/preview-utils';
   import type { Suggestion, Resource, Profile } from '../../lib/supabase/types';
 
   const lang = (document.documentElement.lang || 'fr') as 'fr' | 'en';
@@ -149,7 +130,17 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       loadingState?.classList.add('hidden');
       if (suggestions.some(s => s.action === 'update')) diffNotice?.classList.remove('hidden');
 
-      listContainer!.innerHTML = suggestions.map(res => renderSuggestion(res, resources || [], profiles)).join('');
+      listContainer!.innerHTML = suggestions.map(res => {
+        const original = res.resource_id ? (resources || []).find(r => r.id === res.resource_id) : null;
+        return renderResourcePreview(res, {
+          lang,
+          isModeration: true,
+          diffWith: original,
+          profiles,
+          allResources: resources || [],
+          categoriesData: categoriesData
+        });
+      }).join('');
       attachEvents();
     } catch (err: any) {
       console.error('[Admin] Erreur critique lors du chargement :', err);
@@ -162,87 +153,6 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         `;
       }
     }
-  }
-
-  function renderSuggestion(res: Suggestion, allResources: Resource[], allProfiles: Profile[]) {
-    const actionClass = getActionClass(res.action);
-    const actionIcon = ACTION_ICONS[res.action] || ACTION_ICONS.create;
-    
-    const isMod = (field: string) => {
-      if (res.action !== 'update' || !res.resource_id) return false;
-      const original = allResources.find(r => r.id === res.resource_id);
-      if (!original) return false;
-      if (field === 'address' || field === 'published_at' || field === 'next_date') return res.metadata?.[field] !== original.metadata?.[field];
-      return (res as any)[field] !== (original as any)[field];
-    };
-
-    const diffClass = "ring-2 ring-red-500 ring-offset-2 rounded-sm";
-    const proposer = allProfiles.find(p => p.id === res.submitted_by)?.full_name || '...';
-
-    const catInfo = categoriesData[res.category];
-    const mandatoryTags = catInfo?.mandatoryTags || [];
-    const subCategory = res.tags?.find(t => mandatoryTags.includes(t));
-    const qualifiers = res.tags?.filter(t => !mandatoryTags.includes(t)) || [];
-
-    return `
-      <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden">
-        <div class="w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative flex items-center justify-center text-stone-200 ${isMod('image_url') ? diffClass : ''}">
-          ${res.image_url ? `<img src="${getImageUrl(res.image_url)}" class="absolute inset-0 w-full h-full object-contain p-2" />` : `
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${getCategoryIcon(res.category)}" />
-            </svg>
-          `}
-        </div>
-        
-        <div class="flex-grow w-full">
-          <div class="flex flex-wrap items-center gap-2 mb-3">
-            <span class="flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tight border shadow-sm ${actionClass}">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="${actionIcon}"/></svg>
-              ${res.action === 'create' ? 'Nouveau' : (res.action === 'update' ? 'Modification' : 'Suppression')}
-            </span>
-            <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tight border bg-stone-50 border-stone-200 text-stone-500 shadow-sm ${isMod('category') ? diffClass : ''}">
-              ${getCategoryLabel(res.category, lang)}
-            </span>
-            ${subCategory ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tight border bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm ${isMod('tags') ? diffClass : ''}">${subCategory}</span>` : ''}
-            ${res.metadata?.address ? `<span class="flex items-center gap-1 text-[9px] font-black bg-stone-50 border border-stone-200 px-1.5 py-0.5 rounded text-stone-500 uppercase tracking-tight ${isMod('address') ? diffClass : ''}">${res.metadata.address}</span>` : ''}
-          </div>
-
-          <h2 class="text-xl font-black text-stone-800 mb-1 inline-block ${isMod('title') ? diffClass : ''}">${res.title}</h2>
-
-          <div class="flex flex-col gap-1 mb-3">
-            <p class="text-[9px] font-bold text-stone-400 uppercase">
-              ${res.action === 'create' ? 'Proposé par :' : 'Modification par :'} 
-              <span class="text-stone-600 ml-1">${proposer}</span>
-            </p>
-            ${res.resource_id && res.action !== 'create' ? `<p class="text-[9px] text-stone-400 font-mono tracking-tighter opacity-70">ID cible : <a href="/${lang}/resource/${res.resource_id}" target="_blank" class="underline hover:text-primary transition-colors ml-1">${res.resource_id}</a></p>` : ''}
-          </div>
-
-          <p class="text-stone-600 text-sm mb-4 leading-relaxed ${isMod('description') ? diffClass : ''}">${res.description}</p>
-          
-          ${qualifiers.length > 0 ? `
-            <div class="flex flex-wrap gap-1 mb-4 ${isMod('tags') ? diffClass : ''}">
-              ${qualifiers.map(tag => `<span class="text-[9px] font-black bg-stone-50 border border-stone-100 px-1.5 py-0.5 rounded text-stone-400 uppercase tracking-tight">${tag}</span>`).join('')}
-            </div>
-          ` : ''}
-
-          <a href="${res.link}" target="_blank" class="text-xs text-primary font-bold underline mb-4 inline-block ${isMod('link') ? diffClass : ''}">${res.link}</a>
-
-          ${res.action === 'delete' ? `<div class="mt-4 bg-red-50 p-4 rounded-xl border border-red-100 mb-4"><p class="text-xs font-bold text-red-800 uppercase mb-1">Motif :</p><p class="text-red-700 italic text-sm">${res.reason}</p></div>` : ''}
-        </div>
-
-        <div class="flex md:flex-col gap-2 w-full md:w-auto">
-          <button class="btn btn-primary btn-sm flex-grow approve-btn" data-id="${res.id}">Approuver</button>
-          ${res.action !== 'delete' ? `<a href="/${lang}/propose?sid=${res.id}&moderation=true" class="btn btn-outline btn-sm">Corriger</a>` : ''}
-          <button class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id="${res.id}">Rejeter</button>
-        </div>
-      </article>
-    `;
-  }
-
-  function getActionClass(action: string) {
-    if (action === 'update') return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-    if (action === 'delete') return 'bg-red-50 text-red-800 border-red-200';
-    return 'bg-emerald-800 text-white border-emerald-900';
   }
 
   function attachEvents() {

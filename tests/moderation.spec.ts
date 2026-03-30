@@ -115,7 +115,7 @@ test.describe('Moderation Lifecycle', () => {
 
     const pubDate = '2026-01-01';
     await page.fill('input[name="published_at"]', pubDate);
-    await expect(page.locator('#preview-badges')).toContainText('2026');
+    await expect(page.locator('#resource-preview-container')).toContainText('2026');
   });
 
   test('should display bidirectional relations correctly on detail pages', async ({ page }) => {
