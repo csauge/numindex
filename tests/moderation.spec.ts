@@ -190,12 +190,19 @@ test.describe('Moderation Lifecycle', () => {
     await expect(page.locator('#toast-message')).toContainText('Suggestion envoyée');
     
     await page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    await page.waitForLoadState('networkidle');
     const suggestionCard = page.locator('.suggestion-card').filter({ hasText: rejectedTitle });
+    await expect(suggestionCard).toBeVisible();
     
-    page.once('dialog', dialog => dialog.accept());
+    // Register dialog handler
+    page.on('dialog', dialog => dialog.accept());
     await suggestionCard.locator('.reject-btn').click();
     
-    await expect(suggestionCard).not.toBeVisible();
+    // Wait for the page reload that happens after rejection
+    await page.waitForURL(/\/fr\/admin/);
+    await page.waitForLoadState('networkidle');
+    
+    await expect(page.locator('.suggestion-card').filter({ hasText: rejectedTitle })).not.toBeVisible({ timeout: 15000 });
 
     await page.goto('/fr', { waitUntil: 'networkidle' });
     await expect(page.locator('.resource-card').filter({ hasText: rejectedTitle })).not.toBeVisible();

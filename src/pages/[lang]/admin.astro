@@ -99,11 +99,8 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 
       // Check role via helper
       const isAdmin = await isUserAdmin();
-      
-      // Special bypass for test users in E2E environment
-      const isTestUser = session.user.email?.endsWith('@example.com') || session.user.email === 'admin@numindex.org';
 
-      if (!isAdmin && !isTestUser) {
+      if (!isAdmin) {
         loadingState?.classList.add('hidden');
         accessDenied?.classList.remove('hidden');
         document.querySelector('h1')?.classList.add('hidden');
@@ -177,8 +174,20 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-id');
         if (confirm('Rejeter ?')) {
-          await supabase!.from('suggestions').update({ status: 'rejected' }).eq('id', id);
-          location.reload();
+          (btn as HTMLElement).classList.add('loading');
+          try {
+            const { error } = await supabase!.rpc('reject_suggestion', { suggestion_id: id });
+            if (error) {
+              console.error("Erreur lors du rejet :", error);
+              alert(`Erreur : ${error.message}`);
+              (btn as HTMLElement).classList.remove('loading');
+            } else {
+              location.reload();
+            }
+          } catch (err) {
+            console.error("Exception during rejection:", err);
+            (btn as HTMLElement).classList.remove('loading');
+          }
         }
       });
     });

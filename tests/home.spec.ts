@@ -16,14 +16,19 @@ test.describe('numindex.org Home Page', () => {
 
   test('should display resource cards or empty state', async ({ page }) => {
     await page.goto('/fr');
+    
+    // Use waitForFunction to wait for either the grid to have children or the no-results message to be visible
+    await page.waitForFunction(() => {
+      const grid = document.getElementById('resources-grid');
+      const noResults = document.getElementById('no-results');
+      const hasCards = grid && grid.children.length > 0;
+      const isNoResultsVisible = noResults && !noResults.classList.contains('hidden') && noResults.offsetHeight > 0;
+      return hasCards || isNoResultsVisible;
+    }, { timeout: 15000 });
+    
     const grid = page.locator('#resources-grid');
     const noResults = page.locator('#no-results');
-    
-    // One of them must be visible
-    const isGridVisible = await grid.isVisible();
-    const isNoResultsVisible = await noResults.isVisible();
-    
-    expect(isGridVisible || isNoResultsVisible).toBe(true);
+    expect(await grid.isVisible() || await noResults.isVisible()).toBe(true);
   });
 
   test('should filter results and show empty state if no match', async ({ page }) => {

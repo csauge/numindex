@@ -76,8 +76,12 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     if (session) {
       const urlParams = new URLSearchParams(window.location.search);
       const redirect = urlParams.get('redirect');
-      const target = redirect ? (redirect.startsWith('/') ? redirect : `/${lang}/${redirect}`) : `/${lang}`;
-      window.location.href = target;
+      if (redirect) {
+        const target = redirect.startsWith('/') ? redirect : `/${lang}/${redirect}`;
+        window.location.href = target;
+      } else {
+        window.location.href = `/${lang}`;
+      }
     }
   }
   checkSession();
@@ -114,7 +118,11 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       
       if (redirect) {
         // Le param peut etre un path complet ou juste un mot clé
-        const target = redirect.startsWith('/') ? redirect : `/${lang}/${redirect}`;
+        // Si c'est déjà un chemin absolu (commence par /), on l'utilise tel quel
+        // Sinon on ajoute le préfixe de langue
+        const target = (redirect.startsWith('/') || redirect.startsWith('http')) 
+          ? redirect 
+          : `/${lang}/${redirect}`;
         window.location.href = target;
       } else {
         window.location.href = `/${lang}`;

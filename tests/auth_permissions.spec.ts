@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 
 test.describe('Authentication & Authorization Permissions', () => {
   
@@ -66,7 +67,7 @@ test.describe('Authentication & Authorization Permissions', () => {
     const page = await context.newPage();
     
     // 1. Create/Login as a regular user
-    const userEmail = `user-${Date.now()}@test.org`;
+    const userEmail = `visitor-non-admin-${Date.now()}@example.com`;
     await page.goto('/fr/register');
     await page.fill('input[name="full_name"]', 'Regular User');
     await page.fill('input[name="email"]', userEmail);
@@ -75,13 +76,19 @@ test.describe('Authentication & Authorization Permissions', () => {
     
     // New behavior: redirects to home directly as it logs in automatically
     await page.waitForURL(/\/fr\/?$/);
+    
+    // Wait for the auth script to settle
+    await expect(page.locator('#user-info')).toBeVisible({ timeout: 10000 });
+
+    // Ensure this user is NOT an admin
+    execSync(`npx supabase db query "UPDATE public.profiles SET role = 'user' WHERE id IN (SELECT id FROM auth.users WHERE email = '${userEmail}');"`);
 
     // 2. Try to access /admin
     await page.goto('/fr/admin');
     
     // Should see the Access Denied block
     const accessDenied = page.locator('#access-denied');
-    await expect(accessDenied).toBeVisible();
+    await expect(accessDenied).toBeVisible({ timeout: 10000 });
     await expect(accessDenied).toContainText('Accès réservé');
     
     // Title "Modération" should be hidden
@@ -91,22 +98,38 @@ test.describe('Authentication & Authorization Permissions', () => {
   });
 
   test('Should redirect back to original destination after login', async ({ browser }) => {
+    // We use a fresh context to ensure we are a visitor
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
     
-    // 1. Try to go to propose (as visitor)
+    const userEmail = `redirect-test-${Date.now()}@test.org`;
+    const password = 'password123';
+
+    // 1. Create the user first so we can login
+    await page.goto('/fr/register');
+    await page.fill('input[name="full_name"]', 'Redirect User');
+    await page.fill('input[name="email"]', userEmail);
+    await page.fill('input[name="password"]', password);
+    await page.click('button[type="submit"]');
+    await page.waitForURL(/\/fr\/?$/);
+    
+    // 2. Sign out
+    await page.click('#user-info [role="button"]');
+    await page.click('#logout-btn');
+    await page.waitForURL(/\/fr\/?$/);
+    await expect(page.locator('#login-link')).toBeVisible();
+
+    // 3. Visit propose (as visitor) -> should redirect to login
     await page.goto('/fr/propose');
     await expect(page).toHaveURL(/\/fr\/login\?redirect=.*propose/);
-
-    // 2. Login
-    const email = process.env.TEST_USER_EMAIL || 'admin@numindex.org';
-    const password = process.env.TEST_USER_PASSWORD || 'password123';
     
-    await page.fill('input[name="email"]', email);
+    // 4. Login
+    await page.fill('input[name="email"]', userEmail);
     await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
 
-    // 3. Should be back on propose
+    // 5. Should be back on propose
+    await page.waitForURL(url => url.pathname.includes('/fr/propose'), { timeout: 20000 });
     await expect(page).toHaveURL(/\/fr\/propose/);
     await expect(page.locator('h2:has-text("Proposer")')).toBeVisible();
 

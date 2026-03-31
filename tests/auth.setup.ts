@@ -1,9 +1,22 @@
 import { test as setup, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 
 const authFile = 'playwright/.auth/user.json';
 
 setup('authenticate', async ({ page }) => {
   setup.setTimeout(60000);
+
+  // 1. Cleanup database before starting
+  console.log('[Auth Setup] Cleaning up test data...');
+  try {
+    // Supprimer les suggestions
+    execSync('npx supabase db query "DELETE FROM public.suggestions;"');
+    // Supprimer les utilisateurs de test (en préservant vos emails personnels et en nettoyant les autres)
+    execSync('npx supabase db query "DELETE FROM auth.users WHERE email NOT LIKE \'csauge%@gmail.com\' AND (email LIKE \'%@example.com\' OR email LIKE \'%@test.org\' OR email LIKE \'%test%\' OR email = \'admin@numindex.org\');"');
+    console.log('[Auth Setup] Cleanup successful.');
+  } catch (e) {
+    console.warn('[Auth Setup] Cleanup failed (non-critical):', e);
+  }
   
   const email = process.env.TEST_USER_EMAIL || 'admin@numindex.org';
   const password = process.env.TEST_USER_PASSWORD || 'password123';
@@ -11,6 +24,7 @@ setup('authenticate', async ({ page }) => {
   console.log(`[Auth Setup] Attempting login for ${email}`);
   
   await page.goto('/fr/login');
+  // ... rest of the logic
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await page.click('button[type="submit"]');
@@ -46,6 +60,10 @@ setup('authenticate', async ({ page }) => {
         await page.click('button[type="submit"]');
         await page.waitForURL(/\/fr\/?$/);
       }
+
+      // 2. Force ADMIN role for this user
+      console.log(`[Auth Setup] Forcing admin role for ${uniqueEmail}`);
+      execSync(`npx supabase db query "UPDATE public.profiles SET role = 'admin' WHERE id IN (SELECT id FROM auth.users WHERE email = '${uniqueEmail}');"`);
     }
   } catch (e) {
     console.error(`[Auth Setup] Critical failure during auth setup: ${e}`);

@@ -273,11 +273,17 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           const path = window.location.pathname;
           const isProtected = path.includes('/propose') || path.includes('/admin');
           const hasValidLang = path.startsWith('/fr/') || path.startsWith('/en/');
+          const hasAuthHash = window.location.hash.includes('access_token=') || window.location.hash.includes('recovery_token=');
 
-          if (isProtected && hasValidLang) {
+          if (isProtected && hasValidLang && !hasAuthHash) {
             const currentLang = document.documentElement.lang || 'fr';
-            const currentPath = window.location.pathname + window.location.search;
-            window.location.replace(`/${currentLang}/login?redirect=${encodeURIComponent(currentPath)}`);
+            
+            // On veut rediriger vers la page de login en gardant le chemin actuel en mémoire
+            const currentPath = window.location.pathname;
+            const currentSearch = window.location.search;
+            const fullRedirectPath = currentPath + currentSearch;
+            
+            window.location.replace(`/${currentLang}/login?redirect=${encodeURIComponent(fullRedirectPath)}`);
           }
         }
       }
