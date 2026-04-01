@@ -17,34 +17,21 @@ test.describe('numindex.org Home Page', () => {
   test('should display resource cards or empty state', async ({ page }) => {
     await page.goto('/fr');
     
-    // Use waitForFunction to wait for either the grid to have children or the no-results message to be visible
-    await page.waitForFunction(() => {
-      const grid = document.getElementById('resources-grid');
-      const noResults = document.getElementById('no-results');
-      const hasCards = grid && grid.children.length > 0;
-      const isNoResultsVisible = noResults && !noResults.classList.contains('hidden') && noResults.offsetHeight > 0;
-      return hasCards || isNoResultsVisible;
-    }, { timeout: 15000 });
-    
-    const grid = page.locator('#resources-grid');
+    const firstCard = page.locator('.resource-card').first();
     const noResults = page.locator('#no-results');
-    expect(await grid.isVisible() || await noResults.isVisible()).toBe(true);
+    
+    // Wait for either the grid to be populated OR the no-results message to be visible
+    await expect(firstCard.or(noResults.filter({ visible: true }))).toBeVisible();
   });
 
   test('should filter results and show empty state if no match', async ({ page }) => {
     await page.goto('/fr');
     const searchInput = page.locator('#search-input');
     
-    // Type a term that definitely doesn't exist
     await searchInput.fill('XYZ_NON_EXISTENT_TERM_PLAYWRIGHT_TEST');
-    await page.waitForTimeout(300); // Wait for debounce
     
     const noResults = page.locator('#no-results');
     await expect(noResults).toBeVisible();
-    
-    // Clear search
-    await searchInput.fill('');
-    await page.waitForTimeout(300);
   });
 
   test('should switch language', async ({ page }) => {

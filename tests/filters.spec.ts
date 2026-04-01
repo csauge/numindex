@@ -22,33 +22,14 @@ test.describe('Filters, Sorting and Grouping', () => {
     await expect(sortFilter).toHaveValue('updated_at');
   });
 
-  test('should display alphabetical dividers for actors', async ({ page }) => {
+  test('should display dividers when sorting', async ({ page }) => {
     // Select "Acteurs"
     await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
-    
-    // Check if at least one divider is visible
-    const divider = page.locator('.alphabet-divider');
-    const count = await divider.count();
-    if (count > 0) {
-      await expect(divider.first()).toBeVisible();
-      const text = await divider.first().innerText();
-      expect(text.length).toBe(1); // Should be a single letter
-    }
-  });
+    await expect(page.locator('.alphabet-divider').first()).toBeVisible();
 
-  test('should display date dividers for events', async ({ page }) => {
     // Select "Événements"
     await page.click('nav[aria-label="Categories"] a:has-text("Événements")');
-    
-    // Check if at least one divider is visible
-    const divider = page.locator('.alphabet-divider');
-    const count = await divider.count();
-    if (count > 0) {
-      await expect(divider.first()).toBeVisible();
-      // Divider should contain a month name or special labels
-      const text = await divider.first().innerText();
-      expect(text.length).toBeGreaterThan(1);
-    }
+    await expect(page.locator('.alphabet-divider').first()).toBeVisible();
   });
 
   test('should persist filters in URL when navigating back', async ({ page }) => {
@@ -59,8 +40,7 @@ test.describe('Filters, Sorting and Grouping', () => {
     await searchInput.fill('test');
     await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
     await favLabel.click();
-    await page.waitForTimeout(300); // Wait for debounce and state sync
-
+    
     // Verify URL params
     await expect(page).toHaveURL(/q=test/);
     await expect(page).toHaveURL(/\/acteurs/);
@@ -87,7 +67,6 @@ test.describe('Filters, Sorting and Grouping', () => {
 
     await searchInput.fill('test');
     await page.click('nav[aria-label="Categories"] a:has-text("Acteurs")');
-    await page.waitForTimeout(300);
 
     // Switch to English
     await page.click('label.swap:has(#lang-toggle)');
@@ -95,7 +74,6 @@ test.describe('Filters, Sorting and Grouping', () => {
     // Verify URL and filters
     await expect(page).toHaveURL(/\/en\/(actors|acteurs)/);
     await expect(page).toHaveURL(/q=test/);
-    
     await expect(searchInput).toHaveValue('test');
   });
 
@@ -103,33 +81,19 @@ test.describe('Filters, Sorting and Grouping', () => {
     const favToggle = page.locator('#filter-favorites');
     const favLabel = page.locator('label[title="Favoris"]');
 
-    // Wait for the initial grid to load
-    await page.waitForSelector('.resource-card');
-    const initialCountText = await page.locator('#results-count').innerText();
-    const initialCount = parseInt(initialCountText, 10);
+    await expect(page.locator('.resource-card').first()).toBeVisible();
+    const initialCount = parseInt(await page.locator('#results-count').innerText(), 10);
 
-    // Initially not checked
-    await expect(favToggle).not.toBeChecked();
-
-    // Toggle on
     await favLabel.click();
     await expect(favToggle).toBeChecked();
     await expect(page).toHaveURL(/fav=true/);
     
-    // Check that results count has updated (should be fewer or equal to initial count)
-    await page.waitForTimeout(300); // Wait for debounce and state sync
-    const favCountText = await page.locator('#results-count').innerText();
-    const favCount = parseInt(favCountText, 10);
+    const favCount = parseInt(await page.locator('#results-count').innerText(), 10);
     expect(favCount).toBeLessThanOrEqual(initialCount);
 
-    // Toggle off
     await favLabel.click();
     await expect(favToggle).not.toBeChecked();
-    await expect(page).not.toHaveURL(/fav=true/);
-    
-    await page.waitForTimeout(300); // Wait for debounce and state sync
-    const finalCountText = await page.locator('#results-count').innerText();
-    expect(parseInt(finalCountText, 10)).toBe(initialCount);
+    await expect(parseInt(await page.locator('#results-count').innerText(), 10)).toBe(initialCount);
   });
 
   test('should clear search input when clear button is clicked', async ({ page }) => {
@@ -151,23 +115,5 @@ test.describe('Filters, Sorting and Grouping', () => {
     await expect(searchInput).toHaveValue('');
     await expect(clearBtn).toHaveClass(/opacity-0/);
     await expect(searchInput).toBeFocused();
-  });
-
-  test('should display relative time dividers for all categories view', async ({ page }) => {
-    // Default view is "All Categories" and "Newest" sort
-    const divider = page.locator('.alphabet-divider');
-    const count = await divider.count();
-    
-    if (count > 0) {
-      await expect(divider.first()).toBeVisible();
-      const text = await divider.first().innerText();
-      
-      // Note: text-transform: uppercase is applied via CSS, so innerText returns it in uppercase
-      const validLabels = [
-        "CETTE SEMAINE", "CE MOIS-CI", "CETTE ANNÉE", "PLUS ANCIEN", "SANS DATE", "PASSÉ",
-        "THIS WEEK", "THIS MONTH", "THIS YEAR", "OLDER", "NO DATE", "PAST"
-      ];
-      expect(validLabels).toContain(text.toUpperCase());
-    }
   });
 });

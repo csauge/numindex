@@ -2,6 +2,7 @@ import { supabase, getImageUrl } from './supabase/client';
 import { ACTION_ICONS } from '../utils/categories';
 import { searchAddresses, uploadCompressedImage, fetchEntities, fetchResourceById, fetchSuggestionById } from './services';
 import { renderResourcePreview } from './preview-utils';
+import { prepareMetadata } from './validation-utils';
 import type { Resource, Suggestion } from './supabase/types';
 
 export function initSuggestionForm(form: HTMLFormElement) {
@@ -168,15 +169,14 @@ export function initSuggestionForm(form: HTMLFormElement) {
 
     // Build the data object for preview
     const tags = [elements.mandatoryTag.value, ...selectedOptionalTags].filter(Boolean);
-    const metadata: any = { ...existingData?.metadata };
-    
-    if (isActeur) metadata.address = elements.addressVal.value;
-    else if (isEvenement) {
-       metadata.address = elements.addressVal.value === t.online ? t.online : undefined;
-       metadata.occurrences = occurrences;
-    }
-    else if (isContenu) metadata.published_at = elements.pubDateInput.value;
-    else if (isOutil) metadata.version_date = elements.versionDateInput.value;
+    const metadata = prepareMetadata(cat, {
+      address: elements.addressVal.value,
+      lat: currentCoords?.lat,
+      lng: currentCoords?.lng,
+      occurrences,
+      published_at: elements.pubDateInput.value,
+      version_date: elements.versionDateInput.value
+    });
 
     const previewData: any = {
       title: elements.title.value,
@@ -371,31 +371,15 @@ export function initSuggestionForm(form: HTMLFormElement) {
       if (elements.img.files?.[0]) imageUrl = await uploadCompressedImage(elements.img.files[0]);
 
       const tags = [elements.mandatoryTag.value, ...selectedOptionalTags].filter(Boolean);
-      const metadata = { ...existingData?.metadata };
-      
       const cat = elements.cat.value;
-      if (cat === 'acteur') {
-        metadata.address = elements.addressVal.value;
-        if (currentCoords) {
-          metadata.lat = currentCoords.lat;
-          metadata.lng = currentCoords.lng;
-        } else if (metadata.address !== existingData?.metadata?.address) {
-          delete metadata.lat;
-          delete metadata.lng;
-        }
-      } else if (cat === 'evenement') {
-        // Pour les événements, on ne garde l'adresse que si c'est "En ligne / Online"
-        // Le reste est dans occurrences
-        if (elements.addressVal.value === t.online) {
-          metadata.address = t.online;
-        } else {
-          delete metadata.address;
-          delete metadata.lat;
-          delete metadata.lng;
-        }
-        metadata.occurrences = occurrences;
-      } else if (cat === 'contenu') metadata.published_at = elements.pubDateInput.value;
-      else if (cat === 'outil') metadata.version_date = elements.versionDateInput.value;
+      const metadata = prepareMetadata(cat, {
+        address: elements.addressVal.value,
+        lat: currentCoords?.lat,
+        lng: currentCoords?.lng,
+        occurrences,
+        published_at: elements.pubDateInput.value,
+        version_date: elements.versionDateInput.value
+      });
 
       const payload: any = {
         title: isDeleteSubmit ? existingData?.title : elements.title.value,

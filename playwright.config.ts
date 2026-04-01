@@ -17,6 +17,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1, 
+  timeout: 60000,
+  expect: {
+    timeout: 5000,
+  },
   reporter: [
     ['list'],
     ['html', { open: 'never' }]
@@ -24,6 +28,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4322',
     trace: 'on-first-retry',
+    actionTimeout: 10000,
+    navigationTimeout: 15000,
   },
   projects: [
     { name: 'setup', testMatch: /auth\.setup\.ts/ },

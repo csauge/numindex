@@ -190,6 +190,27 @@ export function sortResources(resources: Resource[], category: string | 'all') {
 }
 
 /**
+ * Logique de groupement pour l'affichage (Dividers)
+ */
+export function getResourceGroup(resource: any, sortBy: string, t: any, currentLang: string, today: string, favCount: number = 0) {
+  if (sortBy === 'favorites') {
+    return favCount > 0 ? t.popular : t.others;
+  }
+  if (sortBy === 'updated_at' || sortBy === 'published_at') {
+    const dateStr = sortBy === 'published_at' ? resource.pub : resource.up;
+    if (!dateStr) return t.noDate;
+    const diff = (new Date().getTime() - new Date(dateStr).getTime()) / 86400000;
+    return diff < 7 ? t.thisWeek : diff < 30 ? t.thisMonth : diff < 365 ? t.thisYear : t.older;
+  }
+  if (sortBy === 'title') return resource.title[0].toUpperCase();
+  if (sortBy === 'cat') return resource.catLabel;
+  if (sortBy === 'next_date') {
+    return !resource.next ? t.noDate : resource.next < today ? t.pastDate : new Date(resource.next).toLocaleDateString(currentLang, { month: 'long', year: 'numeric' });
+  }
+  return '';
+}
+
+/**
  * Récupère le nombre de suggestions en attente de modération
  */
 export async function fetchPendingSuggestionsCount() {

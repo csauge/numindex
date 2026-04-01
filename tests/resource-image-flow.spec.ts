@@ -1,8 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
-test.describe('Resource Image Flow', () => {
+test.describe('Resource Image Flow [TEST]', () => {
+  test.afterEach(async () => {
+    try {
+      execSync(`npx supabase db query "DELETE FROM public.resources WHERE title LIKE '[TEST] %';"`);
+      execSync(`npx supabase db query "DELETE FROM public.suggestions WHERE title LIKE '[TEST] %';"`);
+    } catch (e) {}
+  });
+
   test('Should display resource image in grid after approval', async ({ page }) => {
     // 1. Setup a test image
     const testImagePath = path.join(process.cwd(), 'test-image.png');
@@ -10,7 +18,7 @@ test.describe('Resource Image Flow', () => {
     fs.writeFileSync(testImagePath, Buffer.from(base64Image, 'base64'));
 
     try {
-      const resourceTitle = `Image Test ${Math.floor(Math.random() * 10000)}`;
+      const resourceTitle = `[TEST] Image Resource ${Math.floor(Math.random() * 10000)}`;
 
       // 2. Proposer une ressource avec image
       await page.goto('/fr/propose');

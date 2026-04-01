@@ -1,4 +1,6 @@
 import { fetchUserFavoriteIds, fetchTotalFavoriteCounts, toggleFavorite } from './favorites-client';
+import { generateBookmarksHTML } from './export-utils';
+import { getResourceGroup } from './services';
 
 export interface Resource {
   id: string;
@@ -224,24 +226,7 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     toShow.forEach(d => {
       const isFav = userFavoriteIds.includes(d.id);
       const favCount = totalFavoriteCounts[d.id] || 0;
-      let group = '';
-      if (s === 'favorites') {
-        group = favCount > 0 ? t.popular : t.others;
-      } else if (s === 'updated_at' || s === 'published_at') {
-        const dateStr = s === 'published_at' ? d.pub : d.up;
-        if (!dateStr) {
-          group = t.noDate;
-        } else {
-          const diff = (new Date().getTime() - new Date(dateStr).getTime()) / 86400000;
-          group = diff < 7 ? t.thisWeek : diff < 30 ? t.thisMonth : diff < 365 ? t.thisYear : t.older;
-        }
-      } else if (s === 'title') {
-        group = d.title[0].toUpperCase();
-      } else if (s === 'cat') {
-        group = d.catLabel;
-      } else if (s === 'next_date') {
-        group = !d.next ? t.noDate : d.next < today ? t.pastDate : new Date(d.next).toLocaleDateString(currentLang, {month:'long', year:'numeric'});
-      }
+      const group = getResourceGroup(d, s, t, currentLang, today, favCount);
 
       if (group && group !== lastGroup) {
         lastGroup = group;
@@ -322,43 +307,9 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
   }
 
   function exportBookmarks() {
-    const esc = (s: string) => !s ? '' : s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const categoriesGrouped = filteredData.reduce((acc: any, d) => {
-      const cat = d.catLabel;
-      if (!acc[cat]) acc[cat] = {};
-      
-      const subCats = taxonomy[d.cat] || [];
-      const sub = d.tags.find(t => subCats.includes(t)) || "Autre";
-      
-      if (!acc[cat][sub]) acc[cat][sub] = [];
-      acc[cat][sub].push(d);
-      return acc;
-    }, {});
-
-    const now = Math.floor(Date.now() / 1000);
-    let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
-<!-- This is an automatically generated file. -->
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-<TITLE>Bookmarks</TITLE>
-<H1>Bookmarks</H1>
-<DL><p>
-`;
-    
-    Object.entries(categoriesGrouped).forEach(([cat, subs]: [string, any]) => {
-      html += `    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${esc(cat)}</H3>\n    <DL><p>\n`;
-      Object.entries(subs).forEach(([sub, items]: [string, any]) => {
-        html += `        <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${esc(sub)}</H3>\n        <DL><p>\n`;
-        items.forEach((d: Resource) => {
-          html += `            <DT><A HREF="${esc(d.link || '#')}" ADD_DATE="${now}">${esc(d.title)}</A>\n`;
-          if (d.desc) html += `            <DD>${esc(d.desc)}\n`;
-        });
-        html += `        </DL><p>\n`;
-      });
-      html += `    </DL><p>\n`;
-    });
-
+    const html = generateBookmarksHTML(filteredData, taxonomy);
     const fileNameDate = new Date().toISOString().replace(/[:.]/g, '-');
-    download(html + '</DL><p>\n', 'numindex_bookmarks_' + fileNameDate + '.html', 'text/html');
+    download(html, 'numindex_bookmarks_' + fileNameDate + '.html', 'text/html');
   }
 
   function download(content: string, name: string, type: string) {

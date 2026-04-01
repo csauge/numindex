@@ -8,7 +8,7 @@
 - **Filtrage & Tri Avancé :** Recherche temps-réel, filtrage par 4 grandes catégories (**Acteur, Événement, Contenu, Outil**) et tri dynamique.
 - **Système de Tags Structuré :** Chaque ressource possède une sous-catégorie obligatoire et des tags qualificatifs optionnels (ex: ESS, Open Source, Débutant).
 - **Favoris :** Synchronisation en temps réel et compteur global pour les utilisateurs connectés.
-- **Export de Données :** Export des ressources filtrées au format **CSV**.
+- **Export de Données :** Export des ressources filtrées au format **HTML (Favoris Navigateur)** pour une importation facile.
 - **Flux Calendrier (ICS) :** Abonnement aux événements avec gestion des occurrences multiples.
 - **Sobriété Maximale :** Images au format **AVIF** avec miniatures optimisées.
 - **Relations Dynamiques :** Liens entre entités (Acteurs) et ressources (Contenus).
