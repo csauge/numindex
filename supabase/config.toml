@@ -231,7 +231,9 @@ otp_expiry = 3600
 subject = "Confirmation de votre compte - numindex.org"
 content_path = "./supabase/templates/signup.html"
 
-# [auth.email.template.invite]
+[auth.email.template.recovery]
+subject = "Réinitialisation de mot de passe - numindex.org"
+content_path = "./supabase/templates/recovery.html"
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 

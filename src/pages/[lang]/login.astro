@@ -12,6 +12,7 @@ const translations = {
     submit: "Se connecter",
     noAccount: "Pas encore de compte ?",
     register: "Créer un compte",
+    forgotPassword: "Mot de passe oublié ?",
     error: "Erreur de connexion. Vérifiez vos identifiants.",
     success: "Connexion réussie !"
   },
@@ -22,6 +23,7 @@ const translations = {
     submit: "Login",
     noAccount: "Don't have an account?",
     register: "Create an account",
+    forgotPassword: "Forgot password?",
     error: "Login error. Check your credentials.",
     success: "Login successful!"
   }
@@ -51,6 +53,12 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         <button type="submit" class="btn btn-primary w-full rounded-2xl font-black mt-4">
           {t.submit}
         </button>
+
+        <div class="text-center mt-4">
+          <a href={`/${lang}/forgot-password`} class="text-stone-500 hover:text-primary text-sm font-bold underline-offset-4 hover:underline">
+            {t.forgotPassword}
+          </a>
+        </div>
       </form>
 
       <div class="mt-8 pt-8 border-t border-stone-100 text-center text-sm">
