@@ -18,6 +18,14 @@ const translations = {
     noContributions: "Vous n'avez pas encore proposé de ressources.",
     favorites: "Mes Favoris",
     noFavorites: "Vous n'avez pas encore de favoris.",
+    settings: "Paramètres du compte",
+    changeEmail: "Changer d'email",
+    newEmail: "Nouvelle adresse email",
+    changePassword: "Changer de mot de passe",
+    newPassword: "Nouveau mot de passe",
+    updateBtn: "Mettre à jour",
+    deleteAccount: "Supprimer mon compte",
+    deleteWarning: "Cette action est irréversible et supprimera toutes vos données personnelles.",
     statusPending: "En attente",
     statusApproved: "Approuvé",
     statusRejected: "Refusé",
@@ -35,6 +43,14 @@ const translations = {
     noContributions: "You haven't suggested any resources yet.",
     favorites: "My Favorites",
     noFavorites: "You haven't favorited any resources yet.",
+    settings: "Account Settings",
+    changeEmail: "Change Email",
+    newEmail: "New email address",
+    changePassword: "Change Password",
+    newPassword: "New password",
+    updateBtn: "Update",
+    deleteAccount: "Delete my account",
+    deleteWarning: "This action is irreversible and will delete all your personal data.",
     statusPending: "Pending",
     statusApproved: "Approved",
     statusRejected: "Rejected",
@@ -85,6 +101,10 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
             {t.contributions}
           </button>
+          <button id="tab-settings" class="btn btn-sm btn-ghost justify-start rounded-xl font-bold gap-3 text-stone-500 hover:bg-emerald-50 hover:text-emerald-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            {t.settings}
+          </button>
         </div>
       </div>
 
@@ -99,10 +119,34 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
             </div>
           </div>
 
-          <div id="contributions-list" class="space-y-4 hidden">
-            <div class="animate-pulse space-y-4">
-              <div class="h-12 bg-stone-50 rounded-2xl w-full"></div>
-              <div class="h-12 bg-stone-50 rounded-2xl w-full"></div>
+          <div id="contributions-list" class="space-y-4 hidden"></div>
+
+          <div id="settings-list" class="space-y-8 hidden">
+            <!-- Email -->
+            <div class="p-6 bg-stone-50 rounded-2xl border border-stone-100">
+              <h3 class="font-bold text-stone-800 mb-4">{t.changeEmail}</h3>
+              <form id="email-form" class="flex flex-col gap-3">
+                <input type="email" id="new-email" required placeholder={t.newEmail} class="input input-bordered rounded-xl bg-white focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                <button type="submit" id="btn-email" class="btn btn-primary rounded-xl font-bold w-max">{t.updateBtn}</button>
+                <p id="msg-email" class="text-xs font-bold hidden mt-2"></p>
+              </form>
+            </div>
+            
+            <!-- Password -->
+            <div class="p-6 bg-stone-50 rounded-2xl border border-stone-100">
+              <h3 class="font-bold text-stone-800 mb-4">{t.changePassword}</h3>
+              <form id="password-form" class="flex flex-col gap-3">
+                <input type="password" id="new-password" required minlength="6" placeholder={t.newPassword} class="input input-bordered rounded-xl bg-white focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                <button type="submit" id="btn-password" class="btn btn-primary rounded-xl font-bold w-max">{t.updateBtn}</button>
+                <p id="msg-password" class="text-xs font-bold hidden mt-2"></p>
+              </form>
+            </div>
+
+            <!-- Delete Account -->
+            <div class="p-6 bg-red-50 rounded-2xl border border-red-100">
+              <h3 class="font-bold text-red-800 mb-2">{t.deleteAccount}</h3>
+              <p class="text-sm text-red-600 mb-4">{t.deleteWarning}</p>
+              <button id="btn-delete-account" class="btn btn-error rounded-xl font-bold text-white hover:bg-red-600 border-none">{t.deleteAccount}</button>
             </div>
           </div>
         </div>
@@ -211,27 +255,104 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     // Tabs logic
     const tabFav = document.getElementById('tab-favorites')!;
     const tabContrib = document.getElementById('tab-contributions')!;
+    const tabSettings = document.getElementById('tab-settings')!;
+    const settingsList = document.getElementById('settings-list')!;
     const sectionTitle = document.getElementById('section-title')!;
     const translations = {
-      fr: { favorites: "Mes Favoris", contributions: "Mes contributions" },
-      en: { favorites: "My Favorites", contributions: "My contributions" }
+      fr: { favorites: "Mes Favoris", contributions: "Mes contributions", settings: "Paramètres du compte" },
+      en: { favorites: "My Favorites", contributions: "My contributions", settings: "Account Settings" }
     };
     const t = lang === 'en' ? translations.en : translations.fr;
 
+    function resetTabs() {
+      [tabFav, tabContrib, tabSettings].forEach(t => t.classList.remove('bg-stone-100', 'text-stone-800'));
+      [favList, contribList, settingsList].forEach(l => l.classList.add('hidden'));
+    }
+
     tabFav.onclick = () => {
+      resetTabs();
       tabFav.classList.add('bg-stone-100', 'text-stone-800');
-      tabContrib.classList.remove('bg-stone-100', 'text-stone-800');
       favList.classList.remove('hidden');
-      contribList.classList.add('hidden');
       sectionTitle.innerText = t.favorites;
     };
 
     tabContrib.onclick = () => {
+      resetTabs();
       tabContrib.classList.add('bg-stone-100', 'text-stone-800');
-      tabFav.classList.remove('bg-stone-100', 'text-stone-800');
       contribList.classList.remove('hidden');
-      favList.classList.add('hidden');
       sectionTitle.innerText = t.contributions;
+    };
+
+    tabSettings.onclick = () => {
+      resetTabs();
+      tabSettings.classList.add('bg-stone-100', 'text-stone-800');
+      settingsList.classList.remove('hidden');
+      sectionTitle.innerText = t.settings;
+    };
+
+    // Account Settings Forms
+    const emailForm = document.getElementById('email-form') as HTMLFormElement;
+    const btnEmail = document.getElementById('btn-email') as HTMLButtonElement;
+    const msgEmail = document.getElementById('msg-email')!;
+
+    emailForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const newEmail = (document.getElementById('new-email') as HTMLInputElement).value;
+      btnEmail.classList.add('loading');
+      msgEmail.classList.add('hidden');
+      
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      
+      btnEmail.classList.remove('loading');
+      msgEmail.classList.remove('hidden');
+      if (error) {
+        msgEmail.innerText = error.message;
+        msgEmail.className = 'text-xs font-bold mt-2 text-red-500';
+      } else {
+        msgEmail.innerText = lang === 'fr' ? 'Veuillez vérifier vos boîtes mail (ancienne et nouvelle) pour confirmer le changement.' : 'Please check both your old and new email inboxes to confirm the change.';
+        msgEmail.className = 'text-xs font-bold mt-2 text-emerald-600';
+        emailForm.reset();
+      }
+    };
+
+    const passwordForm = document.getElementById('password-form') as HTMLFormElement;
+    const btnPassword = document.getElementById('btn-password') as HTMLButtonElement;
+    const msgPassword = document.getElementById('msg-password')!;
+
+    passwordForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const newPassword = (document.getElementById('new-password') as HTMLInputElement).value;
+      btnPassword.classList.add('loading');
+      msgPassword.classList.add('hidden');
+      
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      
+      btnPassword.classList.remove('loading');
+      msgPassword.classList.remove('hidden');
+      if (error) {
+        msgPassword.innerText = error.message;
+        msgPassword.className = 'text-xs font-bold mt-2 text-red-500';
+      } else {
+        msgPassword.innerText = lang === 'fr' ? 'Mot de passe mis à jour avec succès.' : 'Password updated successfully.';
+        msgPassword.className = 'text-xs font-bold mt-2 text-emerald-600';
+        passwordForm.reset();
+      }
+    };
+
+    const btnDelete = document.getElementById('btn-delete-account') as HTMLButtonElement;
+    btnDelete.onclick = async () => {
+      const confirmMsg = lang === 'fr' ? 'Êtes-vous sûr de vouloir supprimer définitivement votre compte ?' : 'Are you sure you want to permanently delete your account?';
+      if (confirm(confirmMsg)) {
+        btnDelete.classList.add('loading');
+        const { error } = await supabase.rpc('delete_own_account');
+        if (error) {
+          alert(error.message);
+          btnDelete.classList.remove('loading');
+        } else {
+          await supabase.auth.signOut();
+          window.location.href = `/${lang}`;
+        }
+      }
     };
 
     document.getElementById('loading-profile')?.classList.add('hidden');

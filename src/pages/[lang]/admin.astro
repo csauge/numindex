@@ -39,6 +39,17 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 
     <h1 class="text-3xl font-black mb-8">{t.title}</h1>
 
+    <div class="mb-8 bg-white border border-stone-100 p-8 rounded-3xl shadow-sm">
+      <h2 class="text-xl font-black text-stone-800 mb-4">{lang === 'fr' ? 'Inviter un utilisateur' : 'Invite a user'}</h2>
+      <form id="invite-form" class="flex gap-4">
+        <input type="email" id="invite-email" required placeholder={lang === 'fr' ? 'Adresse email' : 'Email address'} class="input input-bordered rounded-xl flex-grow bg-stone-50 border-stone-200 focus:border-primary focus:ring-2 focus:ring-primary/20" />
+        <button type="submit" id="invite-btn" class="btn btn-primary rounded-xl font-black shadow-md shadow-emerald-200">
+          {lang === 'fr' ? 'Inviter' : 'Invite'}
+        </button>
+      </form>
+      <p id="invite-message" class="mt-4 text-sm font-bold hidden"></p>
+    </div>
+
     <div id="loading-state" class="bg-white border border-stone-100 p-12 rounded-3xl text-center shadow-sm">
       <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
       <p class="text-stone-400 font-medium italic">{t.loading}</p>
@@ -194,4 +205,46 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
   }
 
   loadModeration();
+
+  const inviteForm = document.getElementById('invite-form') as HTMLFormElement;
+  const inviteMessage = document.getElementById('invite-message');
+  const inviteBtn = document.getElementById('invite-btn');
+
+  if (inviteForm) {
+    inviteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!inviteBtn || !inviteMessage) return;
+      
+      inviteBtn.classList.add('loading');
+      inviteMessage.classList.add('hidden');
+      
+      const email = (document.getElementById('invite-email') as HTMLInputElement).value;
+      const { data: { session } } = await supabase!.auth.getSession();
+      
+      try {
+        const res = await fetch('/api/invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({ email })
+        });
+        
+        const json = await res.json();
+        inviteMessage.classList.remove('hidden');
+        
+        if (!res.ok) throw new Error(json.error || 'Erreur inconnue');
+        
+        inviteMessage.innerText = lang === 'fr' ? 'Invitation envoyée avec succès !' : 'Invitation sent successfully!';
+        inviteMessage.className = 'mt-4 text-sm font-bold text-emerald-600';
+        inviteForm.reset();
+      } catch (err: any) {
+        inviteMessage.innerText = err.message;
+        inviteMessage.className = 'mt-4 text-sm font-bold text-red-500';
+      } finally {
+        inviteBtn.classList.remove('loading');
+      }
+    });
+  }
 </script>

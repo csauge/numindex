@@ -234,8 +234,14 @@ content_path = "./supabase/templates/signup.html"
 [auth.email.template.recovery]
 subject = "Réinitialisation de mot de passe - numindex.org"
 content_path = "./supabase/templates/recovery.html"
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.invite]
+subject = "Vous avez été invité(e) sur numindex.org"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.email_change]
+subject = "Confirmation de votre adresse email - numindex.org"
+content_path = "./supabase/templates/email_change.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
