@@ -40,21 +40,19 @@ setup('authenticate', async ({ page }) => {
       await page.fill('input[name="password"]', password);
       await page.click('button[type="submit"]');
       
-      // After registration, it might redirect to /fr (auto-login) or /fr/login
-      await Promise.race([
-        page.waitForURL(/\/fr\/?$/, { timeout: 15000 }),
-        page.waitForURL(/\/fr\/login/, { timeout: 15000 })
-      ]);
+      // With email confirmation enabled, it stays on the register page showing the message
+      await expect(page.locator('#check-email-message')).toBeVisible({ timeout: 15000 });
 
-      if (page.url().includes('/login')) {
-        await page.fill('input[name="email"]', uniqueEmail);
-        await page.fill('input[name="password"]', password);
-        await page.click('button[type="submit"]');
-        await page.waitForURL(/\/fr\/?$/);
-      }
-
-      // 2. Force ADMIN role for this user
+      // 2. Manually confirm the user and force ADMIN role
+      execSync(`npx supabase db query "UPDATE auth.users SET email_confirmed_at = now(), last_sign_in_at = now() WHERE email = '${uniqueEmail}';"`);
       execSync(`npx supabase db query "UPDATE public.profiles SET role = 'admin' WHERE id IN (SELECT id FROM auth.users WHERE email = '${uniqueEmail}');"`);
+
+      // 3. Go to login and sign in
+      await page.goto('/fr/login');
+      await page.fill('input[name="email"]', uniqueEmail);
+      await page.fill('input[name="password"]', password);
+      await page.click('button[type="submit"]');
+      await page.waitForURL(/\/fr\/?$/);
     }
   } catch (e) {
     throw e;

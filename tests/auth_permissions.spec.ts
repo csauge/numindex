@@ -74,16 +74,26 @@ test.describe('Authentication & Authorization Permissions', () => {
     await page.fill('input[name="password"]', 'password123');
     await page.click('button[type="submit"]');
     
-    // New behavior: redirects to home directly as it logs in automatically
+    // With email confirmation, it shows the message
+    await expect(page.locator('#check-email-message')).toBeVisible({ timeout: 10000 });
+    
+    // Manually confirm the user
+    execSync(`npx supabase db query "UPDATE auth.users SET email_confirmed_at = now(), last_sign_in_at = now() WHERE email = '${userEmail}';"`);
+
+    // Ensure this user is NOT an admin
+    execSync(`npx supabase db query "UPDATE public.profiles SET role = 'user' WHERE id IN (SELECT id FROM auth.users WHERE email = '${userEmail}');"`);
+
+    // 2. Login
+    await page.goto('/fr/login');
+    await page.fill('input[name="email"]', userEmail);
+    await page.fill('input[name="password"]', 'password123');
+    await page.click('button[type="submit"]');
     await page.waitForURL(/\/fr\/?$/);
     
     // Wait for the auth script to settle
     await expect(page.locator('#user-info')).toBeVisible({ timeout: 10000 });
 
-    // Ensure this user is NOT an admin
-    execSync(`npx supabase db query "UPDATE public.profiles SET role = 'user' WHERE id IN (SELECT id FROM auth.users WHERE email = '${userEmail}');"`);
-
-    // 2. Try to access /admin
+    // 3. Try to access /admin
     await page.goto('/fr/admin');
     
     // Should see the Access Denied block
@@ -111,9 +121,20 @@ test.describe('Authentication & Authorization Permissions', () => {
     await page.fill('input[name="email"]', userEmail);
     await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
+    
+    // With email confirmation, it shows the message
+    await expect(page.locator('#check-email-message')).toBeVisible({ timeout: 10000 });
+    
+    // Manually confirm the user
+    execSync(`npx supabase db query "UPDATE auth.users SET email_confirmed_at = now(), last_sign_in_at = now() WHERE email = '${userEmail}';"`);
+    
+    // 2. Sign in then Sign out
+    await page.goto('/fr/login');
+    await page.fill('input[name="email"]', userEmail);
+    await page.fill('input[name="password"]', password);
+    await page.click('button[type="submit"]');
     await page.waitForURL(/\/fr\/?$/);
     
-    // 2. Sign out
     await page.click('#user-info [role="button"]');
     await page.click('#logout-btn');
     await page.waitForURL(/\/fr\/?$/);
@@ -227,13 +248,24 @@ test.describe('Authentication & Authorization Permissions', () => {
     await page.fill('input[name="password"]', 'password123');
     await page.click('button[type="submit"]');
 
-    // 2. Should show success and redirect to home (not login)
-    await expect(page).toHaveURL(/\/fr\/?$/, { timeout: 10000 });
+    // 2. Should show the "Check your email" message
+    await expect(page.locator('#check-email-message')).toBeVisible();
+    await expect(page.locator('#check-email-message h2')).toContainText('Presque fini');
     
-    // 3. User info should be visible (meaning logged in)
+    // Manually confirm to verify login behavior after confirmation
+    execSync(`npx supabase db query "UPDATE auth.users SET email_confirmed_at = now(), last_sign_in_at = now() WHERE email = '${newUserEmail}';"`);
+
+    // 3. Go to login
+    await page.goto('/fr/login');
+    await page.fill('input[name="email"]', newUserEmail);
+    await page.fill('input[name="password"]', 'password123');
+    await page.click('button[type="submit"]');
+    await page.waitForURL(/\/fr\/?$/);
+    
+    // 4. User info should be visible (meaning logged in)
     await expect(page.locator('#user-info')).toBeVisible();
     
-    // 4. Try to go back to login -> should be redirected to home
+    // 5. Try to go back to login -> should be redirected to home
     await page.goto('/fr/login');
     await expect(page).toHaveURL(/\/fr\/?$/);
 
