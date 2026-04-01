@@ -29,4 +29,4 @@ Ce document définit les règles essentielles et les standards d'ingénierie pou
 2.  **Sobriété/Perf :** Exécution de `npm run verify-sobriety`, vérification RGAA.
 3.  **Validation :** `npm run build`, `npm run test:unit`, `npm run test:e2e`.
 4.  **Documentation :** Mettre à jour `README.md`, `GEMINI.md` et le schéma SQL (`supabase_schema.sql`) si nécessaire.
-5.  **Git :** Commit normé après vérification du `git diff`. **INTERDICTION :** Ne jamais commit ou push sans permission explicite.
+5.  **Git :** **INTERDICTION ABSOLUE** de commit ou push sans l'accord explicite et préalable de l'utilisateur. La procédure obligatoire est de demander l'autorisation avant toute action Git destructive ou d'envoi.
