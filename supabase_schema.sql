@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS public.resources (
     updated_at timestamp with time zone DEFAULT now(),
     tags text[] DEFAULT '{}'::text[],
     related_ids uuid[] DEFAULT '{}'::uuid[],
-    created_by uuid REFERENCES auth.users(id),
-    updated_by uuid REFERENCES auth.users(id),
+    created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
     CONSTRAINT resources_category_check CHECK (category = ANY (ARRAY['acteur'::text, 'evenement'::text, 'contenu'::text, 'outil'::text]))
 );
 
