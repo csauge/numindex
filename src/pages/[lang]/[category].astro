@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import ResourceIcons from "../../components/ResourceIcons.astro";
@@ -8,19 +8,6 @@ import ResourceGrid from "../../components/ResourceGrid.astro";
 import { CATEGORIES, getCategoryLabel } from "../../utils/categories";
 import { getImageUrl } from "../../lib/supabase/client";
 import { fetchAllResources, getNextEventDate } from "../../lib/services";
-
-export async function getStaticPaths() {
-  const langs = ['fr', 'en'];
-  const categories = ['acteurs', 'evenements', 'contenus', 'outils', 'actors', 'events', 'contents', 'tools'];
-  
-  const paths = [];
-  for (const lang of langs) {
-    for (const category of categories) {
-      paths.push({ params: { lang, category } });
-    }
-  }
-  return paths;
-}
 
 const { lang, category } = Astro.params;
 
