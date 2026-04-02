@@ -166,6 +166,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
   function attachEvents() {
     document.querySelectorAll('.approve-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
+        if (!confirm('Approuver ?')) return;
         const id = btn.getAttribute('data-id');
         btn.classList.add('loading');
 
@@ -176,7 +177,17 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           alert(`Erreur : ${resError.message}`);
           btn.classList.remove('loading');
         } else {
-          location.reload();
+          // Hide immediately for UI snappiness
+          const card = document.querySelector(`.suggestion-card[data-id="${id}"]`);
+          if (card) {
+            console.log(`[Admin] Removing card ${id}`);
+            card.remove();
+          }
+          if (document.querySelectorAll('.suggestion-card').length === 0) {
+            emptyState?.classList.remove('hidden');
+          }
+          // Small delay before reload to let Playwright see the removal
+          setTimeout(() => location.reload(), 500);
         }
       });
     });
@@ -193,7 +204,17 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
               alert(`Erreur : ${error.message}`);
               (btn as HTMLElement).classList.remove('loading');
             } else {
-              location.reload();
+              // Hide immediately for UI snappiness
+              const card = document.querySelector(`.suggestion-card[data-id="${id}"]`);
+              if (card) {
+                console.log(`[Admin] Removing card ${id}`);
+                card.remove();
+              }
+              if (document.querySelectorAll('.suggestion-card').length === 0) {
+                emptyState?.classList.remove('hidden');
+              }
+              // Small delay before reload to let Playwright see the removal
+              setTimeout(() => location.reload(), 500);
             }
           } catch (err) {
             console.error("Exception during rejection:", err);

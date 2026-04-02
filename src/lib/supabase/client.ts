@@ -23,6 +23,9 @@ interface ImageOptions {
  */
 export const getImageUrl = (path: string | null | undefined, options: ImageOptions = {}) => {
   if (!path || !supabase) return null;
+
+  // Handle data URLs (base64 preview)
+  if (path.startsWith('data:')) return path;
   
   // Use transformations only if width/height is provided AND the feature is likely enabled
   const useTransform = (options.width || options.height) && import.meta.env.PUBLIC_SUPABASE_IMAGE_TRANSFORM === 'true';

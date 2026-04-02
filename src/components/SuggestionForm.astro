@@ -171,7 +171,12 @@ const initial = {
 
       <div class="form-control w-full">
         <label class="label"><span class="label-text font-bold">{t.image}</span></label>
-        <input type="file" name="image" accept="image/svg+xml,image/avif,image/webp,image/png,image/jpeg" class="file-input file-input-bordered w-full" />
+        <div class="flex gap-2">
+          <input type="file" name="image" id="image-input" accept="image/svg+xml,image/avif,image/webp,image/png,image/jpeg" class="file-input file-input-bordered flex-grow" />
+          <button type="button" id="clear-image" class="btn btn-ghost border-stone-200 hidden" title={lang === 'fr' ? 'Supprimer l\'image' : 'Remove image'}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
         <label class="label"><span class="label-text-alt italic opacity-60">{t.imageHelp}</span></label>
       </div>
     </div>

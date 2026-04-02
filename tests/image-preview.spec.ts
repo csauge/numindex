@@ -26,11 +26,26 @@ test.describe('Image Preview', () => {
       await fileChooser.setFiles(testImagePath);
 
       // 3. Verify the preview contains an img tag now
-      await expect(previewImgContainer.locator('img')).toBeVisible({ timeout: 5000 });
+      const previewImg = previewImgContainer.locator('img');
+      await expect(previewImg).toBeVisible({ timeout: 5000 });
       
-      // 4. Verify the src is a data URL
-      const src = await previewImgContainer.locator('img').getAttribute('src');
+      // 4. Verify the src is a data URL AND the image is valid (not broken)
+      const src = await previewImg.getAttribute('src');
       expect(src).toContain('data:image/png;base64');
+
+      // Check if image is actually loaded (naturalWidth > 0)
+      const isLoaded = await previewImg.evaluate((img: HTMLImageElement) => img.naturalWidth > 0);
+      expect(isLoaded).toBeTruthy();
+
+      // 5. Clear the image
+      const clearBtn = page.locator('#clear-image');
+      await expect(clearBtn).toBeVisible();
+      await clearBtn.click();
+
+      // 6. Verify preview is back to SVG
+      await expect(previewImg).not.toBeVisible();
+      await expect(previewImgContainer.locator('svg')).toBeVisible();
+      await expect(clearBtn).not.toBeVisible();
     } finally {
       // Cleanup
       if (fs.existsSync(testImagePath)) {

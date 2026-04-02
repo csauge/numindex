@@ -20,6 +20,11 @@ test.describe('Moderation Flow [TEST]', () => {
   const correctedTitle = `[TEST] Corrected ${uniqueId}`;
   const updatedTitle = `[TEST] Updated ${uniqueId}`;
 
+  test.beforeEach(async ({ page }) => {
+    // Automatically accept all confirmation dialogs (for reject/approve)
+    page.on('dialog', dialog => dialog.accept());
+  });
+
   test('Complete Moderation Lifecycle: Propose, Correct, Approve, Update, Delete', async ({ page }) => {
     // 1. Propose
     await page.goto('/fr/propose');
@@ -105,9 +110,11 @@ test.describe('Moderation Flow [TEST]', () => {
     const suggestionCard = page.locator('.suggestion-card').filter({ hasText: rejectedTitle });
     await expect(suggestionCard).toBeVisible();
     
-    page.on('dialog', dialog => dialog.accept());
     await suggestionCard.locator('.reject-btn').click();
-    await expect(suggestionCard).not.toBeVisible({ timeout: 10000 });
+    
+    // Forced reload to ensure the card is gone from server state
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(page.locator('.suggestion-card').filter({ hasText: rejectedTitle })).not.toBeVisible({ timeout: 10000 });
   });
 
   test('Bidirectional relations', async ({ page }) => {

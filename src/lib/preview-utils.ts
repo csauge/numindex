@@ -99,7 +99,7 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
 
   // Render HTML
   return `
-    <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden shadow-sm">
+    <article class="suggestion-card bg-white border border-stone-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start relative overflow-hidden shadow-sm" data-id="${(res as Suggestion).id}">
       <div class="w-full md:w-48 aspect-video rounded-xl overflow-hidden bg-stone-50/50 border border-stone-100 flex-shrink-0 relative flex items-center justify-center text-stone-200 ${isMod('image_url') ? diffClass : ''}">
         ${res.image_url ? `<img src="${getImageUrl(res.image_url)}" class="absolute inset-0 w-full h-full object-contain p-2" />` : `
           <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">

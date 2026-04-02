@@ -23,6 +23,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     optionalTagsList: document.getElementById('optional-tags-list'),
     link: form.querySelector('[name="link"]') as HTMLInputElement,
     img: form.querySelector('[name="image"]') as HTMLInputElement,
+    clearImg: document.getElementById('clear-image') as HTMLButtonElement,
     addressVal: form.querySelector('[name="address-value"]') as HTMLInputElement,
     addressSearch: document.getElementById('address-search') as HTMLInputElement,
     addressResults: document.getElementById('address-results'),
@@ -319,10 +320,22 @@ export function initSuggestionForm(form: HTMLFormElement) {
         const reader = new FileReader();
         reader.onload = (e) => {
           currentImageUrl = e.target?.result as string;
+          elements.clearImg.classList.remove('hidden');
           updateUI();
         };
         reader.readAsDataURL(elements.img.files[0]);
       }
+    });
+
+    elements.clearImg.addEventListener('click', () => {
+      elements.img.value = '';
+      currentImageUrl = null;
+      // If we are editing, we might want to keep the "existing" image or clear it?
+      // For now, "Clear" means "I don't want to upload this new file"
+      // If we want to clear the EXISTING image, it's a bit more complex (needs a flag)
+      // but usually users just want to undo their selection.
+      elements.clearImg.classList.add('hidden');
+      updateUI();
     });
 
     elements.relatedSearch.addEventListener('input', (e) => {
