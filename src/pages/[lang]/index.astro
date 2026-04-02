@@ -82,11 +82,11 @@ const jsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "numindex.org",
-  "url": Astro.site,
+  "url": new URL(lang as string, Astro.site).toString(),
   "description": t.desc,
   "potentialAction": {
     "@type": "SearchAction",
-    "target": `${Astro.site}${lang}/?q={search_term_string}`,
+    "target": `${new URL(lang as string, Astro.site).toString()}?q={search_term_string}`,
     "query-input": "required name=search_term_string"
   }
 });

@@ -110,6 +110,8 @@ const nextEventDate = getNextEventDate(res as Resource);
 const categoryLabel = getCategoryLabel(res.category, lang as 'fr' | 'en');
 const pageTitle = `${res.title} — ${categoryLabel} Numérique Responsable`;
 
+const currentUrl = new URL(Astro.url.pathname.replace(/\/$/, ''), Astro.site).toString();
+
 // JSON-LD
 const baseJsonLd = {
   "@context": "https://schema.org",
@@ -118,7 +120,7 @@ const baseJsonLd = {
            res.category === 'acteur' ? "Organization" : "Article",
   "name": res.title,
   "description": res.description,
-  "url": Astro.url.href,
+  "url": currentUrl,
 };
 
 if (res.category === 'evenement' && nextEventDate) {

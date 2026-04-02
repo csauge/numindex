@@ -5,6 +5,10 @@ import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://numindex.org',
+  trailingSlash: 'never',
+  build: {
+    format: 'file'
+  },
   integrations: [tailwind(), sitemap({
     i18n: {
       defaultLocale: 'fr',

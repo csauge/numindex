@@ -13,7 +13,6 @@ const {
   title: pageTitle,
   description = "numindex.org — L'index du numérique responsable. Explorez les initiatives engagées pour un futur numérique plus sobre, éthique et accessible.",
   ogImage = '/logo.svg', // SVG isn't ideal for OG but is the only thing we have.
-  canonicalURL = new URL(Astro.url.pathname, Astro.site),
   type = 'website',
   lang = 'fr',
   jsonLd,
@@ -22,16 +21,34 @@ const {
 const siteName = 'numindex.org';
 const fullTitle = pageTitle ? `${pageTitle} | ${siteName}` : siteName;
 
+// Normalize current path (strip trailing slash except for root)
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+// Force canonical to use the configured site URL and normalized path
+const canonicalURL = Astro.props.canonicalURL 
+  ? new URL(Astro.props.canonicalURL, Astro.site)
+  : new URL(currentPath, Astro.site);
+
 // i18n alternate links
 const locales = ['fr', 'en'];
 const alternateLinks = locales.map((l) => {
   // Replace current locale prefix with alternate locale
-  const alternatePath = Astro.url.pathname.replace(/^\/(fr|en)/, `/${l}`);
+  // Handles /fr, /fr/..., /en, /en/...
+  let alternatePath = currentPath.replace(/^\/(fr|en)/, `/${l}`);
+  
+  // Special case for root (which redirects)
+  if (currentPath === '/') {
+    alternatePath = `/${l}`;
+  }
+
   return {
     href: new URL(alternatePath, Astro.site),
     hreflang: l,
   };
 });
+
+// x-default should point to the default language version (French)
+const xDefaultURL = new URL(currentPath.replace(/^\/(fr|en)/, '/fr') || '/fr', Astro.site);
 ---
 
 <!-- Global Metadata -->
@@ -47,7 +64,7 @@ const alternateLinks = locales.map((l) => {
 {alternateLinks.map(({ href, hreflang }) => (
   <link rel="alternate" hreflang={hreflang} href={href} />
 ))}
-<link rel="alternate" hreflang="x-default" href={new URL(Astro.url.pathname.replace(/^\/(fr|en)/, '/fr'), Astro.site)} />
+<link rel="alternate" hreflang="x-default" href={xDefaultURL} />
 
 <!-- Primary Meta Tags -->
 <title>{fullTitle}</title>

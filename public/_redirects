@@ -1,1 +1,5 @@
-/  /fr  302
+# Redirections permanentes pour SEO
+/  /fr  301
+
+# Redirection www vers non-www (Cloudflare Pages)
+https://www.numindex.org/* https://numindex.org/:splat 301

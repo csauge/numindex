@@ -140,18 +140,20 @@ const seoKeywords: Record<string, string[]> = {
 const keywords = seoKeywords[categoryKey] || [];
 const extendedDesc = `${t.desc} Retrouvez notre sélection : ${keywords.join(', ')}.`;
 
+const currentUrl = new URL(Astro.url.pathname.replace(/\/$/, ''), Astro.site).toString();
+
 const jsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": t.title,
   "description": extendedDesc,
-  "url": Astro.url.href,
+  "url": currentUrl,
   "mainEntity": {
     "@type": "ItemList",
     "itemListElement": clientResources.slice(0, 10).map((res, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `${Astro.site}${lang}/resource/${res.id}`,
+      "url": new URL(`${lang}/resource/${res.id}`, Astro.site).toString(),
       "name": res.title
     }))
   }
