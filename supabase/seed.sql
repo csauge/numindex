@@ -59,13 +59,23 @@ VALUES
     null, 
     ARRAY['expert', 'blog', 'community', 'Entreprise'], 
     '{"address": "Paris"}'::jsonb
+  ),
+  (
+    '00000000-0000-0000-0000-000000000005', 
+    'Limites Numériques', 
+    'Projet de recherche-action sur les limites environnementales et sociales du numérique.', 
+    'https://limitesnumeriques.fr', 
+    'acteur', 
+    null, 
+    ARRAY['recherche', 'design', 'sobriete', 'Collectif'], 
+    '{"address": "France"}'::jsonb
   );
 
 -- 2. Événement
 INSERT INTO public.resources (id, title, description, link, category, image_url, tags, metadata)
 VALUES 
   (
-    '00000000-0000-0000-0000-000000000005', 
+    '00000000-0000-0000-0000-000000000006', 
     'Green Tech Forum', 
     'Le rendez-vous professionnel du Numérique Responsable.', 
     'https://www.greentech-forum.com', 
