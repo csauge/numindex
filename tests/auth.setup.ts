@@ -4,15 +4,28 @@ import { execSync } from 'child_process';
 const authFile = 'playwright/.auth/user.json';
 
 setup('authenticate', async ({ page }) => {
-  setup.setTimeout(60000);
+  setup.setTimeout(30000);
 
   // 1. Cleanup database before starting
   try {
-    // Supprimer les suggestions
-    execSync('npx supabase db query "DELETE FROM public.suggestions;"');
-    // Supprimer les utilisateurs de test (en préservant vos emails personnels et en nettoyant les autres)
-    execSync('npx supabase db query "DELETE FROM auth.users WHERE email NOT LIKE \'csauge%@gmail.com\' AND (email LIKE \'%@example.com\' OR email LIKE \'%@test.org\' OR email LIKE \'%test%\' OR email = \'admin@numindex.org\');"');
+    // Supprimer dans l'ordre pour respecter les FK
+    execSync('npx supabase db query "DELETE FROM public.favorites WHERE resource_id IN (SELECT id FROM public.resources WHERE title LIKE \'[TEST]%\');"');
+    execSync('npx supabase db query "DELETE FROM public.suggestions WHERE title LIKE \'[TEST]%\';"');
+    
+    // Pour les resources, on veut aussi nettoyer les liens vers les users qu'on va supprimer
+    const usersToDeleteQuery = "SELECT id FROM auth.users WHERE email NOT LIKE 'csauge%@gmail.com' AND (email LIKE '%@example.com' OR email LIKE '%@test.org' OR email LIKE '%test%' OR email = 'admin@numindex.org')";
+    execSync(`npx supabase db query "UPDATE public.resources SET created_by = NULL, updated_by = NULL WHERE created_by IN (${usersToDeleteQuery}) OR updated_by IN (${usersToDeleteQuery});"`);
+    
+    execSync('npx supabase db query "DELETE FROM public.resources WHERE title LIKE \'[TEST]%\';"');
+    
+    // Supprimer les utilisateurs de test
+    execSync(`npx supabase db query "DELETE FROM auth.users WHERE email NOT LIKE 'csauge%@gmail.com' AND (email LIKE '%@example.com' OR email LIKE '%@test.org' OR email LIKE '%test%' OR email = 'admin@numindex.org');"`);
+    
+    // S'assurer qu'on a des données de base pour les tests (Export, Filters, etc.)
+    console.log("Restoring base test data...");
+    execSync('node scripts/ensure-test-data.mjs');
   } catch (e) {
+    console.error("Cleanup error:", e);
   }
   
   const email = process.env.TEST_USER_EMAIL || 'admin@numindex.org';

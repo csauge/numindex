@@ -93,7 +93,6 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 
   async function loadModeration() {
     if (!supabase) {
-      console.error('[Admin] Supabase client not initialized');
       return;
     }
 
@@ -103,7 +102,6 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       
       if (sessionError) throw sessionError;
       if (!session) {
-        console.warn('[Admin] Aucune session trouvée, redirection...');
         window.location.href = `/${lang}/login?redirect=admin`;
         return;
       }
@@ -151,7 +149,6 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       }).join('');
       attachEvents();
     } catch (err: any) {
-      console.error('[Admin] Erreur critique lors du chargement :', err);
       if (loadingState) {
         loadingState.innerHTML = `
           <div class="text-error font-bold p-4 bg-red-50 rounded-xl border border-red-100">
@@ -166,28 +163,31 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
   function attachEvents() {
     document.querySelectorAll('.approve-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Approuver ?')) return;
+        const isConfirmed = confirm('Approuver ?');
+        if (!isConfirmed) return;
+        
         const id = btn.getAttribute('data-id');
+        const card = document.querySelector(`.suggestion-card[data-id="${id}"]`);
+        
         btn.classList.add('loading');
 
-        const { error: resError } = await supabase!.rpc('approve_suggestion', { suggestion_id: id });
+        try {
+          const { error: resError } = await supabase!.rpc('approve_suggestion', { suggestion_id: id });
 
-        if (resError) {
-          console.error("Erreur lors de l'approbation :", resError);
-          alert(`Erreur : ${resError.message}`);
+          if (resError) {
+            alert(`Erreur : ${resError.message}`);
+            btn.classList.remove('loading');
+          } else {
+            // Success: remove card immediately
+            if (card) {
+              card.remove();
+            }
+            if (document.querySelectorAll('.suggestion-card').length === 0) {
+              emptyState?.classList.remove('hidden');
+            }
+          }
+        } catch (err: any) {
           btn.classList.remove('loading');
-        } else {
-          // Hide immediately for UI snappiness
-          const card = document.querySelector(`.suggestion-card[data-id="${id}"]`);
-          if (card) {
-            console.log(`[Admin] Removing card ${id}`);
-            card.remove();
-          }
-          if (document.querySelectorAll('.suggestion-card').length === 0) {
-            emptyState?.classList.remove('hidden');
-          }
-          // Small delay before reload to let Playwright see the removal
-          setTimeout(() => location.reload(), 500);
         }
       });
     });
@@ -195,30 +195,27 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     document.querySelectorAll('.reject-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-id');
-        if (confirm('Rejeter ?')) {
-          (btn as HTMLElement).classList.add('loading');
+        const card = document.querySelector(`.suggestion-card[data-id="${id}"]`);
+        
+        const isConfirmed = confirm('Rejeter ?');
+        if (isConfirmed) {
+          btn.classList.add('loading');
           try {
             const { error } = await supabase!.rpc('reject_suggestion', { suggestion_id: id });
             if (error) {
-              console.error("Erreur lors du rejet :", error);
               alert(`Erreur : ${error.message}`);
-              (btn as HTMLElement).classList.remove('loading');
+              btn.classList.remove('loading');
             } else {
-              // Hide immediately for UI snappiness
-              const card = document.querySelector(`.suggestion-card[data-id="${id}"]`);
+              // Success: remove card immediately
               if (card) {
-                console.log(`[Admin] Removing card ${id}`);
                 card.remove();
               }
               if (document.querySelectorAll('.suggestion-card').length === 0) {
                 emptyState?.classList.remove('hidden');
               }
-              // Small delay before reload to let Playwright see the removal
-              setTimeout(() => location.reload(), 500);
             }
           } catch (err) {
-            console.error("Exception during rejection:", err);
-            (btn as HTMLElement).classList.remove('loading');
+            btn.classList.remove('loading');
           }
         }
       });

@@ -12,6 +12,10 @@ test.describe('Resource Image Flow [TEST]', () => {
   });
 
   test('Should display resource image in grid after approval', async ({ page }) => {
+    // Mock confirm
+    await page.addInitScript(() => {
+      window.confirm = () => true;
+    });
     // 1. Setup a test image
     const testImagePath = path.join(process.cwd(), 'test-image.png');
     const base64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';

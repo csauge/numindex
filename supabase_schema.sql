@@ -94,6 +94,59 @@ SELECT
     COUNT(*) as total_favorites
 FROM public.favorites
 GROUP BY resource_id;
+
+-- 5.5 Moderation RPCs
+CREATE OR REPLACE FUNCTION public.approve_suggestion(suggestion_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+    sug public.suggestions;
+BEGIN
+    SELECT * INTO sug FROM public.suggestions WHERE id = suggestion_id;
+    IF sug.status != 'pending' THEN
+        RAISE EXCEPTION 'Suggestion is not pending';
+    END IF;
+
+    IF sug.action = 'create' THEN
+        INSERT INTO public.resources (title, description, link, category, image_url, metadata, tags, related_ids, created_by)
+        VALUES (sug.title, sug.description, sug.link, sug.category, sug.image_url, sug.metadata, sug.tags, sug.related_ids, sug.submitted_by);
+    ELSIF sug.action = 'update' THEN
+        UPDATE public.resources SET 
+            title = sug.title,
+            description = sug.description,
+            link = sug.link,
+            category = sug.category,
+            image_url = sug.image_url,
+            metadata = sug.metadata,
+            tags = sug.tags,
+            related_ids = sug.related_ids,
+            updated_by = sug.submitted_by
+        WHERE id = sug.resource_id;
+    ELSIF sug.action = 'delete' THEN
+        DELETE FROM public.resources WHERE id = sug.resource_id;
+    END IF;
+
+    UPDATE public.suggestions SET status = 'approved' WHERE id = suggestion_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.reject_suggestion(suggestion_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM public.suggestions WHERE id = suggestion_id AND status = 'pending') THEN
+        RAISE EXCEPTION 'Suggestion not found or already processed';
+    END IF;
+    UPDATE public.suggestions SET status = 'rejected' WHERE id = suggestion_id;
+END;
+$$;
+
 -- 6. Triggers for New Users
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER 

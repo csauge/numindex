@@ -158,6 +158,9 @@ test.describe('Authentication & Authorization Permissions', () => {
   });
 
   test('Admin should see and be able to moderate suggestions', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.confirm = () => true;
+    });
     await page.goto('/fr/admin');
     
     // Should NOT see access denied
@@ -175,6 +178,10 @@ test.describe('Authentication & Authorization Permissions', () => {
   });
 
   test('Should track and display added_by / updated_by correctly', async ({ page, browser }) => {
+    await page.addInitScript(() => {
+      window.confirm = () => true;
+    });
+    page.on('console', msg => console.log('BROWSER:', msg.text()));
     test.setTimeout(120000);
     const resourceTitle = `Tracking Test ${Math.floor(Math.random() * 10000)}`;
     
@@ -201,8 +208,11 @@ test.describe('Authentication & Authorization Permissions', () => {
     await expect(suggestionCard.locator('span:has-text("Expert")')).toBeVisible();
     
     // 3. Approuver
+    console.log('Clicking approve for:', resourceTitle);
     await suggestionCard.locator('.approve-btn').click();
-    await expect(suggestionCard).not.toBeVisible();
+    console.log('Approve clicked, waiting for card to disappear');
+    await expect(suggestionCard).not.toBeVisible({ timeout: 15000 });
+    console.log('Card disappeared');
 
     // 4. Vérifier les détails (Ajouté par)
     await page.goto('/fr');

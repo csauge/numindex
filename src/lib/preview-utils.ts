@@ -201,9 +201,9 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
 
       ${isModeration ? `
         <div class="flex md:flex-col gap-2 w-full md:w-auto">
-          <button class="btn btn-primary btn-sm flex-grow approve-btn" data-id="${(res as Suggestion).id}">${t.approve}</button>
+          <button id="approve-${(res as Suggestion).id}" class="btn btn-primary btn-sm flex-grow approve-btn" data-id="${(res as Suggestion).id}">${t.approve}</button>
           ${action !== 'delete' ? `<a href="/${lang}/propose?sid=${(res as Suggestion).id}&moderation=true" class="btn btn-outline btn-sm">${t.correct}</a>` : ''}
-          <button class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id="${(res as Suggestion).id}">${t.reject}</button>
+          <button id="reject-${(res as Suggestion).id}" class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id="${(res as Suggestion).id}">${t.reject}</button>
         </div>
       ` : ''}
     </article>
