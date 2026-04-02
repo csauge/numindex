@@ -3,13 +3,28 @@ import { createClient } from '@supabase/supabase-js';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+    const runtime = (locals as any).runtime;
+    const env = runtime?.env || process.env;
+
+    const supabaseUrl = env.PUBLIC_SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      return new Response(JSON.stringify({ error: 'Configuration serveur manquante.' }), { status: 500 });
+      console.error('[API Invite] Missing configuration:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey,
+        isRuntimeEnv: !!runtime?.env
+      });
+      return new Response(JSON.stringify({ 
+        error: 'Configuration serveur manquante.',
+        debug: { 
+          hasUrl: !!supabaseUrl, 
+          hasServiceKey: !!supabaseServiceKey,
+          isRuntimeEnv: !!runtime?.env 
+        }
+      }), { status: 500 });
     }
 
     // Initialize Supabase with service role
