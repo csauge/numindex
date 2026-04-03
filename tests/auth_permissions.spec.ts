@@ -217,33 +217,32 @@ test.describe('Authentication & Authorization Permissions', () => {
     // 4. Vérifier les détails (Ajouté par)
     await page.goto('/fr');
     await page.locator('.resource-card').filter({ hasText: resourceTitle }).click();
-    await expect(page.locator('p:has-text("Ajouté le")')).toBeVisible();
-    
+    await expect(page.locator('p:has-text("Soumis le")')).toBeVisible();
+
     // 5. Proposer une modification
     const resourceUrl = page.url();
     const resourceId = resourceUrl.split('/').pop();
     const updatedTitle = `${resourceTitle} Updated`;
-    
+
     await page.goto(`/fr/propose?action=update&id=${resourceId}`);
     await page.fill('input[name="title"]', updatedTitle);
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
-    
+
     // 6. Modérer la mise à jour
     await page.goto('/fr/admin');
     const updateSuggestion = page.locator('.suggestion-card').filter({ hasText: updatedTitle });
     await expect(updateSuggestion).toBeVisible();
-    
+
     // Target ID should be visible for updates
     await expect(updateSuggestion.locator('p:has-text("ID cible :")')).toBeVisible();
-    
+
     await updateSuggestion.locator('.approve-btn').click();
     await expect(updateSuggestion).not.toBeVisible();
-    
-    // 7. Vérifier les détails (Mis à jour le)
+
+    // 7. Vérifier les détails (Modifié le)
     await page.goto(resourceUrl);
-    await expect(page.locator('p:has-text("Mis à jour le")')).toBeVisible();
-  });
+    await expect(page.locator('p:has-text("Modifié le")')).toBeVisible();  });
 
   test('New user registration should login automatically and redirect to home', async ({ browser }) => {
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });

@@ -109,7 +109,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
         </div>
         <div class="form-control relative">
           <label class="label p-1"><span class="label-text text-[10px] uppercase font-bold text-stone-400">${t.address}</span></label>
-          <input type="text" class="input input-sm input-bordered occ-addr" value="${occ.address || ''}" data-index="${index}" placeholder="${t.addressPlaceholder}" autocomplete="off" />
+          <input type="text" class="input input-sm input-bordered occ-addr" value="${occ.address || ''}" data-index="${index}" placeholder="${t.addressPlaceholder}" maxlength="255" autocomplete="off" />
           <div class="occ-addr-results absolute left-0 right-0 top-full mt-1 bg-white border rounded-lg shadow-xl z-50 hidden max-h-48 overflow-y-auto" data-index="${index}"></div>
         </div>
       </div>

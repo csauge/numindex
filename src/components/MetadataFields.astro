@@ -14,7 +14,7 @@ const { t, initial } = Astro.props;
 <div id="address-container" class="form-control hidden">
   <label class="label"><span class="label-text">{t.address}</span></label>
   <div class="relative">
-    <input type="text" id="address-search" value={initial.address} placeholder={t.addressPlaceholder} class="input input-bordered w-full" autocomplete="off" />
+    <input type="text" id="address-search" value={initial.address} placeholder={t.addressPlaceholder} maxlength="255" class="input input-bordered w-full" autocomplete="off" />
     <input type="hidden" name="address-value" value={initial.address} />
     <div id="address-results" class="absolute left-0 right-0 top-full mt-1 bg-white border rounded-lg shadow-xl z-50 hidden max-h-48 overflow-y-auto"></div>
   </div>
@@ -47,7 +47,7 @@ const { t, initial } = Astro.props;
 <div id="related-container" class="form-control hidden">
   <label class="label"><span class="label-text">{t.related}</span></label>
   <div class="relative">
-    <input type="text" id="related-search" placeholder={t.relatedPlaceholder} class="input input-bordered w-full" autocomplete="off" />
+    <input type="text" id="related-search" placeholder={t.relatedPlaceholder} maxlength="100" class="input input-bordered w-full" autocomplete="off" />
     <div id="related-results" class="absolute left-0 right-0 top-full mt-1 bg-white border rounded-lg shadow-xl z-40 hidden max-h-48 overflow-y-auto"></div>
   </div>
   <div id="selected-related" class="flex flex-wrap gap-2 mt-2"></div>

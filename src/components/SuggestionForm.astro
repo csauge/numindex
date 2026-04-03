@@ -136,12 +136,12 @@ const initial = {
     <div id="standard-fields" class={isDelete ? 'hidden' : 'space-y-4 w-full'}>
       <div class="form-control w-full">
         <label class="label"><span class="label-text">{t.name}</span></label>
-        <input type="text" name="title" value={initial.title} required={!isDelete} class="input input-bordered w-full" />
+        <input type="text" name="title" value={initial.title} required={!isDelete} maxlength="100" class="input input-bordered w-full" />
       </div>
 
       <div class="form-control w-full">
         <label class="label"><span class="label-text">{t.description}</span></label>
-        <textarea name="description" required={!isDelete} class="textarea textarea-bordered h-24 w-full">{initial.description}</textarea>
+        <textarea name="description" required={!isDelete} maxlength="1000" class="textarea textarea-bordered h-24 w-full">{initial.description}</textarea>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,7 +166,7 @@ const initial = {
 
       <div class="form-control w-full">
         <label class="label"><span class="label-text">{t.link}</span></label>
-        <input type="url" name="link" value={initial.link} required={!isDelete} class="input input-bordered w-full" />
+        <input type="url" name="link" value={initial.link} required={!isDelete} maxlength="2048" class="input input-bordered w-full" />
       </div>
 
       <div class="form-control w-full">
@@ -184,7 +184,7 @@ const initial = {
     <div id="delete-fields" class={!isDelete ? 'hidden' : 'space-y-4 w-full'}>
       <div class="form-control w-full">
         <label class="label"><span class="label-text text-error font-bold">{t.reason}</span></label>
-        <textarea name="reason" required={isDelete} class="textarea textarea-bordered textarea-error h-24 w-full">{(existingData as Suggestion)?.reason || ''}</textarea>
+        <textarea name="reason" required={isDelete} maxlength="500" class="textarea textarea-bordered textarea-error h-24 w-full">{(existingData as Suggestion)?.reason || ''}</textarea>
       </div>
     </div>
 
