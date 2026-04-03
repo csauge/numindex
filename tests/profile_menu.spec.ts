@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { getLatestEmail, extractConfirmationLink } from './utils/mailpit';
 
 test.describe('User Profile & Menu', () => {
   
@@ -69,17 +70,48 @@ test.describe('User Profile & Menu', () => {
       expect(actualEmail).toContain('@');
     });
 
-    test('User can logout from the dropdown menu', async ({ page }) => {
+    test('User can logout from the dropdown menu', async ({ browser }) => {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      
+      const uniqueEmail = `logout-test-${Date.now()}@test.org`;
+      
+      // 1. Force a clean state in the browser context
       await page.goto('/fr');
+      await page.evaluate(() => {
+         localStorage.clear();
+         sessionStorage.clear();
+         // Attempt to clear cookies as well
+         document.cookie.split(";").forEach((c) => {
+           document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+         });
+      });
+
+      // 2. Register a new user
+      await page.goto('/fr/register');
+      await page.waitForSelector('input[name="full_name"]', { timeout: 10000 });
+      await page.fill('input[name="full_name"]', 'Logout Test User');
+      await page.fill('input[name="email"]', uniqueEmail);
+      await page.fill('input[name="password"]', 'password123');
+      await page.click('button[type="submit"]');
+      
+      // 2. Confirm email
+      const signupEmail = await getLatestEmail(uniqueEmail);
+      const signupLink = extractConfirmationLink(signupEmail);
+      expect(signupLink).toBeTruthy();
+      await page.goto(signupLink!);
+      
       await expect(page.locator('#user-info')).toBeVisible();
 
-      // Open menu and logout
+      // 3. Open menu and logout
       await page.click('#user-info [role="button"]');
       await page.click('#logout-btn');
       
       // Should be logged out and see login link
       await expect(page.locator('#login-link')).toBeVisible();
       await expect(page.locator('#user-info')).toBeHidden();
+      
+      await context.close();
     });
   });
 });

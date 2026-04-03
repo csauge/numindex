@@ -19,6 +19,8 @@ const translations = {
     favorites: "Mes Favoris",
     noFavorites: "Vous n'avez pas encore de favoris.",
     settings: "Paramètres du compte",
+    changeName: "Changer de nom",
+    newName: "Nouveau nom complet",
     changeEmail: "Changer d'email",
     newEmail: "Nouvelle adresse email",
     changePassword: "Changer de mot de passe",
@@ -44,6 +46,8 @@ const translations = {
     favorites: "My Favorites",
     noFavorites: "You haven't favorited any resources yet.",
     settings: "Account Settings",
+    changeName: "Change Name",
+    newName: "New full name",
     changeEmail: "Change Email",
     newEmail: "New email address",
     changePassword: "Change Password",
@@ -122,6 +126,16 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           <div id="contributions-list" class="space-y-4 hidden"></div>
 
           <div id="settings-list" class="space-y-8 hidden">
+            <!-- Name -->
+            <div id="name-section" class="p-6 bg-stone-50 rounded-2xl border border-stone-100">
+              <h3 id="name-section-title" class="font-bold text-stone-800 mb-4">{t.changeName}</h3>
+              <form id="name-form" class="flex flex-col gap-3">
+                <input type="text" id="new-name" required placeholder={t.newName} class="input input-bordered rounded-xl bg-white focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                <button type="submit" id="btn-name" class="btn btn-primary rounded-xl font-bold w-max">{t.updateBtn}</button>
+                <p id="msg-name" class="text-xs font-bold hidden mt-2"></p>
+              </form>
+            </div>
+
             <!-- Email -->
             <div class="p-6 bg-stone-50 rounded-2xl border border-stone-100">
               <h3 class="font-bold text-stone-800 mb-4">{t.changeEmail}</h3>
@@ -194,6 +208,29 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     document.getElementById('p-name')!.innerText = name;
     document.getElementById('p-email')!.innerText = session.user.email;
     document.getElementById('p-initials')!.innerText = name.split(' ').map((n: any) => n[0]).join('').substring(0, 2).toUpperCase();
+    
+    const nameInput = document.getElementById('new-name') as HTMLInputElement;
+    if (nameInput) {
+      nameInput.value = profile?.full_name || '';
+    }
+
+    if (!profile?.full_name) {
+      const nameSection = document.getElementById('name-section');
+      if (nameSection) {
+        nameSection.classList.remove('bg-stone-50', 'border-stone-100');
+        nameSection.classList.add('bg-red-50', 'border-red-100');
+      }
+      const nameSectionTitle = document.getElementById('name-section-title');
+      if (nameSectionTitle) {
+        nameSectionTitle.classList.remove('text-stone-800');
+        nameSectionTitle.classList.add('text-red-800');
+      }
+      const tabSettings = document.getElementById('tab-settings');
+      if (tabSettings) {
+        tabSettings.classList.remove('text-stone-500');
+        tabSettings.classList.add('text-red-500');
+      }
+    }
     
     const roleEl = document.getElementById('p-role')!;
     const lang = document.documentElement.lang || 'fr';
@@ -290,7 +327,68 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       sectionTitle.innerText = t.settings;
     };
 
+    // Auto-select tab if in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'settings') {
+      tabSettings.click();
+    }
+
     // Account Settings Forms
+    const nameForm = document.getElementById('name-form') as HTMLFormElement;
+    const btnName = document.getElementById('btn-name') as HTMLButtonElement;
+    const msgName = document.getElementById('msg-name')!;
+
+    if (nameForm) {
+      nameForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const newName = (document.getElementById('new-name') as HTMLInputElement).value;
+        btnName.classList.add('loading');
+        msgName.classList.add('hidden');
+        
+        const { error } = await supabase.from('profiles').update({ full_name: newName }).eq('id', session.user.id);
+        
+        btnName.classList.remove('loading');
+        msgName.classList.remove('hidden');
+        if (error) {
+          msgName.innerText = error.message;
+          msgName.className = 'text-xs font-bold mt-2 text-red-500';
+        } else {
+          msgName.innerText = lang === 'fr' ? 'Nom mis à jour avec succès.' : 'Name updated successfully.';
+          msgName.className = 'text-xs font-bold mt-2 text-emerald-600';
+          
+          // Update UI
+          const displayStr = newName || session.user.email?.split('@')[0] || 'User';
+          document.getElementById('p-name')!.innerText = displayStr;
+          document.getElementById('p-initials')!.innerText = displayStr.split(' ').map((n: any) => n[0]).join('').substring(0, 2).toUpperCase();
+
+          // Remove highlighting if name was previously missing
+          if (newName) {
+            const nameSection = document.getElementById('name-section');
+            if (nameSection) {
+              nameSection.classList.remove('bg-red-50', 'border-red-100');
+              nameSection.classList.add('bg-stone-50', 'border-stone-100');
+            }
+            const nameSectionTitle = document.getElementById('name-section-title');
+            if (nameSectionTitle) {
+              nameSectionTitle.classList.remove('text-red-800');
+              nameSectionTitle.classList.add('text-stone-800');
+            }
+            const tabSettings = document.getElementById('tab-settings');
+            if (tabSettings) {
+              tabSettings.classList.remove('text-red-500');
+              tabSettings.classList.add('text-stone-500');
+            }
+            
+            // Also notify the header if it was visible
+            const warningBadge = document.getElementById('profile-warning-badge');
+            const warningItem = document.getElementById('profile-warning-item');
+            if (warningBadge) warningBadge.classList.add('hidden');
+            if (warningItem) warningItem.classList.add('hidden');
+          }
+        }
+      };
+    }
+
     const emailForm = document.getElementById('email-form') as HTMLFormElement;
     const btnEmail = document.getElementById('btn-email') as HTMLButtonElement;
     const msgEmail = document.getElementById('msg-email')!;

@@ -41,6 +41,7 @@ test.describe('Account Management [TEST]', () => {
     // Logout and login with new password
     await page.click('#user-info [role="button"]');
     await page.click('#logout-btn');
+    await page.waitForURL(/.*\/fr\/login.*/);
     await expect(page.locator('#login-link')).toBeVisible();
     await page.goto('/fr/login');
     await page.fill('input[type="email"]', originalEmail);
@@ -79,6 +80,7 @@ test.describe('Account Management [TEST]', () => {
     // Verify new email is active by logging out and logging in with new email
     await page.click('#user-info [role="button"]');
     await page.click('#logout-btn');
+    await page.waitForURL(/\/fr\/?$/);
     await expect(page.locator('#login-link')).toBeVisible();
     await page.goto('/fr/login');
     await page.fill('input[type="email"]', newEmail);

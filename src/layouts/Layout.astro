@@ -133,10 +133,14 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           <a href={`/${lang}/login`} id="login-link" class="text-xs font-black text-stone-500 hover:text-primary transition-colors px-1 md:px-2 uppercase tracking-tighter">{t.login}</a>
           <div id="user-info" class="hidden dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost h-auto py-1 px-1 md:pl-1 md:pr-3 flex items-center gap-1.5 md:gap-2 rounded-full border border-stone-200 hover:bg-stone-50 transition-all group">
-              <div class="avatar placeholder">
+              <div class="avatar placeholder relative">
                 <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800 font-black text-[10px] md:text-xs uppercase overflow-hidden group-hover:scale-105 transition-transform border border-emerald-200">
                   <span id="user-initials" class="leading-none"></span>
                 </div>
+                <span id="profile-warning-badge" class="hidden absolute -top-1 -right-1 h-3.5 w-3.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border-2 border-white"></span>
+                </span>
               </div>
               <div class="hidden md:flex flex-col items-start text-left">
                 <span id="user-name-trigger" class="text-xs font-black text-stone-800 leading-tight truncate max-w-[100px]"></span>
@@ -158,6 +162,12 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
                   <span id="user-email" class="text-[10px] text-stone-400 truncate leading-none"></span>
                 </div>
               </div>
+              <li id="profile-warning-item" class="hidden mb-1">
+                <a href={`/${lang}/profile?tab=settings`} class="py-2 font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <span class="text-xs leading-tight whitespace-normal">{lang === 'fr' ? 'Profil incomplet. Cliquez pour ajouter votre nom.' : 'Incomplete profile. Click to add your name.'}</span>
+                </a>
+              </li>
               <li>
                 <a href={`/${lang}/profile`} class="py-3 font-bold text-stone-600 hover:text-primary active:bg-emerald-50 active:text-primary rounded-xl transition-all">
                   <div class="bg-white p-1.5 rounded-lg border border-stone-100 shadow-sm">
@@ -234,6 +244,14 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
             .single();
 
           const fullName = profile?.full_name || session.user.email?.split('@')[0] || 'User';
+          
+          if (!profile?.full_name) {
+            const warningBadge = document.getElementById('profile-warning-badge');
+            const warningItem = document.getElementById('profile-warning-item');
+            if (warningBadge) warningBadge.classList.remove('hidden');
+            if (warningItem) warningItem.classList.remove('hidden');
+          }
+
           const userEmail = session.user.email || '';
           const initials = fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase();
 
