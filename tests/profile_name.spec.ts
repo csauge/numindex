@@ -8,7 +8,7 @@ test.describe('Profile Name Management [TEST]', () => {
   test('Invited user has incomplete profile warning and can update their name', 'pw' in test ? undefined : async ({ page }) => {
     // Go to admin page (already logged in as admin via auth.setup.ts)
     await page.goto('/fr/admin');
-    await expect(page.locator('h1:has-text("Modération")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Administration")')).toBeVisible();
 
     // Send Invitation
     await page.waitForTimeout(500); // Give Supabase client time to initialize session

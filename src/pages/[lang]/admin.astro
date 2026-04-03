@@ -8,18 +8,32 @@ const { lang } = Astro.params as { lang: 'fr' | 'en' };
 
 const translations = {
   fr: { 
-    title: "Modération", 
+    title: "Administration", 
     noPending: "Aucune suggestion en attente.", 
     loading: "Chargement des suggestions...",
     back: "Retour à l'index",
-    diff_notice: "Champs modifiés entourés en rouge."
+    diff_notice: "Champs modifiés entourés en rouge.",
+    users_title: "Utilisateurs",
+    users_loading: "Chargement des utilisateurs...",
+    name: "Nom",
+    email: "Email",
+    role: "Rôle",
+    joined: "Inscription",
+    users_error: "Erreur lors du chargement des utilisateurs"
   },
   en: { 
-    title: "Moderation", 
+    title: "Administration", 
     noPending: "No pending suggestions.", 
     loading: "Loading suggestions...",
     back: "Back to index",
-    diff_notice: "Modified fields highlighted in red."
+    diff_notice: "Modified fields highlighted in red.",
+    users_title: "Users",
+    users_loading: "Loading users...",
+    name: "Name",
+    email: "Email",
+    role: "Role",
+    joined: "Joined",
+    users_error: "Error loading users"
   }
 };
 const t = translations[lang as keyof typeof translations] || translations.fr;
@@ -48,6 +62,32 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         </button>
       </form>
       <p id="invite-message" class="mt-4 text-sm font-bold hidden"></p>
+    </div>
+
+    <div class="mb-8 bg-white border border-stone-100 p-8 rounded-3xl shadow-sm" id="users-section">
+      <h2 class="text-xl font-black text-stone-800 mb-4">{t.users_title}</h2>
+      
+      <div id="users-loading-state" class="text-center py-8">
+        <span class="loading loading-spinner loading-md text-primary mb-2"></span>
+        <p class="text-stone-400 font-medium italic text-sm">{t.users_loading}</p>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full text-sm hidden" id="users-table">
+          <thead>
+            <tr>
+              <th class="font-black text-stone-500 bg-stone-50/50">{t.name}</th>
+              <th class="font-black text-stone-500 bg-stone-50/50">{t.email}</th>
+              <th class="font-black text-stone-500 bg-stone-50/50">{t.role}</th>
+              <th class="font-black text-stone-500 bg-stone-50/50">{t.joined}</th>
+            </tr>
+          </thead>
+          <tbody id="users-list">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
+      <p id="users-error" class="hidden text-sm font-bold text-red-500 mt-4 text-center"></p>
     </div>
 
     <div id="loading-state" class="bg-white border border-stone-100 p-12 rounded-3xl text-center shadow-sm">
@@ -222,7 +262,59 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     });
   }
 
+  async function loadUsers() {
+    if (!supabase) return;
+    const usersLoadingState = document.getElementById('users-loading-state');
+    const usersTable = document.getElementById('users-table');
+    const usersListContainer = document.getElementById('users-list');
+    const usersError = document.getElementById('users-error');
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const res = await fetch('/api/users', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      
+      const json = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(json.error || (lang === 'fr' ? 'Erreur lors du chargement des utilisateurs' : 'Error loading users'));
+      }
+      
+      if (usersLoadingState) usersLoadingState.classList.add('hidden');
+      if (usersTable) usersTable.classList.remove('hidden');
+      
+      if (usersListContainer && json.users) {
+        const dateFormatter = new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeStyle: 'short' });
+        usersListContainer.innerHTML = json.users.map((u: any) => `
+          <tr>
+            <td class="font-medium">${u.full_name || '-'}</td>
+            <td class="text-stone-500">${u.email || '-'}</td>
+            <td>
+              <span class="badge ${u.role === 'admin' ? 'badge-primary font-bold' : 'badge-ghost'} badge-sm">
+                ${u.role === 'admin' ? 'Admin' : (lang === 'fr' ? 'Utilisateur' : 'User')}
+              </span>
+            </td>
+            <td class="text-stone-500 text-xs">${u.created_at ? dateFormatter.format(new Date(u.created_at)) : '-'}</td>
+          </tr>
+        `).join('');
+      }
+      
+    } catch (err: any) {
+      if (usersLoadingState) usersLoadingState.classList.add('hidden');
+      if (usersError) {
+        usersError.innerText = err.message;
+        usersError.classList.remove('hidden');
+      }
+    }
+  }
+
   loadModeration();
+  loadUsers();
 
   const inviteForm = document.getElementById('invite-form') as HTMLFormElement;
   const inviteMessage = document.getElementById('invite-message');

@@ -16,6 +16,7 @@
 
 ## 🛠 Fonctionnalités Admin & Modération
 
+- **Administration des utilisateurs** : Consultation de la liste des inscrits (noms, emails, rôles) via une API sécurisée.
 - **Dashboard SSR** : Liste des suggestions en temps réel avec indicateur de badge.
 - **Workflow de Correction** : Correction des propositions avant approbation.
 - **Visualisation des Différences** : Mise en évidence des champs modifiés.

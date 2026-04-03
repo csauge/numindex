@@ -167,7 +167,7 @@ test.describe('Authentication & Authorization Permissions', () => {
     await expect(page.locator('#access-denied')).toBeHidden();
     
     // Should see the title
-    await expect(page.locator('h1')).toContainText('Modération');
+    await expect(page.locator('h1').first()).toContainText('Administration');
     
     // Should eventually see list or empty state (not loading forever)
     await expect(page.locator('#loading-state')).toBeHidden({ timeout: 15000 });

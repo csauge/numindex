@@ -8,7 +8,7 @@ test.describe('Admin Invite Flow [TEST]', () => {
   test('Admin can invite a new user, who can accept and log in', 'pw' in test ? undefined : async ({ page }) => {
     // Go to admin page (already logged in as admin via auth.setup.ts)
     await page.goto('/fr/admin');
-    await expect(page.locator('h1:has-text("Modération")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Administration")')).toBeVisible();
 
     // Send Invitation
     await page.fill('input#invite-email', invitedEmail);
