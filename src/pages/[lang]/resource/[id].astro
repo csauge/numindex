@@ -60,8 +60,8 @@ const translations = {
     tags: "Tags",
     relations: getCategoryType(res.category) === 'entity' ? "Ressources proposées :" : "Proposé par :",
     meta: "Informations",
-    created: "Ajouté le",
-    updated: "Mis à jour le",
+    created: "Soumis le",
+    updated: "Modifié le",
     by: "par",
     edit: "Modifier",
     report: "Supprimer",
@@ -80,8 +80,9 @@ const translations = {
     tags: "Tags",
     relations: getCategoryType(res.category) === 'entity' ? "Proposed resources:" : "Proposed by:",
     meta: "Information",
-    created: "Added on",
-    updated: "Updated on",
+    created: "Submitted on",
+    updated: "Modified on",
+    by: "by",
     edit: "Edit",
     report: "Delete",
     published: "Published on",
@@ -226,7 +227,7 @@ const jsonLd = JSON.stringify(baseJsonLd);
             )}
             {res.metadata?.version_date && (
               <span class="flex items-center gap-1 text-[10px] font-bold text-stone-600 uppercase tracking-wider bg-stone-100 px-2 py-1 rounded border border-stone-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 {t.version} : {formatDate(res.metadata.version_date)}
               </span>
             )}
@@ -303,7 +304,7 @@ const jsonLd = JSON.stringify(baseJsonLd);
             <p class="text-[9px] font-black uppercase tracking-tighter text-stone-300">{t.created}</p>
             <p class="text-xs font-bold text-stone-500">
               {formatDate(res.created_at)}
-              {res.created_by_profile && <span class="text-stone-300 font-medium"> {t.by} {res.created_by_profile.full_name}</span>}
+              {createdByProfile && <span class="text-stone-300 font-medium"> {t.by} {createdByProfile.full_name}</span>}
             </p>
           </div>
           {res.updated_at !== res.created_at && (
@@ -311,7 +312,7 @@ const jsonLd = JSON.stringify(baseJsonLd);
               <p class="text-[9px] font-black uppercase tracking-tighter text-stone-300">{t.updated}</p>
               <p class="text-xs font-bold text-stone-500">
                 {formatDate(res.updated_at)}
-                {res.updated_by_profile && <span class="text-stone-300 font-medium"> {t.by} {res.updated_by_profile.full_name}</span>}
+                {updatedByProfile && <span class="text-stone-300 font-medium"> {t.by} {updatedByProfile.full_name}</span>}
               </p>
             </div>
           )}

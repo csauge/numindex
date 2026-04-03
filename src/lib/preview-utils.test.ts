@@ -59,6 +59,20 @@ describe('renderResourcePreview', () => {
     expect(html).toContain('2025');
   });
 
+  it('renders a tool with version year and calendar icon', () => {
+    const data: Partial<Resource> = {
+      title: 'Mon Outil',
+      category: 'outil',
+      metadata: { version_date: '2026-01-15' }
+    };
+    const html = renderResourcePreview(data, options);
+    expect(html).toContain('Mon Outil');
+    expect(html).toContain('2026');
+    expect(html).not.toContain('v.2026');
+    // Check for the calendar icon SVG path part
+    expect(html).toContain('d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"');
+  });
+
   it('highlights differences in update action', () => {
     const diffWith: Resource = {
       id: 'res-1',
