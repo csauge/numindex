@@ -5,7 +5,7 @@ import Layout from "../../layouts/Layout.astro";
 import ResourceIcons from "../../components/ResourceIcons.astro";
 import FilterBar from "../../components/FilterBar.astro";
 import ResourceGrid from "../../components/ResourceGrid.astro";
-import { CATEGORIES, getCategoryLabel } from "../../utils/categories";
+import { CATEGORIES, getCategoryLabel, TAG_TRANSLATIONS } from "../../utils/categories";
 import { getImageUrl } from "../../lib/supabase/client";
 import { fetchAllResources, getNextEventDate } from "../../lib/services";
 
@@ -170,6 +170,7 @@ const jsonLd = JSON.stringify({
   </section>
 
   <script id="taxonomy-data" type="application/json" is:inline set:html={JSON.stringify(taxonomy)} />
+  <script id="tag-translations" type="application/json" is:inline set:html={JSON.stringify(TAG_TRANSLATIONS)} />
   <script id="resource-data" type="application/json" is:inline set:html={JSON.stringify(clientResources)} />
 </Layout>
 

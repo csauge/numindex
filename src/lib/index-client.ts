@@ -44,6 +44,9 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
   const t = translations;
   let currentCat = els.filterBarCont.dataset.activeCategory || 'all';
 
+  const tagTranslations = JSON.parse(document.getElementById('tag-translations')?.textContent || '{}');
+  const translateTag = (tag: string) => currentLang === 'en' ? (tagTranslations[tag] || tag) : tag;
+
   async function init() {
     // Fetch favorites
     try {
@@ -128,7 +131,8 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     els.subFilters.classList.remove('hidden');
     let html = `<button class="pill-chip ${!currentSubCat ? 'active' : ''}" data-sub="all">${t.filterSub}</button>`;
     subCats.forEach(s => {
-      html += `<button class="pill-chip ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
+      const translated = translateTag(s);
+      html += `<button class="pill-chip ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${translated}</button>`;
     });
     els.subFilters.innerHTML = html;
     
@@ -263,7 +267,7 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
       const mandatoryTags = taxonomy[d.cat] || [];
       const subCat = d.tags.find(t => mandatoryTags.includes(t));
       if (subCat) {
-        html += '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-tight border border-emerald-200 shadow-sm">' + subCat + '</span>';
+        html += '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-tight border border-emerald-200 shadow-sm">' + translateTag(subCat) + '</span>';
       }
       html += '</div>';
       

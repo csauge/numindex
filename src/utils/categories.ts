@@ -1,3 +1,40 @@
+export const TAG_TRANSLATIONS: Record<string, string> = {
+  'Entreprise': 'Company',
+  'Association': 'Non-profit',
+  'Institution': 'Institution',
+  'Coopérative': 'Cooperative',
+  'Collectif': 'Collective',
+  'Personne': 'Person',
+  'Conférence': 'Conference',
+  'Atelier': 'Workshop',
+  'Webinaire': 'Webinar',
+  'Meetup': 'Meetup',
+  'Salon': 'Exhibition',
+  'Article': 'Article',
+  'Livre': 'Book',
+  'Rapport': 'Report',
+  'Podcast': 'Podcast',
+  'Vidéo': 'Video',
+  'Infographie': 'Infographic',
+  'Logiciel': 'Software',
+  'Référentiel': 'Framework',
+  'Guide': 'Guide',
+  'Jeu': 'Game',
+  'Formation': 'Training',
+  'Loi': 'Law',
+  'Local': 'Local',
+  'ESS': 'SSE',
+  'B-Corp': 'B-Corp',
+  'Label NR': 'NR Label',
+  'Media': 'Media',
+  'Gratuit': 'Free',
+  'Payant': 'Paid',
+  'Débutant': 'Beginner',
+  'Expert': 'Expert',
+  'Open Source': 'Open Source',
+  'Libre': 'Libre'
+};
+
 export type CategoryKey = 'acteur' | 'evenement' | 'contenu' | 'outil';
 
 export interface CategoryInfo {
