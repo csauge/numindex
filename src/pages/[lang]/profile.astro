@@ -31,6 +31,7 @@ const translations = {
     statusPending: "En attente",
     statusApproved: "Approuvé",
     statusRejected: "Refusé",
+    confirmCancel: "Annuler cette proposition ?",
     back: "Retour à l'index"
   },
   en: {
@@ -58,6 +59,7 @@ const translations = {
     statusPending: "Pending",
     statusApproved: "Approved",
     statusRejected: "Rejected",
+    confirmCancel: "Cancel this suggestion?",
     back: "Back to index"
   }
 };
@@ -176,6 +178,35 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 <script>
   import { supabase } from '../../lib/supabase/client';
   import { toggleFavorite } from '../../lib/favorites-client';
+  import { renderResourcePreview } from '../../lib/preview-utils';
+  import { CATEGORIES } from '../../utils/categories';
+
+  function attachContributionEvents() {
+    const lang = document.documentElement.lang || 'fr';
+    const confirmCancelMsg = lang === 'fr' ? "Annuler cette proposition ?" : "Cancel this suggestion?";
+
+    document.querySelectorAll('.cancel-btn').forEach(btn => {
+      (btn as HTMLElement).onclick = async (e) => {
+        e.preventDefault();
+        if (confirm(confirmCancelMsg)) {
+          const id = (btn as HTMLElement).dataset.id!;
+          (btn as HTMLElement).classList.add('loading');
+          const { error } = await supabase.from('suggestions').delete().eq('id', id);
+          if (error) {
+            alert(error.message);
+            (btn as HTMLElement).classList.remove('loading');
+          } else {
+            // Remove the card immediately
+            (btn.closest('.suggestion-card') as HTMLElement)?.remove();
+            if (document.querySelectorAll('.suggestion-card').length === 0) {
+              const contribList = document.getElementById('contributions-list')!;
+              contribList.innerHTML = `<p class="text-stone-400 italic text-sm text-center py-10">${lang === 'fr' ? "Aucune proposition pour le moment." : "No suggestions yet."}</p>`;
+            }
+          }
+        }
+      };
+    });
+  }
 
   async function loadProfile() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -243,20 +274,36 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     if (!suggestions || suggestions.length === 0) {
       contribList.innerHTML = `<p class="text-stone-400 italic text-sm text-center py-10">${lang === 'fr' ? "Aucune proposition pour le moment." : "No suggestions yet."}</p>`;
     } else {
-      contribList.innerHTML = suggestions.map(s => `
-        <div class="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 hover:border-emerald-100 transition-colors">
-          <div>
-            <p class="font-bold text-stone-800">${s.title}</p>
-            <p class="text-[10px] font-black uppercase text-stone-400 tracking-widest border border-stone-200 bg-white px-1.5 py-0.5 rounded mt-1 inline-block">${s.category}</p>
+      const { data: resources } = await supabase.from('resources').select('*');
+      
+      contribList.innerHTML = suggestions.map(s => {
+        if (s.status === 'pending') {
+          const original = s.resource_id ? (resources || []).find(r => r.id === s.resource_id) : null;
+          return renderResourcePreview(s, {
+            lang: lang as 'fr' | 'en',
+            isOwner: true,
+            diffWith: original,
+            allResources: resources || [],
+            categoriesData: CATEGORIES
+          });
+        }
+        
+        return `
+          <div class="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 hover:border-emerald-100 transition-colors">
+            <div>
+              <p class="font-bold text-stone-800">${s.title}</p>
+              <p class="text-[10px] font-black uppercase text-stone-400 tracking-widest border border-stone-200 bg-white px-1.5 py-0.5 rounded mt-1 inline-block">${s.category}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-[10px] font-black uppercase px-2 py-1 rounded border ${
+                s.status === 'approved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 
+                s.status === 'rejected' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-amber-50 text-amber-800 border-amber-200'
+              }">${lang === 'fr' ? (s.status === 'approved' ? 'Approuvé' : 'Refusé') : s.status}</span>
+            </div>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[10px] font-black uppercase px-2 py-1 rounded border ${
-              s.status === 'approved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 
-              s.status === 'rejected' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-amber-50 text-amber-800 border-amber-200'
-            }">${s.status}</span>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
+      attachContributionEvents();
     }
 
     // Favorites List

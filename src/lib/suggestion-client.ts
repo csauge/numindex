@@ -54,7 +54,12 @@ export function initSuggestionForm(form: HTMLFormElement) {
     toastMessage.className = `alert shadow-2xl border-none text-white font-black px-12 py-8 rounded-3xl scale-110 transition-all duration-300 ${type === 'success' ? 'bg-primary' : 'bg-error'}`;
     toastContainer.classList.remove('hidden');
     if (type === 'success') {
-      setTimeout(() => window.location.href = isModeration ? `/${lang}/admin` : `/${lang}`, 2500);
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      let targetUrl = isModeration ? `/${lang}/admin` : `/${lang}`;
+      if (redirect === 'profile') targetUrl = `/${lang}/profile?tab=contributions`;
+      
+      setTimeout(() => window.location.href = targetUrl, 2500);
     } else {
       setTimeout(() => toastContainer.classList.add('hidden'), 5000);
     }
@@ -200,7 +205,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
         categoriesData: CATEGORIES,
         allResources: entities,
         isModeration, 
-        diffWith: originalData
+        diffWith: originalData,
+        hideButtons: true
       });
     }
 

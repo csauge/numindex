@@ -80,7 +80,8 @@ export async function searchAddresses(query: string, lang: string) {
  * Compression et Upload d'image vers Supabase
  */
 export async function uploadCompressedImage(file: File) {
-  const imageCompression = (await import('browser-image-compression')).default;
+  const mod = await import('browser-image-compression');
+  const imageCompression = mod.default || mod;
   const options = {
     maxSizeMB: 0.05,
     maxWidthOrHeight: 800,

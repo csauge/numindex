@@ -5,6 +5,8 @@ import type { Suggestion, Resource, Profile } from './supabase/types';
 export interface PreviewOptions {
   lang: 'fr' | 'en';
   isModeration?: boolean;
+  isOwner?: boolean;
+  hideButtons?: boolean;
   diffWith?: Resource | null;
   profiles?: Profile[];
   allResources?: Resource[];
@@ -12,7 +14,7 @@ export interface PreviewOptions {
 }
 
 export function renderResourcePreview(res: Partial<Suggestion & Resource>, options: PreviewOptions) {
-  const { lang, isModeration, diffWith, profiles = [], allResources = [], categoriesData = {} } = options;
+  const { lang, isModeration, isOwner, hideButtons, diffWith, profiles = [], allResources = [], categoriesData = {} } = options;
   
   const action = (res as Suggestion).action || 'create';
   const actionClass = getActionClass(action);
@@ -74,6 +76,7 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
       approve: 'Approuver',
       correct: 'Corriger',
       reject: 'Rejeter',
+      cancel: 'Annuler',
       new: 'Nouveau',
       update: 'Modification',
       delete: 'Suppression',
@@ -90,6 +93,7 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
       approve: 'Approve',
       correct: 'Correct',
       reject: 'Reject',
+      cancel: 'Cancel',
       new: 'New',
       update: 'Update',
       delete: 'Delete',
@@ -110,7 +114,7 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
       
       <div class="flex-grow w-full">
         <div class="flex flex-wrap items-center gap-2 mb-3">
-          ${isModeration ? `
+          ${isModeration || isOwner ? `
             <span class="flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tight border shadow-sm ${actionClass}">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="${actionIcon}"/></svg>
               ${action === 'create' ? t.new : (action === 'update' ? t.update : t.delete)}
@@ -200,11 +204,11 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
         ` : ''}
       </div>
 
-      ${isModeration ? `
+      ${(isModeration || (isOwner && (res as Suggestion).status === 'pending')) && !hideButtons ? `
         <div class="flex md:flex-col gap-2 w-full md:w-auto">
-          <button id="approve-${(res as Suggestion).id}" class="btn btn-primary btn-sm flex-grow approve-btn" data-id="${(res as Suggestion).id}">${t.approve}</button>
-          ${action !== 'delete' ? `<a href="/${lang}/propose?sid=${(res as Suggestion).id}&moderation=true" class="btn btn-outline btn-sm">${t.correct}</a>` : ''}
-          <button id="reject-${(res as Suggestion).id}" class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id="${(res as Suggestion).id}">${t.reject}</button>
+          ${isModeration ? `<button id="approve-${(res as Suggestion).id}" class="btn btn-primary btn-sm flex-grow approve-btn" data-id="${(res as Suggestion).id}">${t.approve}</button>` : ''}
+          ${action !== 'delete' ? `<a href="/${lang}/propose?sid=${(res as Suggestion).id}${isModeration ? '&moderation=true' : '&redirect=profile'}" class="btn btn-outline btn-sm flex-grow text-center">${t.correct}</a>` : ''}
+          <button id="${isModeration ? 'reject' : 'cancel'}-${(res as Suggestion).id}" class="btn btn-ghost btn-sm text-error flex-grow ${isModeration ? 'reject-btn' : 'cancel-btn'}" data-id="${(res as Suggestion).id}">${isModeration ? t.reject : t.cancel}</button>
         </div>
       ` : ''}
     </article>

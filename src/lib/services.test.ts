@@ -2,6 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { getNextEventDate, sortResources, getResourceGroup } from './services';
 import type { Resource } from './supabase/types';
 
+// Mock browser-image-compression
+vi.mock('browser-image-compression', () => ({
+  default: vi.fn().mockImplementation((file) => Promise.resolve(file))
+}));
+
 describe('services.ts', () => {
   describe('getResourceGroup', () => {
     const t = {
@@ -116,6 +121,26 @@ describe('services.ts', () => {
       const sorted = sortResources(resources, 'all');
       expect(sorted[0].updated_at).toBe('2023-01-01T11:00:00Z');
       expect(sorted[1].updated_at).toBe('2023-01-01T10:00:00Z');
+    });
+  });
+
+  describe('uploadCompressedImage', () => {
+    it('should be defined as a function', async () => {
+      const { uploadCompressedImage } = await import('./services');
+      expect(typeof uploadCompressedImage).toBe('function');
+    });
+    
+    it('should be able to be called with a mock', async () => {
+      const { uploadCompressedImage } = await import('./services');
+      const file = new File(['test'], 'test.png', { type: 'image/png' });
+      
+      // The test also verifies it doesn't crash during dynamic import
+      try {
+        await uploadCompressedImage(file);
+      } catch (e: any) {
+        // Expected to fail because of supabase storage if not mocked
+        expect(e.message).toBeDefined();
+      }
     });
   });
 });

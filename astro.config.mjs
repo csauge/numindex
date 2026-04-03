@@ -25,6 +25,11 @@ export default defineConfig({
       enabled: true,
     },
   }),
+  vite: {
+    optimizeDeps: {
+      include: ['browser-image-compression'],
+    },
+  },
   i18n: {
     defaultLocale: 'fr',
     locales: ['fr', 'en'],
