@@ -27,8 +27,21 @@
 - **Frontend :** [Astro](https://astro.build/) (Hybrid mode).
 - **Style :** [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/).
 - **Base de Données :** [Supabase](https://supabase.com/) (PostgreSQL).
+- **Images :** [Sharp](https://sharp.pixelplumbing.com/) pour la conversion AVIF ultra-légère.
 - **Communications :** [Brevo API](https://www.brevo.com/) pour le formulaire de contact.
 - **Hébergement :** [Cloudflare Pages](https://pages.cloudflare.com/).
+
+## 🧹 Maintenance & Sobriété
+
+Le projet inclut une maintenance automatisée via **GitHub Actions** (`maintenance.yml`) qui s'exécute chaque dimanche :
+- **Optimisation AVIF :** Convertit et redimensionne les nouvelles images en AVIF (600px, qualité 50).
+- **Nettoyage :** Supprime les images orphelines du bucket Supabase qui ne sont plus liées à une ressource.
+
+### Scripts utiles
+
+- `npm run verify-sobriety` : Audit local des images statiques (limite 20 Ko).
+- `npm run optimize-images` : Migration manuelle des images vers AVIF.
+- `npm run cleanup-images` : Suppression manuelle des images orphelines.
 
 ## 🚀 Installation & Développement
 

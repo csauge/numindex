@@ -3,7 +3,8 @@
 Ce document définit les règles essentielles et les standards d'ingénierie pour le développement de numindex.org.
 
 ## 1. Principes de Conception (Sobriété & Performance)
-- **Écoconception :** Poids page léger, images AVIF (<50 Ko pour les vignettes), miniatures adaptées, pas de JS lourd (Vanilla JS privilégié), score EcoIndex ≥ C obligatoire.
+- **Écoconception :** Poids page léger, images AVIF (<20 Ko pour les vignettes), miniatures adaptées, pas de JS lourd (Vanilla JS privilégié), score EcoIndex ≥ C obligatoire.
+- **Maintenance Automatisée :** Nettoyage des images orphelines et ré-optimisation AVIF hebdomadaire via GitHub Actions.
 - **SEO :** Méta-données dynamiques (Open Graph, Twitter), balises `hreflang` pour l'i18n, URLs canoniques et sitemap automatiques.
 - **Accessibilité :** Conformité RGAA, HTML sémantique, aria-labels explicites, navigation au clavier.
 - **Performance :** Polices système uniquement, score Lighthouse ≥ 85 obligatoire.
