@@ -50,11 +50,10 @@ jobs:
           cat <<EOF > ~/.config/rclone/rclone.conf
           [r2]
           type = s3
-          provider = Cloudflare
+          provider = Other
           access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
           secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
           endpoint = ${{ secrets.R2_ENDPOINT }}
-          region = auto
           force_path_style = true
           # R2 peut parfois avoir des soucis avec HTTP/2 sur certains endpoints
           disable_http2 = true
