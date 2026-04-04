@@ -55,8 +55,9 @@ jobs:
           secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
           endpoint = ${{ secrets.R2_ENDPOINT }}
           region = auto
-          no_check_bucket = true
           force_path_style = true
+          # R2 peut parfois avoir des soucis avec HTTP/2 sur certains endpoints
+          disable_http2 = true
 
           [supabase]
           type = s3
