@@ -1,0 +1,32 @@
+name: Weekly Database & Storage Maintenance
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Tous les dimanches à minuit
+  workflow_dispatch: # Permet aussi de le lancer manuellement via un bouton sur GitHub
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 1. Optimize New Images (AVIF)
+        run: node scripts/optimize-images.mjs
+        env:
+          PUBLIC_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PROD_SUPABASE_SERVICE_KEY }}
+
+      - name: 2. Cleanup Orphaned Images
+        run: node scripts/cleanup-images.mjs
+        env:
+          PUBLIC_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PROD_SUPABASE_SERVICE_KEY }}

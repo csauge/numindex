@@ -8,7 +8,6 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "add-ressource": "node scripts/add-ressource.mjs",
     "postbuild": "pagefind --site dist && cp dist/sitemap-index.xml dist/sitemap.xml && node scripts/fix-routes.mjs",
     "cleanup-images": "node scripts/cleanup-images.mjs",
     "optimize-images": "node scripts/optimize-images.mjs",
