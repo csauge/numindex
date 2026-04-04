@@ -15,14 +15,24 @@ jobs:
       - name: Install PostgreSQL Client & Rclone
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client rclone
+          sudo apt-get install -y curl ca-certificates
+          # Ajout du dépôt officiel PostgreSQL pour avoir la version 17
+          install -d /usr/share/postgresql-common/pgdg
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17 rclone
 
-      - name: Backup Database (Data Only)
+      - name: Test Connection and Backup Database
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          # On extrait uniquement les données des schémas critiques
-          # Note: --clean n'est pas compatible avec --data-only
+          # Test de connectivité simple avant de lancer le dump
+          echo "Testing connection to database..."
+          psql "$DB_URL" -c "SELECT 1" > /dev/null
+          
+          echo "Starting pg_dump..."
           pg_dump "$DB_URL" \
             --quote-all-identifiers \
             --exclude-schema=extensions \
