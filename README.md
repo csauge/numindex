@@ -26,10 +26,11 @@
 
 - **Frontend :** [Astro](https://astro.build/) (Hybrid mode).
 - **Style :** [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/).
-- **Base de Données :** [Supabase](https://supabase.com/) (PostgreSQL).
+- **Base de Données & Storage :** [Supabase](https://supabase.com/) (PostgreSQL) localisée à **Paris (Europe)** pour la souveraineté des données.
 - **Images :** [Sharp](https://sharp.pixelplumbing.com/) pour la conversion AVIF ultra-légère.
 - **Communications :** [Brevo API](https://www.brevo.com/) pour le formulaire de contact.
-- **Hébergement :** [Cloudflare Pages](https://pages.cloudflare.com/).
+- **Hébergement :** [Cloudflare Pages](https://pages.cloudflare.com/) (configuré en mode Smart Routing).
+- **Domaine :** Géré par [Infomaniak](https://www.infomaniak.com/) (Hébergeur éco-responsable et indépendant).
 
 ## 🧹 Maintenance & Sobriété
 
