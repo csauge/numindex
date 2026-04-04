@@ -24,14 +24,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17 rclone
 
-      - name: Test Connection and Backup Database
+      - name: Backup Database (Data Only)
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          # Test de connectivité avec psql version 17
-          echo "Testing connection to database..."
-          /usr/lib/postgresql/17/bin/psql "$DB_URL" -c "SELECT 1" > /dev/null
-          
           echo "Starting pg_dump version 17..."
           /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" \
             --quote-all-identifiers \
@@ -54,16 +50,12 @@ jobs:
           RCLONE_CONFIG_R2_REGION: us-east-1
           RCLONE_CONFIG_R2_FORCE_PATH_STYLE: true
         run: |
-          # Test de visibilité du bucket
-          echo "Listing buckets to verify connectivity..."
-          rclone lsd r2: || echo "Could not list buckets, checking endpoint/keys..."
-
           # Nom du fichier avec la date du jour
           FILENAME="db_backup_$(date +'%Y-%m-%d').sql.gz"
           mv db_backup.sql.gz "$FILENAME"
           
           echo "Uploading $FILENAME to R2..."
-          rclone copy -vv "$FILENAME" r2:numindex-backups/database/
+          rclone copy "$FILENAME" r2:numindex-backups/database/
 
       - name: Sync Storage (S3) to R2
         env:
@@ -83,4 +75,4 @@ jobs:
           RCLONE_CONFIG_SUPABASE_REGION: eu-west-3
         run: |
           echo "Syncing Supabase Storage to R2..."
-          rclone sync -vv supabase: r2:numindex-backups/storage/ --transfers=4 --progress
+          rclone sync supabase: r2:numindex-backups/storage/ --transfers=4 --progress
