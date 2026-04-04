@@ -33,6 +33,11 @@ async function optimizeExistingImages() {
   let totalSaved = 0;
 
   for (const file of images) {
+    if (file.name.endsWith('.avif') || file.name.endsWith('.svg')) {
+      console.log(`\n⏭️  Ignoré (déjà optimisé) : ${file.name}`);
+      continue;
+    }
+
     console.log(`\n--- Traitement de ${file.name} ---`);
 
     // 2. Télécharger l'image
