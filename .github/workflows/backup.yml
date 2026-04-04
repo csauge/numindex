@@ -1,0 +1,74 @@
+name: Daily Backup to Cloudflare R2
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Tous les jours à 03h00 UTC
+  workflow_dispatch: # Permet de lancer la sauvegarde manuellement depuis l'onglet Actions
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL Client & Rclone
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client rclone
+
+      - name: Backup Database (Data Only)
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # On extrait uniquement les données des schémas critiques
+          # --clean et --if-exists pour faciliter la restauration ultérieure
+          pg_dump "$DB_URL" \
+            --clean \
+            --if-exists \
+            --quote-all-identifiers \
+            --exclude-schema=extensions \
+            --schema=public \
+            --schema=auth \
+            --schema=storage \
+            --data-only > db_backup.sql
+          
+          # Compression du dump
+          gzip db_backup.sql
+
+      - name: Configure Rclone for R2 and Supabase
+        run: |
+          mkdir -p ~/.config/rclone
+          cat <<EOF > ~/.config/rclone/rclone.conf
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          endpoint = ${{ secrets.R2_ENDPOINT }}
+          acl = private
+
+          [supabase]
+          type = s3
+          provider = Other
+          access_key_id = ${{ secrets.SUPABASE_S3_ACCESS_KEY }}
+          secret_access_key = ${{ secrets.SUPABASE_S3_SECRET_KEY }}
+          endpoint = ${{ secrets.SUPABASE_S3_ENDPOINT }}
+          region = eu-central-1
+          acl = private
+          EOF
+
+      - name: Upload DB Backup to R2
+        run: |
+          # Nom du fichier avec la date du jour
+          FILENAME="db_backup_$(date +'%Y-%m-%d').sql.gz"
+          mv db_backup.sql.gz "$FILENAME"
+          
+          # Upload vers le dossier 'database' du bucket
+          rclone copy "$FILENAME" r2:numindex-backups/database/
+
+      - name: Sync Storage (S3) to R2
+        run: |
+          # Synchronisation incrémentale du stockage
+          # Seuls les fichiers nouveaux ou modifiés sont copiés
+          rclone sync supabase: r2:numindex-backups/storage/ --transfers=4 --progress
