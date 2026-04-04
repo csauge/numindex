@@ -47,12 +47,17 @@ jobs:
       - name: Upload DB Backup to R2
         env:
           RCLONE_CONFIG_R2_TYPE: s3
-          RCLONE_CONFIG_R2_PROVIDER: Cloudflare
+          RCLONE_CONFIG_R2_PROVIDER: Other
           RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           RCLONE_CONFIG_R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          RCLONE_CONFIG_R2_REGION: auto
+          RCLONE_CONFIG_R2_REGION: us-east-1
+          RCLONE_CONFIG_R2_FORCE_PATH_STYLE: true
         run: |
+          # Test de visibilité du bucket
+          echo "Listing buckets to verify connectivity..."
+          rclone lsd r2: || echo "Could not list buckets, checking endpoint/keys..."
+
           # Nom du fichier avec la date du jour
           FILENAME="db_backup_$(date +'%Y-%m-%d').sql.gz"
           mv db_backup.sql.gz "$FILENAME"
@@ -63,11 +68,12 @@ jobs:
       - name: Sync Storage (S3) to R2
         env:
           RCLONE_CONFIG_R2_TYPE: s3
-          RCLONE_CONFIG_R2_PROVIDER: Cloudflare
+          RCLONE_CONFIG_R2_PROVIDER: Other
           RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           RCLONE_CONFIG_R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          RCLONE_CONFIG_R2_REGION: auto
+          RCLONE_CONFIG_R2_REGION: us-east-1
+          RCLONE_CONFIG_R2_FORCE_PATH_STYLE: true
           
           RCLONE_CONFIG_SUPABASE_TYPE: s3
           RCLONE_CONFIG_SUPABASE_PROVIDER: Other
