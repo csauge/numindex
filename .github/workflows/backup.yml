@@ -69,16 +69,39 @@ jobs:
           EOF
 
       - name: Upload DB Backup to R2
+        env:
+          RCLONE_CONFIG_R2_TYPE: s3
+          RCLONE_CONFIG_R2_PROVIDER: Other
+          RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          RCLONE_CONFIG_R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          RCLONE_CONFIG_R2_REGION: us-east-1
+          RCLONE_CONFIG_R2_FORCE_PATH_STYLE: true
         run: |
           # Nom du fichier avec la date du jour
           FILENAME="db_backup_$(date +'%Y-%m-%d').sql.gz"
           mv db_backup.sql.gz "$FILENAME"
           
           # Upload vers le dossier 'database' du bucket
+          # r2: correspond au préfixe de config RCLONE_CONFIG_R2_*
           rclone copy "$FILENAME" r2:numindex-backups/database/
 
       - name: Sync Storage (S3) to R2
+        env:
+          RCLONE_CONFIG_R2_TYPE: s3
+          RCLONE_CONFIG_R2_PROVIDER: Other
+          RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          RCLONE_CONFIG_R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          RCLONE_CONFIG_R2_REGION: us-east-1
+          RCLONE_CONFIG_R2_FORCE_PATH_STYLE: true
+          
+          RCLONE_CONFIG_SUPABASE_TYPE: s3
+          RCLONE_CONFIG_SUPABASE_PROVIDER: Other
+          RCLONE_CONFIG_SUPABASE_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_ACCESS_KEY }}
+          RCLONE_CONFIG_SUPABASE_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET_KEY }}
+          RCLONE_CONFIG_SUPABASE_ENDPOINT: ${{ secrets.SUPABASE_S3_ENDPOINT }}
+          RCLONE_CONFIG_SUPABASE_REGION: eu-west-3
         run: |
           # Synchronisation incrémentale du stockage
-          # Seuls les fichiers nouveaux ou modifiés sont copiés
           rclone sync supabase: r2:numindex-backups/storage/ --transfers=4 --progress
