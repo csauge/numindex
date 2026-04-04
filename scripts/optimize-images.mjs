@@ -52,28 +52,51 @@ async function optimizeExistingImages() {
     try {
       const buffer = Buffer.from(await blob.arrayBuffer());
       const optimizedBuffer = await sharp(buffer)
-        .resize({ width: 800, withoutEnlargement: true })
-        .webp({ quality: 80 })
+        .resize({ width: 600, withoutEnlargement: true })
+        .avif({ quality: 50 })
         .toBuffer();
 
       const finalSize = optimizedBuffer.length;
       const saved = initialSize - finalSize;
       totalSaved += saved;
 
+      const newFileName = file.name.replace(/\.[^.]+$/, '.avif');
       console.log(`✨ Taille optimisée : ${formatSize(finalSize)} (-${((saved / initialSize) * 100).toFixed(1)}%)`);
 
-      // 4. Ré-uploader (écraser)
+      // 4. Uploader le nouveau format
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)
-        .upload(file.name, optimizedBuffer, {
-          contentType: 'image/webp',
+        .upload(newFileName, optimizedBuffer, {
+          contentType: 'image/avif',
           upsert: true
         });
 
       if (uploadError) {
-        console.error(`❌ Erreur re-upload ${file.name}:`, uploadError);
+        console.error(`❌ Erreur upload ${newFileName}:`, uploadError);
+        continue;
+      }
+
+      // 5. Mettre à jour la base de données
+      const { error: dbError } = await supabase
+        .from('resources')
+        .update({ image_url: newFileName })
+        .eq('image_url', file.name);
+
+      const { error: sugError } = await supabase
+        .from('suggestions')
+        .update({ image_url: newFileName })
+        .eq('image_url', file.name);
+
+      if (dbError || sugError) {
+        console.error(`❌ Erreur DB pour ${file.name}:`, dbError || sugError);
       } else {
-        console.log(`✅ ${file.name} mis à jour.`);
+        console.log(`✅ DB mise à jour (Resources & Suggestions) : ${file.name} -> ${newFileName}`);
+        
+        // 6. Supprimer l'ancien fichier si l'extension a changé
+        if (newFileName !== file.name) {
+          await supabase.storage.from(BUCKET).remove([file.name]);
+          console.log(`🗑️ Ancien fichier ${file.name} supprimé du Bucket.`);
+        }
       }
     } catch (err) {
       console.error(`❌ Erreur Sharp sur ${file.name}:`, err);

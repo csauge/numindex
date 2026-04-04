@@ -5,7 +5,7 @@ import { promisify } from 'util';
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 
-const MAX_SIZE_KB = 50;
+const MAX_SIZE_KB = 20;
 const ALLOWED_FORMAT = '.avif';
 const DIRECTORIES = ['public'];
 

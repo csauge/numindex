@@ -167,7 +167,7 @@ const jsonLd = JSON.stringify(baseJsonLd);
       <div class="space-y-8">
         <div class="aspect-square rounded-3xl bg-white border border-stone-200 shadow-sm overflow-hidden flex items-center justify-center p-6 relative group">
           {res.image_url ? (
-            <img src={getImageUrl(res.image_url)} alt="" class="w-full h-full object-contain" />
+            <img src={getImageUrl(res.image_url)} alt="" class="w-full h-full object-contain" decoding="async" width="600" height="600" />
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 text-stone-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getCategoryIcon(res.category)} />

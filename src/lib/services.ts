@@ -83,11 +83,11 @@ export async function uploadCompressedImage(file: File) {
   const mod = await import('browser-image-compression');
   const imageCompression = mod.default || mod;
   const options = {
-    maxSizeMB: 0.05,
-    maxWidthOrHeight: 800,
+    maxSizeMB: 0.02,
+    maxWidthOrHeight: 600,
     useWebWorker: true,
     fileType: 'image/webp' as const,
-    initialQuality: 0.8
+    initialQuality: 0.6
   };
   
   const compressedFile = await imageCompression(file, options);
