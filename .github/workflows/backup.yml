@@ -28,12 +28,12 @@ jobs:
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          # Test de connectivité simple avant de lancer le dump
+          # Test de connectivité avec psql version 17
           echo "Testing connection to database..."
-          psql "$DB_URL" -c "SELECT 1" > /dev/null
+          /usr/lib/postgresql/17/bin/psql "$DB_URL" -c "SELECT 1" > /dev/null
           
-          echo "Starting pg_dump..."
-          pg_dump "$DB_URL" \
+          echo "Starting pg_dump version 17..."
+          /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" \
             --quote-all-identifiers \
             --exclude-schema=extensions \
             --schema=public \
