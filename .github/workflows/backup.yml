@@ -5,15 +5,12 @@ on:
     - cron: '0 3 * * *' # Tous les jours à 03h00 UTC
   workflow_dispatch: # Permet de lancer la sauvegarde manuellement depuis l'onglet Actions
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install PostgreSQL Client & Rclone
         run: |
