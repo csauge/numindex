@@ -10,6 +10,7 @@ export default defineConfig({
     format: 'file'
   },
   integrations: [tailwind(), sitemap({
+    filter: (page) => page !== 'https://numindex.org/',
     i18n: {
       defaultLocale: 'fr',
       locales: {

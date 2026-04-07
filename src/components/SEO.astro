@@ -22,7 +22,12 @@ const siteName = 'numindex.org';
 const fullTitle = pageTitle ? `${pageTitle} | ${siteName}` : siteName;
 
 // Normalize current path (strip trailing slash except for root)
-const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+// If we are at root '/', we should treat it as '/fr' for canonical purposes 
+// since it 301 redirects to /fr and contains the same logic.
+let currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+if (currentPath === '/') {
+  currentPath = '/fr';
+}
 
 // Force canonical to use the configured site URL and normalized path
 const canonicalURL = Astro.props.canonicalURL 
@@ -36,11 +41,6 @@ const alternateLinks = locales.map((l) => {
   // Handles /fr, /fr/..., /en, /en/...
   let alternatePath = currentPath.replace(/^\/(fr|en)/, `/${l}`);
   
-  // Special case for root (which redirects)
-  if (currentPath === '/') {
-    alternatePath = `/${l}`;
-  }
-
   return {
     href: new URL(alternatePath, Astro.site),
     hreflang: l,
@@ -48,7 +48,7 @@ const alternateLinks = locales.map((l) => {
 });
 
 // x-default should point to the default language version (French)
-const xDefaultURL = new URL(currentPath.replace(/^\/(fr|en)/, '/fr') || '/fr', Astro.site);
+const xDefaultURL = new URL(currentPath.replace(/^\/(fr|en)/, '/fr'), Astro.site);
 ---
 
 <!-- Global Metadata -->
