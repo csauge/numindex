@@ -12,6 +12,19 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+-- Ensure necessary schemas exist for standard Supabase features
+CREATE SCHEMA IF NOT EXISTS "supabase_functions";
+CREATE SCHEMA IF NOT EXISTS "extensions";
+
+-- Mock http_request function if it doesn't exist
+-- This signature allows it to be used as a trigger function with arguments
+CREATE OR REPLACE FUNCTION "supabase_functions"."http_request"()
+RETURNS trigger AS $$
+BEGIN
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 
 CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
 
