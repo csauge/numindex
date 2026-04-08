@@ -1,0 +1,26 @@
+name: Daily Podcast Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Tous les jours à minuit
+  workflow_dispatch: # Permet aussi de le lancer manuellement via un bouton sur GitHub
+
+jobs:
+  update-podcasts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 'lts/*'
+          
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch and update latest podcast episodes
+        run: node scripts/update-podcasts.mjs
+        env:
+          PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

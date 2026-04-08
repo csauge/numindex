@@ -29,6 +29,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     addressResults: document.getElementById('address-results'),
     onlineToggle: document.getElementById('online-toggle') as HTMLInputElement,
     pubDateInput: form.querySelector('[name="published_at"]') as HTMLInputElement,
+    rssUrlInput: form.querySelector('[name="rss_url"]') as HTMLInputElement,
     versionDateInput: form.querySelector('[name="version_date"]') as HTMLInputElement,
     occurrencesList: document.getElementById('occurrences-list'),
     addOccurrenceBtn: document.getElementById('add-occurrence'),
@@ -171,6 +172,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     const isEvenement = cat === 'evenement';
     const isContenu = cat === 'contenu';
     const isOutil = cat === 'outil';
+    const isPodcast = elements.mandatoryTag.value === 'Podcast';
     const isDelete = (elements.reason.closest('#delete-fields') as HTMLElement)?.classList.contains('hidden') === false;
 
     // Build the data object for preview
@@ -181,6 +183,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
       lng: currentCoords?.lng,
       occurrences,
       published_at: elements.pubDateInput.value,
+      rss_url: elements.rssUrlInput.value,
       version_date: elements.versionDateInput.value
     });
 
@@ -213,7 +216,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
     document.getElementById('address-container')?.classList.toggle('hidden', !isActeur || isDelete);
     document.getElementById('online-toggle-container')?.classList.toggle('hidden', !isEvenement);
     document.getElementById('occurrences-container')?.classList.toggle('hidden', !isEvenement || isDelete);
-    document.getElementById('pub-date-container')?.classList.toggle('hidden', !isContenu || isDelete);
+    document.getElementById('pub-date-container')?.classList.toggle('hidden', !isContenu || isPodcast || isDelete);
+    document.getElementById('rss-url-container')?.classList.toggle('hidden', !isPodcast || isDelete);
     document.getElementById('version-date-container')?.classList.toggle('hidden', !isOutil || isDelete);
     document.getElementById('related-container')?.classList.toggle('hidden', isActeur || isDelete);
   }
@@ -299,6 +303,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
       elements.addressVal.value = metadata.address || '';
       elements.addressSearch.value = metadata.address || '';
       elements.pubDateInput.value = metadata.published_at || '';
+      elements.rssUrlInput.value = metadata.rss_url || '';
       elements.versionDateInput.value = metadata.version_date || '';
       
       if (metadata.lat && metadata.lng) {
@@ -391,14 +396,40 @@ export function initSuggestionForm(form: HTMLFormElement) {
 
       const tags = [elements.mandatoryTag.value, ...selectedOptionalTags].filter(Boolean);
       const cat = elements.cat.value;
+      const isPodcast = elements.mandatoryTag.value === 'Podcast';
+      let fetchedRssPublishedAt = elements.pubDateInput.value;
+      let fetchedRssTitle = undefined;
+      
+      if (isPodcast && elements.rssUrlInput.value && !isDeleteSubmit) {
+        try {
+          const rssRes = await fetch('/api/parse-rss', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rss_url: elements.rssUrlInput.value })
+          });
+          if (rssRes.ok) {
+            const rssData = await rssRes.json();
+            fetchedRssPublishedAt = rssData.published_at;
+            fetchedRssTitle = rssData.title;
+          }
+        } catch (e) {
+          console.error("Failed to parse RSS before submit", e);
+        }
+      }
+
       const metadata = prepareMetadata(cat, {
         address: elements.addressVal.value,
         lat: currentCoords?.lat,
         lng: currentCoords?.lng,
         occurrences,
-        published_at: elements.pubDateInput.value,
+        published_at: fetchedRssPublishedAt,
+        rss_url: elements.rssUrlInput.value,
         version_date: elements.versionDateInput.value
       });
+      
+      if (fetchedRssTitle) {
+        metadata.last_episode_title = fetchedRssTitle;
+      }
 
       const payload: any = {
         title: isDeleteSubmit ? existingData?.title : elements.title.value,

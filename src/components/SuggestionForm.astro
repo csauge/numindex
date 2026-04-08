@@ -59,6 +59,7 @@ const t = {
     start: 'Début',
     end: 'Fin',
     online: 'En ligne / Online',
+    rssUrl: 'Lien du flux RSS',
   },
   en: {
     titleCreate: isModeration ? 'Correct proposal' : 'Suggest addition',
@@ -90,6 +91,7 @@ const t = {
     start: 'Start',
     end: 'End',
     online: 'Online',
+    rssUrl: 'RSS Feed URL',
   }
 }[lang];
 
@@ -108,6 +110,7 @@ const initial = {
   address: existingData?.metadata?.address || '',
   published_at: existingData?.metadata?.published_at || '',
   version_date: existingData?.metadata?.version_date || '',
+  rss_url: existingData?.metadata?.rss_url || '',
   occurrences: existingData?.metadata?.occurrences || [],
 };
 ---

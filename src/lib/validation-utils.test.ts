@@ -34,5 +34,15 @@ describe('validation-utils', () => {
       const result = prepareMetadata('contenu', { published_at: '2023' });
       expect(result).toEqual({ published_at: '2023' });
     });
+
+    it('should handle contenu metadata with rss_url', () => {
+      const result = prepareMetadata('contenu', { rss_url: 'https://example.com/rss' });
+      expect(result).toEqual({ rss_url: 'https://example.com/rss' });
+    });
+
+    it('should handle contenu metadata with rss_url and published_at', () => {
+      const result = prepareMetadata('contenu', { rss_url: 'https://example.com/rss', published_at: '2023' });
+      expect(result).toEqual({ rss_url: 'https://example.com/rss', published_at: '2023' });
+    });
   });
 });
