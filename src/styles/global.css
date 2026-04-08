@@ -39,7 +39,7 @@
     color: #047857 !important;
   }
   
-  .border-primary {
+  .border-primary, .hover\:border-primary:hover {
     border-color: #047857 !important;
   }
 

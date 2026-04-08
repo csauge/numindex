@@ -3,7 +3,8 @@ import type { APIRoute } from 'astro';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const env = typeof process !== 'undefined' ? process.env : import.meta.env;
+  const runtime = (locals as any).runtime;
+  const env = runtime?.env || process.env;
 
   const apiKey = env.BREVO_API_KEY || import.meta.env.BREVO_API_KEY;
   const toEmail = env.CONTACT_EMAIL || import.meta.env.CONTACT_EMAIL;
