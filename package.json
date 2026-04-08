@@ -28,7 +28,7 @@
     "marked": "^18.0.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2"
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
