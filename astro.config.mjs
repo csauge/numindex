@@ -21,7 +21,7 @@ export default defineConfig({
   })],
   output: 'static',
   adapter: cloudflare({
-    imageService: 'compile', // Optimizes images at build time, avoids sharp at runtime
+    imageService: 'compile', // Optimizes images at build time
     platformProxy: {
       enabled: true,
     },
