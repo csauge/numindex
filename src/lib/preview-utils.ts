@@ -32,6 +32,12 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
     if (field === 'version_date') {
       return res.metadata?.version_date !== diffWith.metadata?.version_date;
     }
+    if (field === 'rss_url') {
+      return res.metadata?.rss_url !== diffWith.metadata?.rss_url;
+    }
+    if (field === 'last_episode_title') {
+      return res.metadata?.last_episode_title !== diffWith.metadata?.last_episode_title;
+    }
     if (field === 'occurrences') {
       return JSON.stringify(res.metadata?.occurrences) !== JSON.stringify(diffWith.metadata?.occurrences);
     }
@@ -146,9 +152,30 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
               ${res.metadata.version_date.split('-')[0]}
             </span>
           ` : ''}
+
+          ${res.metadata?.rss_url ? `
+            <span class="flex items-center gap-1 text-[9px] font-black bg-stone-50 border border-stone-200 px-1.5 py-0.5 rounded text-stone-500 uppercase tracking-tight ${isMod('rss_url') ? diffClass : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+              RSS
+            </span>
+          ` : ''}
         </div>
 
         <h2 class="text-xl font-black text-stone-800 mb-1 inline-block ${isMod('title') ? diffClass : ''}">${res.title || '...'}</h2>
+
+        ${res.metadata?.rss_url ? `
+          <div class="mb-2 ${isMod('rss_url') ? diffClass : ''}">
+            <p class="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none mb-1">Flux RSS :</p>
+            <p class="text-[10px] text-primary truncate">${res.metadata.rss_url}</p>
+          </div>
+        ` : ''}
+
+        ${res.metadata?.last_episode_title ? `
+          <div class="mb-2 ${isMod('last_episode_title') ? diffClass : ''}">
+            <p class="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none mb-1">Dernier épisode :</p>
+            <p class="text-[10px] text-stone-600 font-bold italic line-clamp-1">${res.metadata.last_episode_title}</p>
+          </div>
+        ` : ''}
 
         ${isModeration ? `
           <div class="flex flex-col gap-1 mb-3">

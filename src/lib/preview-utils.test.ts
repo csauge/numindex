@@ -126,4 +126,57 @@ describe('renderResourcePreview', () => {
     expect(html).toContain('Organisations / Personnes liées');
     expect(html).toContain('Related Entity');
   });
+
+  it('renders a podcast with RSS feed and last episode', () => {
+    const data: Partial<Resource> = {
+      title: 'Mon Podcast',
+      category: 'contenu',
+      metadata: { 
+        rss_url: 'https://example.com/rss',
+        last_episode_title: 'Dernier Épisode'
+      }
+    };
+    const html = renderResourcePreview(data, options);
+    expect(html).toContain('Mon Podcast');
+    expect(html).toContain('RSS');
+    expect(html).toContain('Flux RSS :');
+    expect(html).toContain('https://example.com/rss');
+    expect(html).toContain('Dernier épisode :');
+    expect(html).toContain('Dernier Épisode');
+  });
+
+  it('highlights RSS-related changes in update action', () => {
+    const diffWith: Resource = {
+      id: 'res-1',
+      title: 'Podcast',
+      description: 'Desc',
+      category: 'contenu',
+      link: 'p.com',
+      tags: [],
+      related_ids: [],
+      metadata: {
+        rss_url: 'https://old.com/rss',
+        last_episode_title: 'Old Episode'
+      },
+      created_at: '',
+      updated_at: ''
+    };
+    const data: Partial<Suggestion> = {
+      action: 'update',
+      title: 'Podcast',
+      description: 'Desc',
+      category: 'contenu',
+      link: 'p.com',
+      metadata: {
+        rss_url: 'https://new.com/rss',
+        last_episode_title: 'New Episode'
+      }
+    };
+    const html = renderResourcePreview(data, { ...options, diffWith });
+    expect(html).toContain('https://new.com/rss');
+    expect(html).toContain('New Episode');
+    // We expect three rings: RSS badge, RSS field, and Last Episode title field
+    const ringMatches = html.match(/ring-2 ring-red-500/g);
+    expect(ringMatches).toHaveLength(3);
+  });
 });

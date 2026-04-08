@@ -187,6 +187,10 @@ export function initSuggestionForm(form: HTMLFormElement) {
       version_date: elements.versionDateInput.value
     });
 
+    if (existingData?.metadata?.last_episode_title) {
+      metadata.last_episode_title = existingData.metadata.last_episode_title;
+    }
+
     const previewData: any = {
       title: elements.title.value,
       description: elements.desc.value,
@@ -429,6 +433,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
       
       if (fetchedRssTitle) {
         metadata.last_episode_title = fetchedRssTitle;
+      } else if (existingData?.metadata?.last_episode_title) {
+        metadata.last_episode_title = existingData.metadata.last_episode_title;
       }
 
       const payload: any = {
