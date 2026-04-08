@@ -70,7 +70,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 <Layout title={t.title} lang={lang as string}>
   <div id="profile-content" class="max-w-4xl mx-auto py-8 hidden">
     <div class="mb-8">
-      <a href={`/${lang}`} class="inline-flex items-center gap-2 text-stone-400 hover:text-emerald-700 transition-colors text-sm font-bold group">
+      <a href={`/${lang}`} class="back-link group">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
         {t.back}
       </a>

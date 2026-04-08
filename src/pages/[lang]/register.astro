@@ -40,16 +40,16 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       
       <form id="register-form" class="space-y-4">
         <div class="form-control">
-          <label class="label"><span class="label-text font-bold">{t.fullName}</span></label>
-          <input type="text" name="full_name" required class="input input-bordered rounded-2xl" />
+          <label class="label"><span class="form-label">{t.fullName}</span></label>
+          <input type="text" name="full_name" required class="input input-bordered rounded-2xl w-full" />
         </div>
         <div class="form-control">
-          <label class="label"><span class="label-text font-bold">{t.email}</span></label>
-          <input type="email" name="email" required class="input input-bordered rounded-2xl" />
+          <label class="label"><span class="form-label">{t.email}</span></label>
+          <input type="email" name="email" required class="input input-bordered rounded-2xl w-full" />
         </div>
         <div class="form-control">
-          <label class="label"><span class="label-text font-bold">{t.password}</span></label>
-          <input type="password" name="password" required class="input input-bordered rounded-2xl" />
+          <label class="label"><span class="form-label">{t.password}</span></label>
+          <input type="password" name="password" required class="input input-bordered rounded-2xl w-full" />
         </div>
         
         <div id="error-message" class="text-error text-sm font-bold hidden bg-red-50 p-3 rounded-xl border border-red-100 text-center">

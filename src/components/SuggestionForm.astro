@@ -42,7 +42,6 @@ const t = {
     related: 'Organisations / Personnes liées',
     relatedPlaceholder: 'Chercher...',
     image: 'Image',
-    imageHelp: 'Préféré : SVG, AVIF, WebP (ou PNG, JPG)',
     reason: 'Motif suppression',
     target: 'Aperçu :',
     submitCreate: isModeration ? 'Enregistrer les corrections' : 'Envoyer la proposition',
@@ -74,7 +73,6 @@ const t = {
     related: 'Related Organizations / People',
     relatedPlaceholder: 'Search...',
     image: 'Image',
-    imageHelp: 'Preferred: SVG, AVIF, WebP (or PNG, JPG)',
     reason: 'Reason',
     target: 'Preview:',
     submitCreate: isModeration ? 'Save corrections' : 'Send suggestion',
@@ -135,55 +133,54 @@ const initial = {
   <form id="suggestion-form" class="space-y-4 w-full" data-lang={lang} data-t={JSON.stringify(t)} data-existing={JSON.stringify(existingData)} data-moderation={isModeration.toString()} data-categories={JSON.stringify(CATEGORIES)}>
     <div id="standard-fields" class={isDelete ? 'hidden' : 'space-y-4 w-full'}>
       <div class="form-control w-full">
-        <label class="label"><span class="label-text">{t.name}</span></label>
+        <label class="label"><span class="form-label">{t.name}</span></label>
         <input type="text" name="title" value={initial.title} required={!isDelete} maxlength="100" class="input input-bordered w-full" />
       </div>
 
       <div class="form-control w-full">
-        <label class="label"><span class="label-text">{t.description}</span></label>
+        <label class="label"><span class="form-label">{t.description}</span></label>
         <textarea name="description" required={!isDelete} maxlength="1000" class="textarea textarea-bordered h-24 w-full">{initial.description}</textarea>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="form-control w-full">
-          <label class="label"><span class="label-text">{t.category}</span></label>
+          <label class="label"><span class="form-label">{t.category}</span></label>
           <select name="category" class="select select-bordered w-full">
             {Object.entries(CATEGORIES).map(([k, v]) => <option value={k} selected={k === initial.category}>{v[lang as 'fr' | 'en']}</option>)}
           </select>
         </div>
         <div id="mandatory-tag-container" class="form-control w-full">
-          <label class="label"><span class="label-text">{t.mandatoryTag}</span></label>
+          <label class="label"><span class="form-label">{t.mandatoryTag}</span></label>
           <select name="mandatory-tag" class="select select-bordered w-full" required={!isDelete}></select>
         </div>
       </div>
 
       <div id="optional-tags-container" class="form-control w-full">
-        <label class="label"><span class="label-text">{t.optionalTags}</span></label>
+        <label class="label"><span class="form-label">{t.optionalTags}</span></label>
         <div id="optional-tags-list" class="flex flex-wrap gap-2"></div>
       </div>
 
       <MetadataFields t={t} initial={initial} />
 
       <div class="form-control w-full">
-        <label class="label"><span class="label-text">{t.link}</span></label>
+        <label class="label"><span class="form-label">{t.link}</span></label>
         <input type="url" name="link" value={initial.link} required={!isDelete} maxlength="2048" class="input input-bordered w-full" />
       </div>
 
       <div class="form-control w-full">
-        <label class="label"><span class="label-text font-bold">{t.image}</span></label>
+        <label class="label"><span class="form-label">{t.image}</span></label>
         <div class="flex gap-2">
           <input type="file" name="image" id="image-input" accept="image/svg+xml,image/avif,image/webp,image/png,image/jpeg" class="file-input file-input-bordered flex-grow" />
           <button type="button" id="clear-image" class="btn btn-ghost border-stone-200 hidden" title={lang === 'fr' ? 'Supprimer l\'image' : 'Remove image'}>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <label class="label"><span class="label-text-alt italic opacity-60">{t.imageHelp}</span></label>
       </div>
     </div>
 
     <div id="delete-fields" class={!isDelete ? 'hidden' : 'space-y-4 w-full'}>
       <div class="form-control w-full">
-        <label class="label"><span class="label-text text-error font-bold">{t.reason}</span></label>
+        <label class="label"><span class="form-label text-error font-bold">{t.reason}</span></label>
         <textarea name="reason" required={isDelete} maxlength="500" class="textarea textarea-bordered textarea-error h-24 w-full">{(existingData as Suggestion)?.reason || ''}</textarea>
       </div>
     </div>

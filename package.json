@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "postbuild": "pagefind --site dist && cp dist/sitemap-0.xml dist/sitemap.xml && node scripts/fix-routes.mjs",
+    "postbuild": "pagefind --site dist/client && cp dist/client/sitemap-index.xml dist/client/sitemap.xml && node scripts/fix-routes.mjs",
     "cleanup-images": "node scripts/cleanup-images.mjs",
     "optimize-images": "node scripts/optimize-images.mjs",
     "verify-sobriety": "node scripts/verify-sobriety.mjs",
@@ -17,28 +17,26 @@
     "verify": "npm run verify-sobriety && npm run build && npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.12",
+    "@astrojs/cloudflare": "^13.1.7",
     "@astrojs/sitemap": "^3.7.2",
-    "@astrojs/tailwind": "^6.0.2",
-    "@supabase/supabase-js": "^2.98.0",
-    "astro": "^5.4.1",
+    "@supabase/supabase-js": "^2.102.1",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "^6.1.4",
     "browser-image-compression": "^2.0.2",
-    "daisyui": "^4.12.24",
-    "marked": "^17.0.5",
+    "daisyui": "^5.5.19",
+    "marked": "^18.0.0",
     "sharp": "^0.34.5",
-    "typescript": "^5.7.3"
+    "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "@tailwindcss/typography": "^0.5.19",
-    "@types/marked": "^5.0.2",
-    "autoprefixer": "^10.4.24",
-    "dotenv": "^17.3.1",
+    "@playwright/test": "^1.59.1",
+    "@types/marked": "^6.0.0",
+    "dotenv": "^17.4.1",
     "happy-dom": "^20.8.9",
-    "pagefind": "^1.4.0",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
-    "vitest": "^4.1.2"
+    "pagefind": "^1.5.0",
+    "vitest": "^4.1.3"
   },
   "engines": {
     "node": ">=22"

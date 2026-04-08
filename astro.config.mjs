@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
 import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://numindex.org',
@@ -9,7 +9,7 @@ export default defineConfig({
   build: {
     format: 'file'
   },
-  integrations: [tailwind(), sitemap({
+  integrations: [sitemap({
     filter: (page) => page !== 'https://numindex.org/',
     i18n: {
       defaultLocale: 'fr',
@@ -27,6 +27,7 @@ export default defineConfig({
     },
   }),
   vite: {
+    plugins: [tailwindcss()],
     optimizeDeps: {
       include: ['browser-image-compression'],
     },

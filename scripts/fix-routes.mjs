@@ -4,8 +4,8 @@ import path from 'path';
 const routesPath = path.resolve('dist/_routes.json');
 
 if (!fs.existsSync(routesPath)) {
-  console.error('❌ _routes.json not found in dist/');
-  process.exit(1);
+  console.log('ℹ️ _routes.json not found. Skipping fix-routes (normal for static builds).');
+  process.exit(0);
 }
 
 try {

@@ -47,18 +47,18 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     <div class="bg-white p-8 rounded-3xl border border-stone-100 shadow-sm">
       <form id="contact-form" class="space-y-6">
         <div class="form-control">
-          <label for="name" class="label"><span class="label-text font-black text-[10px] uppercase tracking-widest text-stone-400">{t.name}</span></label>
-          <input type="text" id="name" name="name" required class="input input-bordered bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl" />
+          <label for="name" class="label"><span class="form-label">{t.name}</span></label>
+          <input type="text" id="name" name="name" required class="input input-bordered w-full bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl" />
         </div>
 
         <div class="form-control">
-          <label for="email" class="label"><span class="label-text font-black text-[10px] uppercase tracking-widest text-stone-400">{t.email}</span></label>
-          <input type="email" id="email" name="email" required class="input input-bordered bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl" />
+          <label for="email" class="label"><span class="form-label">{t.email}</span></label>
+          <input type="email" id="email" name="email" required class="input input-bordered w-full bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl" />
         </div>
 
         <div class="form-control">
-          <label for="message" class="label"><span class="label-text font-black text-[10px] uppercase tracking-widest text-stone-400">{t.message}</span></label>
-          <textarea id="message" name="message" required class="textarea textarea-bordered h-32 bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl"></textarea>
+          <label for="message" class="label"><span class="form-label">{t.message}</span></label>
+          <textarea id="message" name="message" required class="textarea textarea-bordered w-full h-32 bg-stone-50/50 focus:bg-white transition-all border-stone-200 rounded-xl"></textarea>
         </div>
 
         <button type="submit" id="submit-btn" class="btn btn-primary w-full shadow-lg shadow-emerald-100 border-none h-12 rounded-xl font-bold">

@@ -3,14 +3,10 @@ import type { APIRoute } from 'astro';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  // Sur Cloudflare Pages avec Astro 5, les variables peuvent se trouver dans locals.runtime.env
-  // ou injectées via process.env selon la configuration du projet
-  const runtime = (locals as any).runtime;
-  const env = runtime?.env || process.env;
-  
+  const env = typeof process !== 'undefined' ? process.env : import.meta.env;
+
   const apiKey = env.BREVO_API_KEY || import.meta.env.BREVO_API_KEY;
   const toEmail = env.CONTACT_EMAIL || import.meta.env.CONTACT_EMAIL;
-
   if (!apiKey || !toEmail) {
     console.error('Contact API Error: Missing BREVO_API_KEY or CONTACT_EMAIL in environment');
     return new Response(JSON.stringify({ 

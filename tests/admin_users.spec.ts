@@ -7,7 +7,7 @@ test.describe('Admin Users List [TEST]', () => {
     await page.goto('/fr/admin');
     
     // Check if the page title has updated (optional but good)
-    await expect(page.locator('h1')).toHaveText('Administration');
+    await expect(page.locator('h1').first()).toHaveText('Administration');
 
     // Check if the users section is visible
     const usersSection = page.locator('#users-section');
@@ -20,6 +20,7 @@ test.describe('Admin Users List [TEST]', () => {
 
     // Check if there are rows in the table
     const rows = usersTable.locator('tbody tr');
+    await expect(rows.first()).toBeVisible({ timeout: 10000 });
     const rowCount = await rows.count();
     expect(rowCount).toBeGreaterThan(0);
 

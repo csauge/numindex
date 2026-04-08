@@ -5,8 +5,7 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const runtime = (locals as any).runtime;
-    const env = runtime?.env || process.env;
+    const env = typeof process !== 'undefined' ? process.env : import.meta.env;
 
     const supabaseUrl = env.PUBLIC_SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;

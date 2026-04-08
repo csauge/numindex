@@ -1,5 +1,5 @@
 ---
-import { getEntry } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
@@ -18,7 +18,7 @@ if (!entry) {
   return Astro.redirect(`/${lang}/404`);
 }
 
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 ---
 
 <Layout title={entry.data.title} description={entry.data.subtitle} lang={lang}>
@@ -44,4 +44,4 @@ const { Content } = await entry.render();
     </article>
     
   </main>
-</Layout>
+</Layout></Layout>

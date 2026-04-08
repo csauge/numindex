@@ -49,6 +49,7 @@ export default defineConfig({
     env: {
       PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL || '',
       PUBLIC_SUPABASE_ANON_KEY: process.env.PUBLIC_SUPABASE_ANON_KEY || '',
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
     }
   },
 });

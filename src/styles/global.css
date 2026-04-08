@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui";
+
+@theme {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  
+  /* Couleurs de base Tailwind v4 */
+  --color-primary: #047857; /* Emerald 700 */
+  --color-primary-hover: #065f46; /* Emerald 800 */
+}
+
+/* Forçage radical pour DaisyUI v5 et Tailwind v4 */
+@layer base {
+  :root, [data-theme="numindex"] {
+    /* Variables DaisyUI 5 */
+    --p: #047857 !important;
+    --pc: #ffffff !important;
+    
+    --s: #133f1a !important;
+    --sc: #ffffff !important;
+    
+    --a: #10b981 !important;
+    --ac: #ffffff !important;
+
+    --b1: #fdfcfb !important;
+    --b2: #f1f5f2 !important;
+    --b3: #d8e2dc !important;
+
+    /* Info/Success/Warning/Error */
+    --in: #065f46 !important;
+    --su: #059669 !important;
+    --wa: #fbbf24 !important;
+    --er: #dc2626 !important;
+  }
+
+  /* Forcer les utilitaires Tailwind à utiliser le vert */
+  .text-primary {
+    color: #047857 !important;
+  }
+  
+  .border-primary {
+    border-color: #047857 !important;
+  }
+
+  .bg-primary {
+    background-color: #047857 !important;
+  }
+
+  .badge-primary {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+    color: #ffffff !important;
+  }
+
+  /* Liens et survols */
+  a {
+    @apply transition-all duration-200;
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  a:hover, 
+  .back-link:hover,
+  .resource-card:hover h2,
+  .group:hover .group-hover\:text-primary {
+    color: #047857 !important;
+  }
+
+  /* Correction critique pour les boutons primaires (Ajouter, Visiter...) */
+  .btn-primary {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+    color: #ffffff !important;
+  }
+  
+  .btn-primary:hover {
+    background-color: #065f46 !important;
+    border-color: #065f46 !important;
+    color: #ffffff !important; /* Force le texte en blanc au survol */
+  }
+
+  /* Boutons outline */
+  .btn-outline.btn-primary {
+    color: #047857 !important;
+    border-color: #047857 !important;
+    background-color: transparent !important;
+  }
+  
+  .btn-outline.btn-primary:hover {
+    background-color: #047857 !important;
+    color: #ffffff !important;
+  }
+}
+
+@layer components {
+  .back-link {
+    @apply inline-flex items-center gap-2 text-stone-400 transition-colors text-sm font-bold;
+  }
+
+  .form-control {
+    @apply flex flex-col gap-1.5 w-full;
+  }
+
+  .input, .textarea {
+    @apply w-full rounded-2xl border-stone-200 focus:border-primary focus:ring-1 focus:ring-primary/20;
+  }
+
+  .btn {
+    @apply rounded-2xl font-black;
+  }
+
+  .form-label {
+    @apply font-black text-[10px] uppercase tracking-widest text-stone-400;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Contenu Markdown */
+.prose a {
+  color: #047857 !important;
+  text-decoration: none;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(4, 120, 87, 0.2);
+}
+
+.prose a:hover {
+  border-bottom-color: rgba(4, 120, 87, 0.8);
+}
