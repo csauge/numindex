@@ -94,17 +94,17 @@ async function sendMonthlyDigest() {
     
     return `
       <tr>
-        <td style="padding-bottom: 8px; font-family: sans-serif; font-size: 13px; vertical-align: top;">
+        <td style="padding-bottom: 8px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; vertical-align: top;">
           <span style="color: #a8a29e; font-weight: 800; font-size: 10px; text-transform: uppercase; display: inline-block; width: 75px;">${catLabel}</span>
           <span style="color: #78716c; font-size: 10px; text-transform: uppercase; display: inline-block; width: 95px; margin-right: 8px;">${subCat}</span>
-          <a href="https://numindex.org/fr/resource/${r.id}" style="color: #047857; font-weight: 600; text-decoration: none;">${r.title}</a>
+          <a href="https://numindex.org/fr/resource/${r.id}" style="color: #1155cc; font-weight: normal; text-decoration: underline;">${r.title}</a>
         </td>
       </tr>
     `;
   }).join('');
 
   const htmlContent = `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917; line-height: 1.4;">
+    <div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917; line-height: 1.4;">
       <div style="text-align: center; margin-bottom: 24px; padding-top: 24px;">
         <img src="https://numindex.org/logo.svg" alt="numindex.org" width="80" style="margin-bottom: 12px;">
         <h1 style="font-size: 20px; font-weight: 900; color: #1c1917; margin: 0;">Le résumé mensuel</h1>
@@ -123,7 +123,7 @@ async function sendMonthlyDigest() {
       
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e7e5e4; text-align: center;">
         <p style="font-size: 10px; color: #a8a29e;">
-          Vous recevez cet email car vous avez activé l'option dans vos <a href="https://numindex.org/fr/profile?tab=settings" style="color: #047857; text-decoration: underline;">paramètres</a>.<br>
+          Vous recevez cet email car vous avez activé l'option dans vos <a href="https://numindex.org/fr/profile?tab=settings" style="color: #1155cc; text-decoration: underline;">paramètres</a>.<br>
           Pour vous désabonner, décochez l'option "Recevoir le résumé mensuel" dans votre compte.
         </p>
       </div>
