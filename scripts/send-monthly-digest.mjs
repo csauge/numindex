@@ -49,7 +49,7 @@ async function sendMonthlyDigest() {
   }
 
   if (!optedInProfiles || optedInProfiles.length === 0) {
-    console.log('Aucun utilisateur n\\'a souscrit au résumé mensuel. Fin du script.');
+    console.log("Aucun utilisateur n'a souscrit au résumé mensuel. Fin du script.");
     process.exit(0);
   }
 
@@ -116,13 +116,13 @@ async function sendMonthlyDigest() {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Erreur de l\\'API Brevo:', JSON.stringify(errorData, null, 2));
+      console.error("Erreur de l'API Brevo:", JSON.stringify(errorData, null, 2));
       process.exit(1);
     }
 
     console.log('Résumé mensuel envoyé avec succès !');
   } catch (err) {
-    console.error('Erreur lors de l\\'envoi de l\\'email:', err);
+    console.error("Erreur lors de l'envoi de l'email:", err);
     process.exit(1);
   }
 }
