@@ -52,17 +52,29 @@ async function fetchGithubStats(owner, repo) {
 
   const data = await res.json();
   
-  // Get latest release or last commit for version_date
-  let versionDate = data.updated_at; // Fallback to last update
+  // Base fallback: last push to the repository (more reliable than updated_at for code changes)
+  let versionDate = data.pushed_at;
   
   try {
+    // 1. Try to get the latest official release
     const relRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`, { headers });
     if (relRes.ok) {
       const relData = await relRes.json();
       versionDate = relData.published_at || relData.created_at;
+    } else {
+      // 2. Fallback: Try to get the latest tag if no release is found
+      const tagsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/tags`, { headers });
+      if (tagsRes.ok) {
+        const tagsData = await tagsRes.json();
+        if (tagsData.length > 0) {
+          // Note: To get the date of a tag, we would need to fetch the commit. 
+          // For efficiency, we keep pushed_at as the date, but we know a tag exists.
+          // Or we can just stick to pushed_at which is the most recent code state.
+        }
+      }
     }
   } catch (e) {
-    // Ignore release fetch error, fallback to updated_at
+    // Ignore fetch errors, fallback to pushed_at
   }
 
   return {
