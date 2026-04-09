@@ -83,7 +83,7 @@ async function sendMonthlyDigest() {
 
   const CATEGORY_LABELS = {
     acteur: 'Acteur',
-    evenement: 'Événement',
+    evenement: 'Event',
     contenu: 'Contenu',
     outil: 'Outil'
   };
@@ -94,10 +94,10 @@ async function sendMonthlyDigest() {
     
     return `
       <tr>
-        <td style="padding-bottom: 8px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; vertical-align: top;">
-          <span style="color: #a8a29e; font-weight: 800; font-size: 10px; text-transform: uppercase; display: inline-block; width: 75px;">${catLabel}</span>
-          <span style="color: #78716c; font-size: 10px; text-transform: uppercase; display: inline-block; width: 95px; margin-right: 8px;">${subCat}</span>
-          <a href="https://numindex.org/fr/resource/${r.id}" style="color: #1155cc; font-weight: normal; text-decoration: underline;">${r.title}</a>
+        <td style="padding-bottom: 6px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #a8a29e; width: 60px; vertical-align: top; font-weight: bold; text-transform: uppercase;">${catLabel}</td>
+        <td style="padding-bottom: 6px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #78716c; width: 85px; vertical-align: top; padding-right: 10px;">${subCat}</td>
+        <td style="padding-bottom: 6px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; vertical-align: top;">
+          <a href="https://numindex.org/fr/resource/${r.id}" style="color: #1155cc; text-decoration: underline;">${r.title}</a>
         </td>
       </tr>
     `;
