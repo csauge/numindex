@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     full_name text,
     role public.user_role DEFAULT 'user' NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    digest_opt_in boolean DEFAULT false NOT NULL
 );
 
 -- 2. Resources Table

@@ -6,6 +6,7 @@ export interface Profile {
   role: UserRole;
   created_at: string;
   updated_at: string;
+  digest_opt_in: boolean;
 }
 
 export interface Resource {

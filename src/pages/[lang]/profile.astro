@@ -25,6 +25,8 @@ const translations = {
     newEmail: "Nouvelle adresse email",
     changePassword: "Changer de mot de passe",
     newPassword: "Nouveau mot de passe",
+    digestOptIn: "Recevoir le résumé mensuel des nouvelles ressources",
+    digestOptInDesc: "Un email par mois, respectueux de votre boîte de réception.",
     updateBtn: "Mettre à jour",
     deleteAccount: "Supprimer mon compte",
     deleteWarning: "Cette action est irréversible et supprimera toutes vos données personnelles.",
@@ -53,6 +55,8 @@ const translations = {
     newEmail: "New email address",
     changePassword: "Change Password",
     newPassword: "New password",
+    digestOptIn: "Receive the monthly summary of new resources",
+    digestOptInDesc: "One email per month, respectful of your inbox.",
     updateBtn: "Update",
     deleteAccount: "Delete my account",
     deleteWarning: "This action is irreversible and will delete all your personal data.",
@@ -128,6 +132,19 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           <div id="contributions-list" class="space-y-4 hidden"></div>
 
           <div id="settings-list" class="space-y-8 hidden">
+            <!-- Notifications -->
+            <div class="p-6 bg-stone-50 rounded-2xl border border-stone-100">
+              <h3 class="font-bold text-stone-800 mb-4">Notifications</h3>
+              <div class="flex items-start gap-3">
+                <input type="checkbox" id="digest-opt-in" class="checkbox checkbox-success mt-1" />
+                <div>
+                  <label for="digest-opt-in" class="font-bold text-stone-700 cursor-pointer">{t.digestOptIn}</label>
+                  <p class="text-xs text-stone-500">{t.digestOptInDesc}</p>
+                  <p id="msg-digest" class="text-xs font-bold hidden mt-2"></p>
+                </div>
+              </div>
+            </div>
+
             <!-- Name -->
             <div id="name-section" class="p-6 bg-stone-50 rounded-2xl border border-stone-100">
               <h3 id="name-section-title" class="font-bold text-stone-800 mb-4">{t.changeName}</h3>
@@ -439,6 +456,33 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     const emailForm = document.getElementById('email-form') as HTMLFormElement;
     const btnEmail = document.getElementById('btn-email') as HTMLButtonElement;
     const msgEmail = document.getElementById('msg-email')!;
+
+    const digestCheckbox = document.getElementById('digest-opt-in') as HTMLInputElement;
+    if (digestCheckbox) {
+      digestCheckbox.checked = profile?.digest_opt_in || false;
+      
+      digestCheckbox.onchange = async () => {
+        digestCheckbox.disabled = true;
+        const msgDigest = document.getElementById('msg-digest')!;
+        msgDigest.classList.add('hidden');
+        
+        const { error } = await supabase.from('profiles').update({ digest_opt_in: digestCheckbox.checked }).eq('id', session.user.id);
+        
+        digestCheckbox.disabled = false;
+        if (error) {
+          msgDigest.innerText = error.message;
+          msgDigest.className = 'text-xs font-bold mt-2 text-red-500';
+          msgDigest.classList.remove('hidden');
+          digestCheckbox.checked = !digestCheckbox.checked; // Revert
+        } else {
+          const docLang = document.documentElement.lang || 'fr';
+          msgDigest.innerText = docLang === 'fr' ? 'Préférence mise à jour.' : 'Preference updated.';
+          msgDigest.className = 'text-xs font-bold mt-2 text-emerald-600';
+          msgDigest.classList.remove('hidden');
+          setTimeout(() => msgDigest.classList.add('hidden'), 3000);
+        }
+      };
+    }
 
     emailForm.onsubmit = async (e) => {
       e.preventDefault();

@@ -1,0 +1,28 @@
+name: Send Monthly Digest
+
+on:
+  schedule:
+    - cron: '0 9 1 * *' # Le 1er du mois à 09:00 UTC
+  workflow_dispatch: # Permet de déclencher manuellement pour tester
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run send monthly digest script
+        run: node scripts/send-monthly-digest.mjs
+        env:
+          PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
