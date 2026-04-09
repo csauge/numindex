@@ -85,4 +85,4 @@ Accédez au dashboard local (Studio) via : [http://127.0.0.1:54323](http://127.0
 
 ---
 
-*Ce projet est sous licence [MIT](LICENSE). 🌱 Pour un numérique plus conscient.*
+*Ce projet est sous licence [GNU GPL v3](LICENSE). 🌱 Pour un numérique plus conscient.*
