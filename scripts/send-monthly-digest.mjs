@@ -94,35 +94,35 @@ async function sendMonthlyDigest() {
     
     return `
       <tr>
-        <td style="padding-bottom: 12px; font-size: 14px; vertical-align: top;">
-          <span style="color: #78716c; font-weight: 800; font-size: 11px; text-transform: uppercase; display: inline-block; width: 90px;">[${subCat}]</span>
-          <span style="color: #a8a29e; font-size: 10px; text-transform: uppercase; display: inline-block; width: 70px; margin-right: 12px;">${catLabel}</span>
-          <a href="https://numindex.org/fr/resource/${r.id}" style="color: #047857; font-weight: 700; text-decoration: none;">${r.title}</a>
+        <td style="padding-bottom: 8px; font-family: sans-serif; font-size: 13px; vertical-align: top;">
+          <span style="color: #a8a29e; font-weight: 800; font-size: 10px; text-transform: uppercase; display: inline-block; width: 75px;">${catLabel}</span>
+          <span style="color: #78716c; font-size: 10px; text-transform: uppercase; display: inline-block; width: 95px; margin-right: 8px;">${subCat}</span>
+          <a href="https://numindex.org/fr/resource/${r.id}" style="color: #047857; font-weight: 600; text-decoration: none;">${r.title}</a>
         </td>
       </tr>
     `;
   }).join('');
 
   const htmlContent = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917; line-height: 1.5;">
-      <div style="text-align: center; margin-bottom: 32px; padding-top: 24px;">
-        <img src="https://numindex.org/logo.svg" alt="numindex.org" width="100" style="margin-bottom: 16px;">
-        <h1 style="font-size: 22px; font-weight: 900; color: #1c1917; margin: 0;">Le résumé mensuel</h1>
-        <p style="color: #78716c; margin-top: 4px; font-size: 14px; font-weight: 700;">numindex.org</p>
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917; line-height: 1.4;">
+      <div style="text-align: center; margin-bottom: 24px; padding-top: 24px;">
+        <img src="https://numindex.org/logo.svg" alt="numindex.org" width="80" style="margin-bottom: 12px;">
+        <h1 style="font-size: 20px; font-weight: 900; color: #1c1917; margin: 0;">Le résumé mensuel</h1>
+        <p style="color: #78716c; margin-top: 2px; font-size: 13px;">numindex.org</p>
       </div>
       
-      <p style="font-size: 15px;">Bonjour,</p>
-      <p style="font-size: 15px; margin-bottom: 24px;">Voici les <strong>${newResources.length} nouvelles ressources</strong> ajoutées ce mois-ci pour un numérique plus responsable :</p>
+      <p style="font-size: 14px;">Bonjour,</p>
+      <p style="font-size: 14px; margin-bottom: 20px;">Voici les <strong>${newResources.length} nouvelles ressources</strong> ajoutées ce mois-ci pour un numérique plus responsable :</p>
       
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 32px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
         ${resourceListHtml}
       </table>
       
-      <p style="font-size: 15px; margin-bottom: 8px;">À bientôt sur numindex.org,</p>
-      <p style="font-size: 15px; font-weight: 700; color: #047857;">L'équipe numindex</p>
+      <p style="font-size: 14px; margin-bottom: 4px;">À bientôt sur numindex.org,</p>
+      <p style="font-size: 14px; font-weight: 700; color: #047857;">L'équipe numindex</p>
       
-      <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e7e5e4; text-align: center;">
-        <p style="font-size: 11px; color: #a8a29e;">
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e7e5e4; text-align: center;">
+        <p style="font-size: 10px; color: #a8a29e;">
           Vous recevez cet email car vous avez activé l'option dans vos <a href="https://numindex.org/fr/profile?tab=settings" style="color: #047857; text-decoration: underline;">paramètres</a>.<br>
           Pour vous désabonner, décochez l'option "Recevoir le résumé mensuel" dans votre compte.
         </p>
