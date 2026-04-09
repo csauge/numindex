@@ -94,9 +94,9 @@ async function sendMonthlyDigest() {
     
     return `
       <tr>
-        <td style="padding-bottom: 6px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #1c1917; width: 65px; vertical-align: top;">${catLabel}</td>
-        <td style="padding-bottom: 6px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #1c1917; width: 90px; vertical-align: top; padding-right: 10px;">${subCat}</td>
-        <td style="padding-bottom: 6px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; vertical-align: top;">
+        <td style="padding-bottom: 4px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #1c1917; width: 75px; padding-right: 12px; vertical-align: top;">${catLabel}</td>
+        <td style="padding-bottom: 4px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #1c1917; width: 90px; vertical-align: top; padding-right: 10px;">${subCat}</td>
+        <td style="padding-bottom: 4px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; vertical-align: top;">
           <a href="https://numindex.org/fr/resource/${r.id}" style="color: #1155cc; text-decoration: underline;">${r.title}</a>
         </td>
       </tr>
