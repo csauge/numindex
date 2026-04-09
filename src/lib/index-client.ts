@@ -13,6 +13,7 @@ export interface Resource {
   up: string;
   pub: string;
   next: string;
+  stars: number | null;
   tags: string[];
   kw: string;
 }
@@ -268,6 +269,13 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
       const subCat = d.tags.find(t => mandatoryTags.includes(t));
       if (subCat) {
         html += '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-tight border border-emerald-200 shadow-sm">' + translateTag(subCat) + '</span>';
+      }
+
+      if (d.stars) {
+        html += '<span class="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-stone-50 text-emerald-600 text-[9px] font-black uppercase tracking-tight border border-stone-100 shadow-sm">';
+        html += '<svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+        html += d.stars;
+        html += '</span>';
       }
       html += '</div>';
       

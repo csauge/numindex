@@ -35,6 +35,12 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
     if (field === 'rss_url') {
       return res.metadata?.rss_url !== diffWith.metadata?.rss_url;
     }
+    if (field === 'repository_url') {
+      return res.metadata?.repository_url !== diffWith.metadata?.repository_url;
+    }
+    if (field === 'stars_count') {
+      return res.metadata?.stars_count !== diffWith.metadata?.stars_count;
+    }
     if (field === 'last_episode_title') {
       return res.metadata?.last_episode_title !== diffWith.metadata?.last_episode_title;
     }
@@ -159,6 +165,20 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
               RSS
             </span>
           ` : ''}
+
+          ${res.metadata?.repository_url ? `
+            <span class="flex items-center gap-1 text-[9px] font-black bg-stone-50 border border-stone-200 px-1.5 py-0.5 rounded text-stone-500 uppercase tracking-tight ${isMod('repository_url') ? diffClass : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+              Repo
+            </span>
+          ` : ''}
+
+          ${res.metadata?.stars_count ? `
+            <span class="flex items-center gap-1 text-[9px] font-black bg-stone-50 border border-stone-200 px-1.5 py-0.5 rounded text-emerald-600 uppercase tracking-tight ${isMod('stars_count') ? diffClass : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              ${res.metadata.stars_count}
+            </span>
+          ` : ''}
         </div>
 
         <h2 class="text-xl font-black text-stone-800 mb-1 inline-block ${isMod('title') ? diffClass : ''}">${res.title || '...'}</h2>
@@ -167,6 +187,13 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
           <div class="mb-2 ${isMod('rss_url') ? diffClass : ''}">
             <p class="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none mb-1">Flux RSS :</p>
             <p class="text-[10px] text-primary truncate">${res.metadata.rss_url}</p>
+          </div>
+        ` : ''}
+
+        ${res.metadata?.repository_url ? `
+          <div class="mb-2 ${isMod('repository_url') ? diffClass : ''}">
+            <p class="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none mb-1">Dépôt :</p>
+            <p class="text-[10px] text-primary truncate">${res.metadata.repository_url}</p>
           </div>
         ` : ''}
 

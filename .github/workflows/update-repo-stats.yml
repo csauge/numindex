@@ -1,0 +1,26 @@
+name: Update Repo Stats
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Every day at 2:00 AM UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-repo-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run update script
+        run: node scripts/update-repo-stats.mjs
+        env:
+          PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GH_TOKEN_REPO_STATS: ${{ secrets.GH_TOKEN_REPO_STATS }}

@@ -192,6 +192,19 @@ const jsonLd = JSON.stringify(baseJsonLd);
             </a>
           )}
           
+          {res.metadata?.repository_url && (
+            <a href={res.metadata.repository_url} target="_blank" rel="noopener noreferrer" class="btn btn-outline border-stone-200 hover:border-emerald-300 hover:bg-emerald-50 text-stone-700 w-full rounded-2xl font-bold gap-2 group transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400 group-hover:text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+              {lang === 'fr' ? 'Dépôt' : 'Repository'}
+              {res.metadata.stars_count && (
+                <span class="ml-auto flex items-center gap-0.5 text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                  {res.metadata.stars_count}
+                </span>
+              )}
+            </a>
+          )}
+          
           <button id="btn-favorite-main" class="btn btn-outline border-stone-200 hover:border-amber-300 hover:bg-amber-50 text-stone-500 hover:text-amber-600 w-full rounded-2xl font-bold gap-2 group transition-all" data-id={id}>
             <svg id="fav-star-main" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-stone-300 fill-none transition-colors" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />

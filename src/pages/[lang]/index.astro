@@ -102,6 +102,7 @@ const clientResources = allRessources.map(res => ({
   up: res.updated_at,
   pub: res.metadata?.published_at,
   next: getNextEventDate(res),
+  stars: res.metadata?.stars_count || null,
   tags: res.tags || [],
   kw: (res.title + " " + (res.description || "") + " " + (res.tags?.join(" ") || "")).toLowerCase()
 }));

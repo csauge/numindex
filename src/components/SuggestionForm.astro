@@ -60,6 +60,7 @@ const t = {
     end: 'Fin',
     online: 'En ligne / Online',
     rssUrl: 'Lien du flux RSS',
+    repositoryUrl: 'Lien du dépôt (GitHub / GitLab)',
   },
   en: {
     titleCreate: isModeration ? 'Correct proposal' : 'Suggest addition',
@@ -92,6 +93,7 @@ const t = {
     end: 'End',
     online: 'Online',
     rssUrl: 'RSS Feed URL',
+    repositoryUrl: 'Repository link (GitHub / GitLab)',
   }
 }[lang];
 
@@ -111,6 +113,7 @@ const initial = {
   published_at: existingData?.metadata?.published_at || '',
   version_date: existingData?.metadata?.version_date || '',
   rss_url: existingData?.metadata?.rss_url || '',
+  repository_url: existingData?.metadata?.repository_url || '',
   occurrences: existingData?.metadata?.occurrences || [],
 };
 ---

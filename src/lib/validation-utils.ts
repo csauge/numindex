@@ -37,6 +37,9 @@ export function prepareMetadata(category: string, rawData: any) {
     }
   } else if (category === 'outil') {
     metadata.version_date = rawData.version_date || '';
+    if (rawData.repository_url) {
+      metadata.repository_url = rawData.repository_url;
+    }
   }
   
   return metadata;

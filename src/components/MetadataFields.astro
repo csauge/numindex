@@ -6,6 +6,7 @@ interface Props {
     published_at: string;
     version_date: string;
     rss_url: string;
+    repository_url: string;
   };
 }
 
@@ -43,6 +44,11 @@ const { t, initial } = Astro.props;
 <div id="rss-url-container" class="form-control hidden">
   <label class="label"><span class="form-label">{t.rssUrl}</span></label>
   <input type="url" name="rss_url" value={initial.rss_url} placeholder="https://..." class="input input-bordered w-full" />
+</div>
+
+<div id="repository-url-container" class="form-control hidden">
+  <label class="label"><span class="form-label">{t.repositoryUrl}</span></label>
+  <input type="url" name="repository_url" value={initial.repository_url} placeholder="https://github.com/..." class="input input-bordered w-full" />
 </div>
 
 <div id="version-date-container" class="form-control hidden">

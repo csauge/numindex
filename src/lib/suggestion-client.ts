@@ -30,6 +30,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     onlineToggle: document.getElementById('online-toggle') as HTMLInputElement,
     pubDateInput: form.querySelector('[name="published_at"]') as HTMLInputElement,
     rssUrlInput: form.querySelector('[name="rss_url"]') as HTMLInputElement,
+    repositoryUrlInput: form.querySelector('[name="repository_url"]') as HTMLInputElement,
     versionDateInput: form.querySelector('[name="version_date"]') as HTMLInputElement,
     occurrencesList: document.getElementById('occurrences-list'),
     addOccurrenceBtn: document.getElementById('add-occurrence'),
@@ -173,6 +174,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     const isContenu = cat === 'contenu';
     const isOutil = cat === 'outil';
     const isPodcast = elements.mandatoryTag.value === 'Podcast';
+    const isLogiciel = elements.mandatoryTag.value === 'Logiciel';
     const isDelete = (elements.reason.closest('#delete-fields') as HTMLElement)?.classList.contains('hidden') === false;
 
     // Build the data object for preview
@@ -184,6 +186,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
       occurrences,
       published_at: elements.pubDateInput.value,
       rss_url: elements.rssUrlInput.value,
+      repository_url: elements.repositoryUrlInput.value,
       version_date: elements.versionDateInput.value
     });
 
@@ -222,7 +225,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
     document.getElementById('occurrences-container')?.classList.toggle('hidden', !isEvenement || isDelete);
     document.getElementById('pub-date-container')?.classList.toggle('hidden', !isContenu || isPodcast || isDelete);
     document.getElementById('rss-url-container')?.classList.toggle('hidden', !isPodcast || isDelete);
-    document.getElementById('version-date-container')?.classList.toggle('hidden', !isOutil || isDelete);
+    document.getElementById('repository-url-container')?.classList.toggle('hidden', !isLogiciel || isDelete);
+    document.getElementById('version-date-container')?.classList.toggle('hidden', !isOutil || isLogiciel || isDelete);
     document.getElementById('related-container')?.classList.toggle('hidden', isActeur || isDelete);
   }
 
@@ -428,6 +432,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
         occurrences,
         published_at: fetchedRssPublishedAt,
         rss_url: elements.rssUrlInput.value,
+        repository_url: elements.repositoryUrlInput.value,
         version_date: elements.versionDateInput.value
       });
       
