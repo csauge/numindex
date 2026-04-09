@@ -22,7 +22,7 @@ async function sendMonthlyDigest() {
 
   const { data: newResources, error: resourcesError } = await supabase
     .from('resources')
-    .select('id, title, category, link')
+    .select('id, title, category, tags')
     .gte('created_at', thirtyDaysAgo.toISOString());
 
   if (resourcesError) {
@@ -74,35 +74,55 @@ async function sendMonthlyDigest() {
   console.log(`Envoi du résumé à ${bccList.length} utilisateur(s)...`);
 
   // 4. Générer le contenu de l'email
-  const resourceListHtml = newResources.map(r => `
-    <div style="margin-bottom: 16px; padding: 16px; background-color: #fdfcfb; border-radius: 16px; border: 1px solid #e7e5e4;">
-      <a href="https://numindex.org/fr/resource/${r.id}" style="text-decoration: none; display: block;">
-        <span style="display: block; font-size: 16px; font-weight: 800; color: #047857; margin-bottom: 6px;">${r.title}</span>
-        <span style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: #78716c; background-color: #ffffff; padding: 2px 6px; border-radius: 6px; border: 1px solid #e7e5e4; display: inline-block;">${r.category}</span>
-      </a>
-    </div>
-  `).join('');
+  const MANDATORY_TAGS = [
+    'Entreprise', 'Association', 'Institution', 'Coopérative', 'Collectif', 'Personne',
+    'Conférence', 'Atelier', 'Webinaire', 'Meetup', 'Salon',
+    'Article', 'Livre', 'Rapport', 'Podcast', 'Vidéo', 'Infographie',
+    'Logiciel', 'Référentiel', 'Guide', 'Jeu', 'Formation', 'Loi', 'Travail'
+  ];
+
+  const CATEGORY_LABELS = {
+    acteur: 'Acteur',
+    evenement: 'Événement',
+    contenu: 'Contenu',
+    outil: 'Outil'
+  };
+
+  const resourceListHtml = newResources.map(r => {
+    const subCat = r.tags?.find(t => MANDATORY_TAGS.includes(t)) || '';
+    const catLabel = CATEGORY_LABELS[r.category] || r.category;
+    
+    return `
+      <tr>
+        <td style="padding-bottom: 12px; font-size: 14px; vertical-align: top;">
+          <span style="color: #78716c; font-weight: 800; font-size: 11px; text-transform: uppercase; display: inline-block; width: 90px;">[${subCat}]</span>
+          <span style="color: #a8a29e; font-size: 10px; text-transform: uppercase; display: inline-block; width: 70px; margin-right: 12px;">${catLabel}</span>
+          <a href="https://numindex.org/fr/resource/${r.id}" style="color: #047857; font-weight: 700; text-decoration: none;">${r.title}</a>
+        </td>
+      </tr>
+    `;
+  }).join('');
 
   const htmlContent = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917; line-height: 1.5;">
       <div style="text-align: center; margin-bottom: 32px; padding-top: 24px;">
-        <img src="https://numindex.org/logo.svg" alt="numindex.org" width="120" style="margin-bottom: 16px;">
-        <h1 style="font-size: 24px; font-weight: 900; color: #1c1917; margin: 0;">Le résumé mensuel</h1>
-        <p style="color: #78716c; margin-top: 4px;">numindex.org</p>
+        <img src="https://numindex.org/logo.svg" alt="numindex.org" width="100" style="margin-bottom: 16px;">
+        <h1 style="font-size: 22px; font-weight: 900; color: #1c1917; margin: 0;">Le résumé mensuel</h1>
+        <p style="color: #78716c; margin-top: 4px; font-size: 14px; font-weight: 700;">numindex.org</p>
       </div>
       
-      <p style="font-size: 16px;">Bonjour,</p>
-      <p style="font-size: 16px; margin-bottom: 24px;">Voici les <strong>${newResources.length} nouvelles ressources</strong> ajoutées ce mois-ci pour un numérique plus responsable :</p>
+      <p style="font-size: 15px;">Bonjour,</p>
+      <p style="font-size: 15px; margin-bottom: 24px;">Voici les <strong>${newResources.length} nouvelles ressources</strong> ajoutées ce mois-ci pour un numérique plus responsable :</p>
       
-      <div style="margin-bottom: 32px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 32px;">
         ${resourceListHtml}
-      </div>
+      </table>
       
-      <p style="font-size: 16px; margin-bottom: 8px;">À bientôt sur numindex.org,</p>
-      <p style="font-size: 16px; font-weight: 700; color: #047857;">L'équipe numindex</p>
+      <p style="font-size: 15px; margin-bottom: 8px;">À bientôt sur numindex.org,</p>
+      <p style="font-size: 15px; font-weight: 700; color: #047857;">L'équipe numindex</p>
       
       <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e7e5e4; text-align: center;">
-        <p style="font-size: 12px; color: #a8a29e;">
+        <p style="font-size: 11px; color: #a8a29e;">
           Vous recevez cet email car vous avez activé l'option dans vos <a href="https://numindex.org/fr/profile?tab=settings" style="color: #047857; text-decoration: underline;">paramètres</a>.<br>
           Pour vous désabonner, décochez l'option "Recevoir le résumé mensuel" dans votre compte.
         </p>
