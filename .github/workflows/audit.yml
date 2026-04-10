@@ -26,7 +26,7 @@ jobs:
         run: npx @lhci/cli autorun
         continue-on-error: true
         env:
-          LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LHCI_GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
         
       - name: Generate SVG Badges
         run: node scripts/generate-badges.mjs

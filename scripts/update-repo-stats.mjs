@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const githubToken = process.env.GH_TOKEN_REPO_STATS; // Optionnel mais recommandé
+const githubToken = process.env.GH_API_TOKEN; // Optionnel mais recommandé
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('Erreur: PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont requis.');
