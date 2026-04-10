@@ -194,6 +194,10 @@ export function initSuggestionForm(form: HTMLFormElement) {
       metadata.last_episode_title = existingData.metadata.last_episode_title;
     }
 
+    if (existingData?.metadata?.stars_count && existingData?.metadata?.repository_url === elements.repositoryUrlInput.value) {
+      metadata.stars_count = existingData.metadata.stars_count;
+    }
+
     const previewData: any = {
       title: elements.title.value,
       description: elements.desc.value,
@@ -440,6 +444,10 @@ export function initSuggestionForm(form: HTMLFormElement) {
         metadata.last_episode_title = fetchedRssTitle;
       } else if (existingData?.metadata?.last_episode_title) {
         metadata.last_episode_title = existingData.metadata.last_episode_title;
+      }
+
+      if (existingData?.metadata?.stars_count && existingData?.metadata?.repository_url === elements.repositoryUrlInput.value) {
+        metadata.stars_count = existingData.metadata.stars_count;
       }
 
       const payload: any = {
