@@ -25,6 +25,8 @@ jobs:
       - name: Run Lighthouse & EcoIndex Audit
         run: npx @lhci/cli autorun
         continue-on-error: true
+        env:
+          LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
       - name: Generate SVG Badges
         run: node scripts/generate-badges.mjs
@@ -33,6 +35,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add public/badge-performance.svg public/badge-ecoindex.svg
+          git add public/badge-*.svg
           git commit -m "chore: update ecoindex and lighthouse badges [skip ci]" || echo "No changes to commit"
           git push || echo "No changes to push"

@@ -21,8 +21,9 @@ function getPerfColor(score) {
 }
 
 function generateBadgeSVG(label, value, color, textColor = '#fff') {
-  const labelWidth = 85;
-  const valueWidth = 35;
+  // Calcul dynamique de la largeur du label basé sur le nombre de caractères (approx 7px par car)
+  const labelWidth = Math.max(85, label.length * 7 + 10);
+  const valueWidth = Math.max(35, value.length * 7 + 10);
   const totalWidth = labelWidth + valueWidth;
   
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="20" role="img" aria-label="${label}: ${value}">
@@ -53,26 +54,38 @@ async function run() {
     process.exit(1);
   }
 
-  // On prend le dernier rapport (ou on pourrait moyenner)
+  // On prend le dernier rapport
   const reportPath = path.join(LH_RESULTS_DIR, files[files.length - 1]);
   const lhr = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
 
   // Extraction scores
-  const perfScore = Math.round((lhr.categories?.performance?.score || 0) * 100);
-  const ecoindexScore = Math.round((lhr.categories?.ecoindex?.score || lhr.audits?.['ecoindex']?.score || 0) * 100);
+  const getScore = (cat) => Math.round((lhr.categories?.[cat]?.score || 0) * 100);
   
-  const ecoGrade = getGrade(ecoindexScore);
-  const perfColor = getPerfColor(perfScore);
+  const perf = getScore('performance');
+  const acc = getScore('accessibility');
+  const bp = getScore('best-practices');
+  const seo = getScore('seo');
+  const ecoindex = Math.round((lhr.categories?.ecoindex?.score || lhr.audits?.['ecoindex']?.score || 0) * 100);
+  
+  const ecoGrade = getGrade(ecoindex);
 
   console.log(`📊 Résultats audit :`);
-  console.log(`- Performance: ${perfScore}%`);
-  console.log(`- EcoIndex: ${ecoindexScore}/100 (Grade ${ecoGrade.label})`);
+  console.log(`- Performance: ${perf}%`);
+  console.log(`- Accessibilité: ${acc}%`);
+  console.log(`- Best Practices: ${bp}%`);
+  console.log(`- SEO: ${seo}%`);
+  console.log(`- EcoIndex: ${ecoindex}/100 (Grade ${ecoGrade.label})`);
 
   // Sauvegarde des badges
   if (!fs.existsSync(PUBLIC_DIR)) fs.mkdirSync(PUBLIC_DIR);
   
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'badge-performance.svg'), generateBadgeSVG('Lighthouse Performance', `${perfScore}%`, perfColor));
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'badge-ecoindex.svg'), generateBadgeSVG('EcoIndex', ecoGrade.label, ecoGrade.color, ecoGrade.textColor || '#fff'));
+  const save = (name, svg) => fs.writeFileSync(path.join(PUBLIC_DIR, name), svg);
+
+  save('badge-performance.svg', generateBadgeSVG('Performance', `${perf}%`, getPerfColor(perf)));
+  save('badge-accessibility.svg', generateBadgeSVG('Accessibility', `${acc}%`, getPerfColor(acc)));
+  save('badge-best-practices.svg', generateBadgeSVG('Best Practices', `${bp}%`, getPerfColor(bp)));
+  save('badge-seo.svg', generateBadgeSVG('SEO', `${seo}%`, getPerfColor(seo)));
+  save('badge-ecoindex.svg', generateBadgeSVG('EcoIndex', ecoGrade.label, ecoGrade.color, ecoGrade.textColor || '#fff'));
 
   console.log('✅ Badges SVG générés dans le dossier public/.');
 }
