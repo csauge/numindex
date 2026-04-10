@@ -9,6 +9,7 @@ const { lang } = Astro.params as { lang: 'fr' | 'en' };
 const translations = {
   fr: { 
     title: "Administration", 
+    moderation_title: "Modérations de ressources à approuver",
     noPending: "Aucune suggestion en attente.", 
     loading: "Chargement des suggestions...",
     back: "Retour à l'index",
@@ -23,6 +24,7 @@ const translations = {
   },
   en: { 
     title: "Administration", 
+    moderation_title: "Moderations to approve",
     noPending: "No pending suggestions.", 
     loading: "Loading suggestions...",
     back: "Back to index",
@@ -51,9 +53,24 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       </span>
     </div>
 
-    <h1 class="text-3xl font-black mb-8">{t.title}</h1>
+    <h1 class="text-3xl font-black mb-8 main-title">{t.title}</h1>
 
-    <div class="mb-8 bg-white border border-stone-100 p-8 rounded-3xl shadow-sm">
+    <div class="mb-12" id="moderation-section">
+      <h2 class="text-xl font-black text-stone-800 mb-6">{t.moderation_title}</h2>
+      
+      <div id="loading-state" class="bg-white border border-stone-100 p-12 rounded-3xl text-center shadow-sm">
+        <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
+        <p class="text-stone-400 font-medium italic">{t.loading}</p>
+      </div>
+
+      <div id="empty-state" class="hidden bg-stone-50 border border-stone-200 p-12 rounded-3xl text-center">
+        <p class="text-stone-400 font-medium italic">{t.noPending}</p>
+      </div>
+
+      <div id="suggestions-list" class="grid gap-6" data-categories={JSON.stringify(CATEGORIES)}></div>
+    </div>
+
+    <div class="mb-12 bg-white border border-stone-100 p-8 rounded-3xl shadow-sm">
       <h2 class="text-xl font-black text-stone-800 mb-4">{lang === 'fr' ? 'Inviter un utilisateur' : 'Invite a user'}</h2>
       <form id="invite-form" class="flex gap-4">
         <input type="email" id="invite-email" required placeholder={lang === 'fr' ? 'Adresse email' : 'Email address'} class="input input-bordered rounded-xl flex-grow bg-stone-50 border-stone-200 focus:border-primary focus:ring-2 focus:ring-primary/20" />
@@ -64,7 +81,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       <p id="invite-message" class="mt-4 text-sm font-bold hidden"></p>
     </div>
 
-    <div class="mb-8 bg-white border border-stone-100 p-8 rounded-3xl shadow-sm" id="users-section">
+    <div class="mb-12 bg-white border border-stone-100 p-8 rounded-3xl shadow-sm" id="users-section">
       <h2 class="text-xl font-black text-stone-800 mb-4">{t.users_title}</h2>
       
       <div id="users-loading-state" class="text-center py-8">
@@ -89,17 +106,6 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       </div>
       <p id="users-error" class="hidden text-sm font-bold text-red-500 mt-4 text-center"></p>
     </div>
-
-    <div id="loading-state" class="bg-white border border-stone-100 p-12 rounded-3xl text-center shadow-sm">
-      <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
-      <p class="text-stone-400 font-medium italic">{t.loading}</p>
-    </div>
-
-    <div id="empty-state" class="hidden bg-stone-50 border border-stone-200 p-12 rounded-3xl text-center">
-      <p class="text-stone-400 font-medium italic">{t.noPending}</p>
-    </div>
-
-    <div id="suggestions-list" class="grid gap-6" data-categories={JSON.stringify(CATEGORIES)}></div>
 
     <div id="access-denied" class="hidden bg-white border border-stone-50 p-12 rounded-3xl text-center shadow-xl shadow-stone-100/50 max-w-lg mx-auto mt-12">
       <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
