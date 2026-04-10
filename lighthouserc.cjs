@@ -8,9 +8,10 @@ module.exports = {
       ],
       numberOfRuns: 3,
       settings: {
-        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+        chromeFlags: '--no-sandbox --headless --disable-gpu',
+        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo', 'lighthouse-plugin-ecoindex'],
         plugins: ['lighthouse-plugin-ecoindex'],
-        skipAudits: ['uses-http2'] // Cloudflare handle this but LH locally might complain
+        skipAudits: ['uses-http2'] 
       }
     },
     assert: {
