@@ -66,13 +66,11 @@ async function run() {
   const bp = getScore('best-practices');
   const seo = getScore('seo');
   
-  // Extraction EcoIndex (via fichier généré par @cnumr/eco-index-audit)
+  // Extraction EcoIndex (via fichier généré par Playwright)
   let ecoindex = 0;
   if (fs.existsSync('ecoindex-results.json')) {
     try {
-      const results = JSON.parse(fs.readFileSync('ecoindex-results.json', 'utf8'));
-      // Format @cnumr/eco-index-audit : { score: X, grade: 'Y' } ou tableau
-      const data = Array.isArray(results) ? results[0] : results;
+      const data = JSON.parse(fs.readFileSync('ecoindex-results.json', 'utf8'));
       ecoindex = Math.round(data.ecoIndex || data.score || 0);
     } catch (e) {
       console.error('⚠️  Impossible de lire les résultats EcoIndex :', e.message);

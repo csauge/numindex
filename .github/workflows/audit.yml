@@ -26,10 +26,10 @@ jobs:
         run: npx @lhci/cli autorun
         continue-on-error: true
         env:
-          LHCI_GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+          LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run EcoIndex Audit
-        run: npx @cnumr/eco-index-audit --url https://numindex.org/fr --output json > ecoindex-results.json || echo "[]" > ecoindex-results.json
+      - name: Run EcoIndex Audit (Custom Playwright Script)
+        run: node scripts/run-ecoindex.mjs
         continue-on-error: true
         
       - name: Generate SVG Badges
