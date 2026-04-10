@@ -58,14 +58,26 @@ async function run() {
   const reportPath = path.join(LH_RESULTS_DIR, files[files.length - 1]);
   const lhr = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
 
-  // Extraction scores
+  // Extraction scores Lighthouse
   const getScore = (cat) => Math.round((lhr.categories?.[cat]?.score || 0) * 100);
   
   const perf = getScore('performance');
   const acc = getScore('accessibility');
   const bp = getScore('best-practices');
   const seo = getScore('seo');
-  const ecoindex = Math.round((lhr.categories?.ecoindex?.score || lhr.audits?.['ecoindex']?.score || 0) * 100);
+  
+  // Extraction EcoIndex (via fichier généré par @cnumr/eco-index-audit)
+  let ecoindex = 0;
+  if (fs.existsSync('ecoindex-results.json')) {
+    try {
+      const results = JSON.parse(fs.readFileSync('ecoindex-results.json', 'utf8'));
+      // Format @cnumr/eco-index-audit : { score: X, grade: 'Y' } ou tableau
+      const data = Array.isArray(results) ? results[0] : results;
+      ecoindex = Math.round(data.ecoIndex || data.score || 0);
+    } catch (e) {
+      console.error('⚠️  Impossible de lire les résultats EcoIndex :', e.message);
+    }
+  }
   
   const ecoGrade = getGrade(ecoindex);
 

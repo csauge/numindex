@@ -22,11 +22,15 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Run Lighthouse & EcoIndex Audit
+      - name: Run Lighthouse Audit
         run: npx @lhci/cli autorun
         continue-on-error: true
         env:
           LHCI_GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+
+      - name: Run EcoIndex Audit
+        run: npx @cnumr/eco-index-audit --url https://numindex.org/fr --output json > ecoindex-results.json || echo "[]" > ecoindex-results.json
+        continue-on-error: true
         
       - name: Generate SVG Badges
         run: node scripts/generate-badges.mjs

@@ -5,15 +5,13 @@ module.exports = {
       numberOfRuns: 1,
       settings: {
         chromeFlags: '--no-sandbox --headless --disable-gpu',
-        plugins: ['lighthouse-plugin-ecoindex'],
-        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo', 'ecoindex']
+        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo']
       }
     },
     assert: {
       assertions: {
         'categories:performance': ['warn', { minScore: 0.70 }],
-        'categories:accessibility': ['warn', { minScore: 0.70 }],
-        'categories:ecoindex': ['warn', { minScore: 0.01 }] 
+        'categories:accessibility': ['warn', { minScore: 0.70 }]
       }
     },
     upload: {
