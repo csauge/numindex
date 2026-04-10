@@ -1,4 +1,4 @@
-name: Update Repo Stats
+name: Daily Repo Stats Update
 
 on:
   schedule:
