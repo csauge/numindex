@@ -21,4 +21,16 @@ In line with our values, the **numindex.org** platform itself applies the princi
 * **Accessibility:** Our platform is designed to be accessible and inclusive, complying with web standards.
 * **Transparency and Ethics:** The project is driven by a desire for openness, with eco-responsible hosting and minimalist data management.
 
+## Quality and Eco-design
+
+We automatically audit the performance and eco-design of our platform with every technical update. These audits are performed under strict conditions (average 4G mobile profile) to reflect the real user experience.
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;">
+  <img src="/badge-ecoindex.svg" alt="EcoIndex Score" loading="lazy" />
+  <img src="/badge-performance.svg" alt="Lighthouse Performance" loading="lazy" />
+  <img src="/badge-accessibility.svg" alt="Lighthouse Accessibility" loading="lazy" />
+  <img src="/badge-best-practices.svg" alt="Lighthouse Best Practices" loading="lazy" />
+  <img src="/badge-seo.svg" alt="Lighthouse SEO" loading="lazy" />
+</div>
+
 Join us in this endeavor and help enrich our directory of positive-impact initiatives.

@@ -91,10 +91,10 @@ async function run() {
   
   const save = (name, svg) => fs.writeFileSync(path.join(PUBLIC_DIR, name), svg);
 
-  save('badge-performance.svg', generateBadgeSVG('Performance', `${perf}%`, getPerfColor(perf)));
-  save('badge-accessibility.svg', generateBadgeSVG('Accessibility', `${acc}%`, getPerfColor(acc)));
-  save('badge-best-practices.svg', generateBadgeSVG('Best Practices', `${bp}%`, getPerfColor(bp)));
-  save('badge-seo.svg', generateBadgeSVG('SEO', `${seo}%`, getPerfColor(seo)));
+  save('badge-performance.svg', generateBadgeSVG('Lighthouse Perf.', `${perf}%`, getPerfColor(perf)));
+  save('badge-accessibility.svg', generateBadgeSVG('LH Access.', `${acc}%`, getPerfColor(acc)));
+  save('badge-best-practices.svg', generateBadgeSVG('LH Best Prac.', `${bp}%`, getPerfColor(bp)));
+  save('badge-seo.svg', generateBadgeSVG('LH SEO', `${seo}%`, getPerfColor(seo)));
   save('badge-ecoindex.svg', generateBadgeSVG('EcoIndex', ecoGrade.label, ecoGrade.color, ecoGrade.textColor || '#fff'));
 
   console.log('✅ Badges SVG générés dans le dossier public/.');

@@ -216,6 +216,11 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           <a href={`/${lang}/terms`} class="hover:text-primary transition-colors">{lang === 'fr' ? "Conditions d'utilisation" : 'Terms of Use'}</a>
           <a href={`/${lang}/contact`} class="hover:text-primary transition-colors">{lang === 'fr' ? 'Contact' : 'Contact'}</a>
         </nav>
+        <div class="flex justify-center mt-4">
+          <a href="https://www.ecoindex.fr/" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
+            <img src="/badge-ecoindex.svg" alt="EcoIndex Score" class="h-5 w-auto" loading="lazy" decoding="async" />
+          </a>
+        </div>
       </div>
     </footer>
 
