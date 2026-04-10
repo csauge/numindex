@@ -58,8 +58,8 @@ async function run() {
   const lhr = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
 
   // Extraction scores
-  const perfScore = Math.round(lhr.categories.performance.score * 100);
-  const ecoindexScore = Math.round(lhr.audits['ecoindex']?.score * 100) || 0;
+  const perfScore = Math.round(lhr.categories.performance?.score * 100) || 0;
+  const ecoindexScore = Math.round((lhr.categories.ecoindex?.score || lhr.audits['ecoindex']?.score || 0) * 100);
   
   const ecoGrade = getGrade(ecoindexScore);
   const perfColor = getPerfColor(perfScore);

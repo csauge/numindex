@@ -19,8 +19,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build project
+        run: npm run build
+
       - name: Run Lighthouse & EcoIndex Audit
-        run: npx @lhci/cli autorun --config=lighthouserc.cjs
+        run: npx @lhci/cli autorun
         
       - name: Generate SVG Badges
         run: node scripts/generate-badges.mjs
@@ -30,4 +33,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add public/badge-performance.svg public/badge-ecoindex.svg
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update ecoindex and lighthouse badges" && git push)
+          git commit -m "chore: update ecoindex and lighthouse badges [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
