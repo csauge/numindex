@@ -27,6 +27,7 @@
     "astro": "^5.4.2",
     "browser-image-compression": "^2.0.2",
     "daisyui": "^5.5.19",
+    "ecoindex": "^2.0.1",
     "marked": "^18.0.0",
     "playwright": "^1.59.1",
     "rss-parser": "^3.13.0",
