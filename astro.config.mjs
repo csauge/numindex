@@ -31,6 +31,9 @@ export default defineConfig({
     optimizeDeps: {
       include: ['browser-image-compression'],
     },
+    ssr: {
+      external: ['http', 'https', 'url', 'events', 'timers', 'stream'],
+    },
   },
   i18n: {
     defaultLocale: 'fr',
