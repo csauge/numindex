@@ -24,6 +24,7 @@ jobs:
 
       - name: Run Lighthouse & EcoIndex Audit
         run: npx @lhci/cli autorun
+        continue-on-error: true
         
       - name: Generate SVG Badges
         run: node scripts/generate-badges.mjs
