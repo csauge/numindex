@@ -267,6 +267,14 @@ const jsonLd = JSON.stringify(baseJsonLd);
 
         <div class="prose prose-stone max-w-none">
           <p class="text-lg text-stone-600 leading-relaxed italic">{res.description}</p>
+          
+          {res.metadata?.alternative_to && (
+            <div class="mt-4 flex items-center gap-2 text-sm font-bold text-emerald-700 bg-emerald-50/50 px-3 py-1.5 rounded-xl border border-emerald-100/50 w-fit">
+              <span class="text-base">🌱</span>
+              <span>{lang === 'fr' ? 'Alternative éthique à' : 'Ethical alternative to'} : {res.metadata.alternative_to}</span>
+            </div>
+          )}
+
           {res.metadata?.last_episode_title && (
             <div class="mt-6 p-4 bg-stone-50 border border-stone-100 rounded-2xl">
               <p class="text-xs font-black uppercase tracking-widest text-stone-300 mb-1">

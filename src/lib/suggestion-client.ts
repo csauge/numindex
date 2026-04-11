@@ -31,6 +31,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     pubDateInput: form.querySelector('[name="published_at"]') as HTMLInputElement,
     rssUrlInput: form.querySelector('[name="rss_url"]') as HTMLInputElement,
     repositoryUrlInput: form.querySelector('[name="repository_url"]') as HTMLInputElement,
+    alternativeToInput: form.querySelector('[name="alternative_to"]') as HTMLInputElement,
     versionDateInput: form.querySelector('[name="version_date"]') as HTMLInputElement,
     occurrencesList: document.getElementById('occurrences-list'),
     addOccurrenceBtn: document.getElementById('add-occurrence'),
@@ -187,6 +188,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
       published_at: elements.pubDateInput.value,
       rss_url: elements.rssUrlInput.value,
       repository_url: elements.repositoryUrlInput.value,
+      alternative_to: elements.alternativeToInput.value,
       version_date: elements.versionDateInput.value
     });
 
@@ -230,6 +232,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
     document.getElementById('pub-date-container')?.classList.toggle('hidden', !isContenu || isPodcast || isDelete);
     document.getElementById('rss-url-container')?.classList.toggle('hidden', !isPodcast || isDelete);
     document.getElementById('repository-url-container')?.classList.toggle('hidden', !isLogiciel || isDelete);
+    document.getElementById('alternative-to-container')?.classList.toggle('hidden', !isLogiciel || isDelete);
     document.getElementById('version-date-container')?.classList.toggle('hidden', !isOutil || isLogiciel || isDelete);
     document.getElementById('related-container')?.classList.toggle('hidden', isActeur || isDelete);
   }
@@ -316,6 +319,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
       elements.addressSearch.value = metadata.address || '';
       elements.pubDateInput.value = metadata.published_at || '';
       elements.rssUrlInput.value = metadata.rss_url || '';
+      elements.repositoryUrlInput.value = metadata.repository_url || '';
+      elements.alternativeToInput.value = metadata.alternative_to || '';
       elements.versionDateInput.value = metadata.version_date || '';
       
       if (metadata.lat && metadata.lng) {
@@ -437,6 +442,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
         published_at: fetchedRssPublishedAt,
         rss_url: elements.rssUrlInput.value,
         repository_url: elements.repositoryUrlInput.value,
+        alternative_to: elements.alternativeToInput.value,
         version_date: elements.versionDateInput.value
       });
       

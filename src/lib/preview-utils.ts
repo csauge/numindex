@@ -38,6 +38,9 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
     if (field === 'repository_url') {
       return res.metadata?.repository_url !== diffWith.metadata?.repository_url;
     }
+    if (field === 'alternative_to') {
+      return res.metadata?.alternative_to !== diffWith.metadata?.alternative_to;
+    }
     if (field === 'stars_count') {
       return res.metadata?.stars_count !== diffWith.metadata?.stars_count;
     }
@@ -194,6 +197,13 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
           <div class="mb-2 ${isMod('repository_url') ? diffClass : ''}">
             <p class="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none mb-1">Dépôt :</p>
             <p class="text-[10px] text-primary truncate">${res.metadata.repository_url}</p>
+          </div>
+        ` : ''}
+
+        ${res.metadata?.alternative_to ? `
+          <div class="mb-2 ${isMod('alternative_to') ? diffClass : ''}">
+            <p class="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-none mb-1">Alternative à :</p>
+            <p class="text-[10px] text-emerald-600 font-bold tracking-tight">🌱 ${res.metadata.alternative_to}</p>
           </div>
         ` : ''}
 

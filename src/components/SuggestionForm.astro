@@ -61,8 +61,10 @@ const t = {
     online: 'En ligne / Online',
     rssUrl: 'Lien du flux RSS',
     repositoryUrl: 'Lien du dépôt (GitHub / GitLab)',
-  },
-  en: {
+    alternativeTo: 'Alternative à (ex: GAFAM)',
+    alternativeToPlaceholder: 'Nom du logiciel propriétaire',
+    },
+    en: {
     titleCreate: isModeration ? 'Correct proposal' : 'Suggest addition',
     titleUpdate: isModeration ? 'Correct modification' : 'Suggest modification',
     titleDelete: 'Suggest deletion',
@@ -76,8 +78,7 @@ const t = {
     relatedPlaceholder: 'Search...',
     image: 'Image',
     reason: 'Reason',
-    target: 'Preview:',
-    submitCreate: isModeration ? 'Save corrections' : 'Send suggestion',
+    submitCreate: isModeration ? 'Save proposal' : 'Send suggestion',
     submitUpdate: isModeration ? 'Save corrections' : 'Send modification',
     submitDelete: 'Confirm deletion',
     loading: 'Sending...',
@@ -94,6 +95,8 @@ const t = {
     online: 'Online',
     rssUrl: 'RSS Feed URL',
     repositoryUrl: 'Repository link (GitHub / GitLab)',
+    alternativeTo: 'Alternative to (e.g. GAFAM)',
+    alternativeToPlaceholder: 'Name of proprietary software',
   }
 }[lang];
 
@@ -114,6 +117,7 @@ const initial = {
   version_date: existingData?.metadata?.version_date || '',
   rss_url: existingData?.metadata?.rss_url || '',
   repository_url: existingData?.metadata?.repository_url || '',
+  alternative_to: existingData?.metadata?.alternative_to || '',
   occurrences: existingData?.metadata?.occurrences || [],
 };
 ---

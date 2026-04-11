@@ -40,6 +40,9 @@ export function prepareMetadata(category: string, rawData: any) {
     if (rawData.repository_url) {
       metadata.repository_url = rawData.repository_url;
     }
+    if (rawData.alternative_to) {
+      metadata.alternative_to = rawData.alternative_to;
+    }
   }
   
   return metadata;
