@@ -91,6 +91,49 @@ describe('favorites-client', () => {
       expect(result).toBe(false);
       expect(deleteEqMock).toHaveBeenCalledWith('id', mockFavoriteId);
     });
+
+    it('should throw error if insert fails', async () => {
+      (supabase.auth.getSession as any).mockResolvedValue({ 
+        data: { session: { user: { id: 'user-123' } } } 
+      });
+
+      const maybeSingleMock = vi.fn().mockResolvedValue({ data: null });
+      const eqMock2 = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock1 = vi.fn().mockReturnValue({ eq: eqMock2 });
+      const selectMock = vi.fn().mockReturnValue({ eq: eqMock1 });
+
+      const insertMock = vi.fn().mockResolvedValue({ error: new Error('Insert failed') });
+
+      (supabase.from as any).mockImplementation((table: string) => {
+        if (table === 'favorites') {
+          return { select: selectMock, insert: insertMock };
+        }
+      });
+
+      await expect(toggleFavorite('res-123')).rejects.toThrow('Insert failed');
+    });
+
+    it('should throw error if delete fails', async () => {
+      (supabase.auth.getSession as any).mockResolvedValue({ 
+        data: { session: { user: { id: 'user-123' } } } 
+      });
+
+      const maybeSingleMock = vi.fn().mockResolvedValue({ data: { id: 'fav-123' } });
+      const eqMock2 = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock1 = vi.fn().mockReturnValue({ eq: eqMock2 });
+      const selectMock = vi.fn().mockReturnValue({ eq: eqMock1 });
+
+      const deleteEqMock = vi.fn().mockResolvedValue({ error: new Error('Delete failed') });
+      const deleteMock = vi.fn().mockReturnValue({ eq: deleteEqMock });
+
+      (supabase.from as any).mockImplementation((table: string) => {
+        if (table === 'favorites') {
+          return { select: selectMock, delete: deleteMock };
+        }
+      });
+
+      await expect(toggleFavorite('res-123')).rejects.toThrow('Delete failed');
+    });
   });
 
   describe('fetchUserFavoriteIds', () => {
@@ -117,6 +160,23 @@ describe('favorites-client', () => {
       expect(result).toEqual(['res-1', 'res-2']);
       expect(selectMock).toHaveBeenCalledWith('resource_id');
     });
+
+    it('should return empty array and log error if fetch fails', async () => {
+      (supabase.auth.getSession as any).mockResolvedValue({ 
+        data: { session: { user: { id: 'user-123' } } } 
+      });
+
+      const eqMock = vi.fn().mockResolvedValue({ data: null, error: new Error('Fetch failed') });
+      const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
+      (supabase.from as any).mockReturnValue({ select: selectMock });
+
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const result = await fetchUserFavoriteIds();
+      
+      expect(result).toEqual([]);
+      expect(consoleSpy).toHaveBeenCalledWith('Error fetching favorites:', expect.any(Error));
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('fetchTotalFavoriteCounts', () => {
@@ -136,6 +196,18 @@ describe('favorites-client', () => {
         'res-1': 5,
         'res-2': 10
       });
+    });
+
+    it('should return empty record and log error if fetch fails', async () => {
+      const selectMock = vi.fn().mockResolvedValue({ data: null, error: new Error('Fetch counts failed') });
+      (supabase.from as any).mockReturnValue({ select: selectMock });
+
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const result = await fetchTotalFavoriteCounts();
+      
+      expect(result).toEqual({});
+      expect(consoleSpy).toHaveBeenCalledWith('Error fetching favorite counts:', expect.any(Error));
+      consoleSpy.mockRestore();
     });
   });
 });

@@ -46,7 +46,7 @@ test.describe('Open Source Repository Stats', () => {
     await expect(resourceLink).toBeVisible();
     await resourceLink.click();
 
-    await expect(page.locator('h1.text-4xl')).toContainText('[TEST] Open Source Tool');
+    await expect(page.locator('h1.text-3xl')).toContainText('[TEST] Open Source Tool');
     const repoLink = page.locator('a', { hasText: 'Dépôt' });
     await expect(repoLink).toBeVisible();
     await expect(repoLink).toHaveAttribute('href', 'https://github.com/facebook/react');
