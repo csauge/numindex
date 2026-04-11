@@ -12,7 +12,7 @@ test.describe('numindex.org Map Page', () => {
     
     await expect(page).toHaveURL(/\/fr\/carte\/?$/);
     const title = page.locator('header h1').first();
-    await expect(title).toContainText("Carte des acteurs");
+    await expect(title).toContainText("Carte des acteurs et événements");
   });
 
   test('should activate the map automatically on dedicated page', async ({ page }) => {
@@ -41,7 +41,38 @@ test.describe('numindex.org Map Page', () => {
     
     await expect(page).toHaveURL(/\/en\/carte\/?$/);
     const title = page.locator('header h1').first();
-    await expect(title).toContainText("Actors Map");
+    await expect(title).toContainText("Actors and Events Map");
+  });
+
+  test('should filter by category and sub-category', async ({ page }) => {
+    await page.goto('/fr/carte');
+
+    // Wait for the map and filters to load
+    const categoryContainer = page.locator('#category-filters-container');
+    await expect(categoryContainer).toBeVisible();
+
+    // Check "Événements" button
+    const eventBtn = categoryContainer.locator('button', { hasText: 'Événements' });
+    await expect(eventBtn).toBeVisible();
+    await eventBtn.click();
+
+    // Check if sub-filters updated (e.g., "Salon" should appear for events)
+    const subContainer = page.locator('#sub-filters-container');
+    await expect(subContainer.locator('button', { hasText: 'Salon' })).toBeVisible();
+
+    // Select "Salon" sub-filter
+    const salonBtn = subContainer.locator('button', { hasText: 'Salon' });
+    await salonBtn.click();
+    await expect(salonBtn).toHaveClass(/active/);
+
+    // Switch to "Acteurs"
+    const actorBtn = categoryContainer.locator('button', { hasText: 'Acteurs' });
+    await actorBtn.click();
+
+    // Sub-filters should change (e.g., "Association" should appear)
+    await expect(subContainer.locator('button', { hasText: 'Association' })).toBeVisible();
+    // "Salon" should no longer be visible as a sub-filter for Acteurs
+    await expect(subContainer.locator('button', { hasText: 'Salon' })).toBeHidden();
   });
 
   test.describe('Geolocation', () => {

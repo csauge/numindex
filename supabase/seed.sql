@@ -28,7 +28,7 @@ VALUES
     'acteur', 
     null, 
     ARRAY['think-tank', 'expert', 'france', 'Association'], 
-    '{"address": "La Rochelle"}'::jsonb
+    '{"address": "La Rochelle", "lat": 46.1603, "lng": -1.1511}'::jsonb
   ),
   (
     '00000000-0000-0000-0000-000000000002', 
@@ -38,7 +38,7 @@ VALUES
     'acteur', 
     null, 
     ARRAY['recherche', 'cnrs', 'expert', 'Institution'], 
-    '{"address": "Grenoble"}'::jsonb
+    '{"address": "Grenoble", "lat": 45.1885, "lng": 5.7245}'::jsonb
   ),
   (
     '00000000-0000-0000-0000-000000000003', 
@@ -48,7 +48,7 @@ VALUES
     'acteur', 
     null, 
     ARRAY['global', 'non-profit', 'it-leaders', 'Association'], 
-    '{"address": "San Francisco"}'::jsonb
+    '{"address": "San Francisco", "lat": 37.7749, "lng": -122.4194}'::jsonb
   ),
   (
     '00000000-0000-0000-0000-000000000004', 
@@ -58,7 +58,7 @@ VALUES
     'acteur', 
     null, 
     ARRAY['expert', 'blog', 'community', 'Entreprise'], 
-    '{"address": "Paris"}'::jsonb
+    '{"address": "Paris", "lat": 48.8566, "lng": 2.3522}'::jsonb
   ),
   (
     '00000000-0000-0000-0000-000000000005', 
@@ -82,7 +82,7 @@ VALUES
     'evenement', 
     null, 
     ARRAY['paris', 'pro', 'Salon'], 
-    '{"address": "Paris", "occurrences": [{"start": "2030-11-05T09:00:00Z", "end": "2030-11-06T18:00:00Z", "address": "Palais des Congrès, Paris"}]}'::jsonb
+    '{"address": "Paris", "lat": 48.8566, "lng": 2.3522, "occurrences": [{"start": "2030-11-05T09:00:00Z", "end": "2030-11-06T18:00:00Z", "address": "Palais des Congrès, Paris"}]}'::jsonb
   );
 
 -- 3. Contenu & Outil

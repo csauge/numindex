@@ -16,13 +16,13 @@ const taxonomy = Object.fromEntries(
 
 const translations = {
   fr: {
-    title: "Carte des acteurs",
-    desc: "Découvrez géographiquement les acteurs du numérique responsable.",
+    title: "Carte des acteurs et événements",
+    desc: "Découvrez géographiquement les acteurs et événements du numérique responsable.",
     back: "Retour à l'index",
   },
   en: {
-    title: "Actors Map",
-    desc: "Geographically discover sustainable digital actors.",
+    title: "Actors and Events Map",
+    desc: "Geographically discover sustainable digital actors and events.",
     back: "Back to index",
   }
 };
@@ -41,14 +41,15 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
       </a>
     </div>
 
-    <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-stone-100 pb-6">
+    <header class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
       <div>
         <h1 class="text-3xl font-black text-stone-800 mb-1 leading-tight tracking-tighter">{t.title}</h1>
         <p class="text-stone-500 italic text-sm font-medium">{t.desc}</p>
       </div>
     </header>
 
-    <div id="sub-filters-container" class="mb-6 px-1 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap"></div>
+    <div id="category-filters-container" class="mb-6 flex items-center border-b border-stone-100 overflow-x-auto no-scrollbar gap-1 md:gap-2 px-1"></div>
+    <div id="sub-filters-container" class="mb-6 px-1 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap min-h-[44px]"></div>
 
     <div class="mb-12">
       <div id="map-wrapper">
@@ -64,35 +65,79 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
 <script>
   const taxonomy = JSON.parse(document.getElementById('taxonomy-data')?.textContent || '{}');
   const allResources = JSON.parse(document.getElementById('resource-data')?.textContent || '[]');
-  const container = document.getElementById('sub-filters-container');
+  const categoryContainer = document.getElementById('category-filters-container');
+  const subContainer = document.getElementById('sub-filters-container');
+  
+  let currentCategory = 'all';
   let currentSubCat: string | null = null;
 
-  function renderFilters() {
-    if (!container) return;
-    const subCats = taxonomy['acteur'] || [];
+  function renderCategoryFilters() {
+    if (!categoryContainer) return;
     const lang = document.documentElement.lang || 'fr';
+    
+    const cats = [
+      { id: 'all', fr: 'Tout', en: 'All' },
+      { id: 'acteur', fr: 'Acteurs', en: 'Actors' },
+      { id: 'evenement', fr: 'Événements', en: 'Events' }
+    ];
+    
+    let html = '';
+    cats.forEach(c => {
+      const label = lang === 'en' ? c.en : c.fr;
+      const activeClass = currentCategory === c.id ? 'text-primary border-primary bg-emerald-50/30' : 'text-stone-400 border-transparent hover:text-stone-600 hover:bg-stone-50/50';
+      html += `
+        <button class="px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${activeClass}" data-cat="${c.id}">
+          ${label}
+        </button>
+      `;
+    });
+    categoryContainer.innerHTML = html;
+
+    categoryContainer.querySelectorAll('button').forEach(btn => {
+      btn.onclick = () => {
+        currentCategory = btn.getAttribute('data-cat') || 'all';
+        currentSubCat = null;
+        renderCategoryFilters();
+        renderSubFilters();
+        updateMap();
+      };
+    });
+  }
+
+  function renderSubFilters() {
+    if (!subContainer) return;
+    const lang = document.documentElement.lang || 'fr';
+    
+    if (currentCategory === 'all') {
+      subContainer.innerHTML = `<span class="text-[10px] text-stone-300 italic px-2">${lang === 'en' ? 'Select a category to filter by type' : 'Sélectionnez une catégorie pour filtrer par type'}</span>`;
+      return;
+    }
+
+    const subCats = taxonomy[currentCategory] || [];
     const filterAll = lang === 'en' ? 'All types' : 'Tous types';
     
     let html = `<button class="pill-chip ${!currentSubCat ? 'active' : ''}" data-sub="all">${filterAll}</button>`;
     subCats.forEach((s: string) => {
       html += `<button class="pill-chip ${currentSubCat === s ? 'active' : ''}" data-sub="${s}">${s}</button>`;
     });
-    container.innerHTML = html;
+    subContainer.innerHTML = html;
 
-    container.querySelectorAll('.pill-chip').forEach(btn => {
+    subContainer.querySelectorAll('.pill-chip').forEach(btn => {
       (btn as HTMLElement).onclick = () => {
         const sub = btn.getAttribute('data-sub');
         currentSubCat = sub === 'all' ? null : sub;
         updateMap();
-        renderFilters();
+        renderSubFilters();
       };
     });
   }
 
   async function updateMap() {
-    const filtered = allResources.filter((r: any) => 
-      r.category === 'acteur' && (!currentSubCat || r.tags?.includes(currentSubCat))
-    );
+    const filtered = allResources.filter((r: any) => {
+      const matchCat = currentCategory === 'all' || r.category === currentCategory;
+      const matchSub = !currentSubCat || r.tags?.includes(currentSubCat);
+      return matchCat && matchSub && (r.category === 'acteur' || r.category === 'evenement');
+    });
 
     if ((window as any).L && (window as any).mapInstance) {
       const map = (window as any).mapInstance;
@@ -111,13 +156,16 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
           popupAnchor: [0, -32]
         });
 
+        const lang = document.documentElement.lang || 'fr';
+
         filtered.forEach((item: any) => {
           if (item.metadata?.lat && item.metadata?.lng) {
+            const categoryLabel = item.category === 'acteur' ? (lang === 'fr' ? 'Acteur' : 'Actor') : (lang === 'fr' ? 'Événement' : 'Event');
             const popupContent = `
               <div class="p-2">
-                <span class="text-[10px] font-black uppercase text-primary mb-1 block tracking-wider">${item.category === 'acteur' ? (document.documentElement.lang === 'fr' ? 'Acteur' : 'Actor') : ''}</span>
+                <span class="text-[10px] font-black uppercase text-primary mb-1 block tracking-wider">${categoryLabel}</span>
                 <h4 class="font-black text-stone-800 mb-2 leading-tight">${item.title}</h4>
-                <a href="/${document.documentElement.lang}/resource/${item.id}" class="btn btn-xs btn-primary rounded-lg no-underline text-white font-bold w-full">Détails</a>
+                <a href="/${lang}/resource/${item.id}" class="btn btn-xs btn-primary rounded-lg no-underline text-white font-bold w-full">Détails</a>
               </div>
             `;
             (window as any).L.marker([item.metadata.lat, item.metadata.lng], { icon: customIcon })
@@ -130,15 +178,12 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
           map.fitBounds(markers.getBounds(), { padding: [50, 50] });
         }
       }
-    } else {
-      const url = new URL(window.location.href);
-      if (currentSubCat) url.searchParams.set('type', currentSubCat);
-      else url.searchParams.delete('type');
-      window.location.href = url.toString();
     }
   }
 
-  renderFilters();
+  // Initialisation
+  renderCategoryFilters();
+  renderSubFilters();
 </script>
 
 <style is:global>

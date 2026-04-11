@@ -10,14 +10,14 @@ interface Props {
 
 const { resources, lang, autoActivate = false } = Astro.props;
 
-// Filtrer les ressources qui ont des coordonnées et sont des acteurs
-const resourcesWithLocation = resources.filter(r => r.category === 'acteur' && r.metadata?.lat && r.metadata?.lng);
+// Filtrer les ressources qui ont des coordonnées et sont des acteurs ou des événements
+const resourcesWithLocation = resources.filter(r => ['acteur', 'evenement'].includes(r.category) && r.metadata?.lat && r.metadata?.lng);
 
 const translations = {
   fr: {
     activate: "Activer la carte interactive",
     loading: "Chargement de la carte...",
-    description: "Visualisez les acteurs sur la carte. Les données de localisation sont chargées uniquement à votre demande pour économiser de la bande passante.",
+    description: "Visualisez les acteurs et événements sur la carte. Les données de localisation sont chargées uniquement à votre demande pour économiser de la bande passante.",
     locateMe: "Me localiser",
     geoError: "Impossible de vous localiser. Vérifiez vos autorisations.",
     geoNotSupported: "La géolocalisation n'est pas supportée par votre navigateur."
@@ -25,7 +25,7 @@ const translations = {
   en: {
     activate: "Activate interactive map",
     loading: "Loading map...",
-    description: "Visualize actors on the map. Location data is only loaded upon your request to save bandwidth.",
+    description: "Visualize actors and events on the map. Location data is only loaded upon your request to save bandwidth.",
     locateMe: "Locate me",
     geoError: "Unable to locate you. Please check your permissions.",
     geoNotSupported: "Geolocation is not supported by your browser."
