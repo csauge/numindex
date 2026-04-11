@@ -43,4 +43,56 @@ test.describe('numindex.org Map Page', () => {
     const title = page.locator('header h1').first();
     await expect(title).toContainText("Actors Map");
   });
+
+  test.describe('Geolocation', () => {
+    test.beforeEach(async ({ context }) => {
+      // Grant geolocation permission for the context
+      await context.grantPermissions(['geolocation']);
+      // Mock the geolocation position (Paris)
+      await context.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
+    });
+
+    test('should show locate me button and center on user when clicked', async ({ page }) => {
+      await page.goto('/fr/carte');
+      
+      const locateBtn = page.locator('#locate-me');
+      
+      // Wait for map to be initialized and button to be visible
+      await expect(locateBtn).toBeVisible();
+      
+      // Click on locate me
+      await locateBtn.click();
+      
+      // Check if user marker is added (blue pulse dot)
+      const userMarker = page.locator('.user-marker');
+      await expect(userMarker).toBeVisible();
+      
+      // We can't easily check the map view center coordinates via Playwright easily 
+      // without exposing internal L.map but seeing the marker is a good sign
+    });
+
+    test('should handle geolocation error/refusal', async ({ page, context }) => {
+      // Deny permissions for this specific test
+      await context.clearPermissions();
+      
+      await page.goto('/fr/carte');
+      
+      const locateBtn = page.locator('#locate-me');
+      await expect(locateBtn).toBeVisible();
+
+      // Mock alert() since geolocation will fail or prompt (which we won't answer)
+      let alertMessage = '';
+      page.on('dialog', async dialog => {
+        alertMessage = dialog.message();
+        await dialog.dismiss();
+      });
+
+      await locateBtn.click();
+      
+      // Wait for the alert to be triggered (it might take a moment if the browser times out or refuses)
+      // Note: In some headless environments, it might fail instantly if no provider is available
+      await expect.poll(() => alertMessage).not.toBe('');
+      expect(alertMessage).toMatch(/Impossible de vous localiser|Unable to locate you/);
+    });
+  });
 });

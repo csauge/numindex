@@ -17,12 +17,18 @@ const translations = {
   fr: {
     activate: "Activer la carte interactive",
     loading: "Chargement de la carte...",
-    description: "Visualisez les acteurs sur la carte. Les données de localisation sont chargées uniquement à votre demande pour économiser de la bande passante."
+    description: "Visualisez les acteurs sur la carte. Les données de localisation sont chargées uniquement à votre demande pour économiser de la bande passante.",
+    locateMe: "Me localiser",
+    geoError: "Impossible de vous localiser. Vérifiez vos autorisations.",
+    geoNotSupported: "La géolocalisation n'est pas supportée par votre navigateur."
   },
   en: {
     activate: "Activate interactive map",
     loading: "Loading map...",
-    description: "Visualize actors on the map. Location data is only loaded upon your request to save bandwidth."
+    description: "Visualize actors on the map. Location data is only loaded upon your request to save bandwidth.",
+    locateMe: "Locate me",
+    geoError: "Unable to locate you. Please check your permissions.",
+    geoNotSupported: "Geolocation is not supported by your browser."
   }
 };
 
@@ -64,6 +70,18 @@ const geoData = resourcesWithLocation.map(r => ({
   {/* Conteneur de la carte */}
   <div id="map" class={`absolute inset-0 z-10 transition-opacity duration-1000 ${autoActivate ? 'opacity-100' : 'opacity-0'}`}></div>
   
+  {/* Bouton de géolocalisation */}
+  <button 
+    id="locate-me" 
+    class="absolute top-4 right-4 z-20 btn btn-circle btn-sm bg-white hover:bg-white text-stone-600 border-2 border-stone-200 shadow-lg hidden"
+    title={t.locateMe}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  </button>
+
   {/* Indicateur de chargement (caché par défaut) */}
   <div id="map-loader" class="absolute inset-0 z-30 hidden items-center justify-center bg-base-200">
     <span class="loading loading-ring loading-lg text-primary"></span>
@@ -90,13 +108,16 @@ const geoData = resourcesWithLocation.map(r => ({
   }
 </style>
 
-<script define:vars={{ geoData, lang, autoActivate }}>
+<script define:vars={{ geoData, lang, autoActivate, translations }}>
+  const t = translations[lang];
   const activateBtn = document.getElementById('activate-map');
   const placeholder = document.getElementById('map-placeholder');
   const mapContainer = document.getElementById('map');
   const loader = document.getElementById('map-loader');
+  const locateBtn = document.getElementById('locate-me');
 
   let mapInitialized = false;
+  let userMarker = null;
 
   async function initMap() {
     if (mapInitialized) return;
@@ -180,6 +201,35 @@ const geoData = resourcesWithLocation.map(r => ({
       // Exposer pour le filtrage dynamique
       window.mapInstance = map;
       window.markerGroup = markers;
+
+      // Logique de géolocalisation
+      locateBtn.classList.remove('hidden');
+      locateBtn.onclick = () => {
+        if (!navigator.geolocation) {
+          alert(t.geoNotSupported);
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+          const { latitude, longitude } = position.coords;
+          map.setView([latitude, longitude], 12);
+
+          const userIcon = L.divIcon({
+            className: 'user-marker',
+            html: `<div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+          });
+
+          if (userMarker) {
+            userMarker.setLatLng([latitude, longitude]);
+          } else {
+            userMarker = L.marker([latitude, longitude], { icon: userIcon }).addTo(map);
+          }
+        }, () => {
+          alert(t.geoError);
+        });
+      };
 
       // Ajuster la vue pour voir tous les marqueurs
       if (geoData.length > 0) {
