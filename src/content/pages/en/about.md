@@ -20,6 +20,7 @@ In line with our values, the **numindex.org** platform itself applies the princi
 * **Ecodesign and Performance:** We aim for a minimal carbon footprint through lightweight pages, strict media optimization, and the absence of unnecessary scripts.
 * **Accessibility:** Our platform is designed to be accessible and inclusive, complying with web standards.
 * **Transparency and Ethics:** The project is driven by a desire for openness, with eco-responsible hosting and minimalist data management.
+* **Open Source and Libre:** The source code of numindex is entirely open (under GNU GPL v3 license). We believe in the power of the commons and collaboration to continuously improve this index.
 
 ## Quality and Eco-design
 
