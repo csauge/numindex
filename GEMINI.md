@@ -33,4 +33,8 @@ Ce document définit les règles essentielles et les standards d'ingénierie pou
 2.  **Sobriété/Perf :** Exécution de `npm run verify-sobriety`, vérification RGAA.
 3.  **Validation :** `npm run build`, `npm run test:unit`, `npm run test:e2e`.
 4.  **Documentation :** Mettre à jour `README.md`, `GEMINI.md` et le schéma SQL (`supabase_schema.sql`) si nécessaire.
-5.  **Git :** **INTERDICTION ABSOLUE** de commit ou push sans l'accord explicite et préalable de l'utilisateur. La procédure obligatoire est de demander l'autorisation avant toute action Git destructive ou d'envoi.
+5.  **Git (Flux de travail PR) :** **INTERDICTION ABSOLUE** de pousser des modifications directement sur la branche `main`. Toute livraison doit suivre le processus suivant (toujours avec l'accord préalable de l'utilisateur) :
+    - Créer une nouvelle branche (ex: `feature/nom-de-la-fonctionnalite` ou `fix/correction-bug`).
+    - Commiter les changements et pousser la branche sur le dépôt distant.
+    - Créer une Pull Request pointant vers `main` (via l'interface GitHub ou la CLI `gh pr create`).
+    - *Bonne pratique :* Une fois la Pull Request mergée, la branche de travail doit être supprimée pour garder le dépôt propre.
