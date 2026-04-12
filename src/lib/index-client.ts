@@ -319,7 +319,7 @@ export function generateResourceCardHTML(d: Resource, options: {
   // Image / Icon
   html += '<div class="relative w-full sm:w-36 sm:h-auto aspect-video sm:aspect-square bg-stone-50 flex-shrink-0 flex items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-stone-50">';
   if (d.imgUrl) {
-    html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy" decoding="async" width="300" height="300"/>';
+    html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy" decoding="async" width="300" height="300" alt=""/>';
   } else {
     html += '<svg class="w-10 h-10 text-stone-300"><use href="#cat-' + d.cat + '"/></svg>';
   }
