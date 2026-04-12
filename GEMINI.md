@@ -37,4 +37,5 @@ Ce document définit les règles essentielles et les standards d'ingénierie pou
     - Créer une nouvelle branche (ex: `feature/nom-de-la-fonctionnalite` ou `fix/correction-bug`).
     - Commiter les changements et pousser la branche sur le dépôt distant.
     - Créer une Pull Request pointant vers `main` (via l'interface GitHub ou la CLI `gh pr create`).
+    - **Fusionner impérativement via 'Squash and Merge'** (`gh pr merge --squash`) pour maintenir un historique `main` propre et linéaire.
     - *Bonne pratique :* Une fois la Pull Request mergée, la branche de travail doit être supprimée pour garder le dépôt propre.
