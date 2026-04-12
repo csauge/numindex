@@ -229,7 +229,6 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
     const today = new Date().toISOString().split('T')[0];
 
     toShow.forEach(d => {
-      const isFav = userFavoriteIds.includes(d.id);
       const favCount = totalFavoriteCounts[d.id] || 0;
       const group = getResourceGroup(d, s, t, currentLang, today, favCount);
 
@@ -238,50 +237,14 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
         html += '<div class="col-span-full pt-3 pb-0 alphabet-divider"><span>' + group + '</span></div>';
       }
 
-      html += '<a href="/' + currentLang + '/resource/' + d.id + '" class="resource-card group relative bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all flex flex-col sm:flex-row gap-0 sm:gap-3 items-stretch shadow-sm">';
-      
-      // Favorite Button (Star)
-      html += '<button type="button" class="btn-favorite absolute top-2 right-2 z-20 h-7 px-2 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border border-stone-200 shadow-sm transition-all hover:scale-105 active:scale-95" data-id="' + d.id + '" aria-label="Favorite">';
-      html += '<svg class="w-3.5 h-3.5 ' + (isFav ? 'text-amber-500 fill-amber-500' : 'text-stone-300 fill-none') + '" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
-      html += '<span class="fav-count text-[10px] font-black ml-1 ' + (isFav ? 'text-amber-600' : 'text-stone-500') + '">' + (favCount > 0 ? favCount : '0') + '</span>';
-      html += '</button>';
-
-      // Image / Icon
-      html += '<div class="relative w-full sm:w-36 sm:h-auto aspect-video sm:aspect-square bg-stone-50 flex-shrink-0 flex items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-stone-50">';
-      if (d.imgUrl) {
-        html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy" decoding="async" width="300" height="300"/>';
-      } else {
-        html += '<svg class="w-10 h-10 text-stone-300"><use href="#cat-' + d.cat + '"/></svg>';
-      }
-      
-      if (d.cat === 'evenement' && d.next) {
-        const isNextToday = d.next.split('T')[0] === today;
-        html += '<div class="absolute bottom-2 left-2 px-2 py-1 rounded-md text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-600 text-white' : 'bg-white/90 text-stone-800 shadow-sm border border-stone-100') + '">📅 ' + new Date(d.next).toLocaleDateString(currentLang, {day: 'numeric', month: 'short'}) + '</div>';
-      }
-      html += '</div>';
-
-      // Text Content & Badges
-      html += '<div class="p-4 flex flex-col flex-grow min-w-0">';
-      html += '<div class="flex flex-wrap gap-1 mb-2 pr-8">';
-      html += '<span class="px-1.5 py-0.5 rounded bg-stone-100 text-stone-700 text-[9px] font-black uppercase tracking-tight border border-stone-200">' + d.catLabel + '</span>';
-
-      const mandatoryTags = taxonomy[d.cat] || [];
-      const subCat = d.tags.find(t => mandatoryTags.includes(t));
-      if (subCat) {
-        html += '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-tight border border-emerald-200 shadow-sm">' + translateTag(subCat) + '</span>';
-      }
-
-      if (d.stars) {
-        html += '<span class="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-stone-50 text-emerald-600 text-[9px] font-black uppercase tracking-tight border border-stone-100 shadow-sm">';
-        html += '<svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
-        html += d.stars;
-        html += '</span>';
-      }
-      html += '</div>';
-      
-      html += '<h2 class="text-sm sm:text-base font-black text-stone-800 line-clamp-2 leading-tight mb-1 pr-6 group-hover:text-primary transition-colors">' + d.title + '</h2>';
-      html += '<p class="text-xs sm:text-sm text-stone-600 line-clamp-2 leading-relaxed">' + (d.desc || '') + '</p>';
-      html += '</div></a>';
+      html += generateResourceCardHTML(d, {
+        currentLang,
+        taxonomy,
+        today,
+        translateTag,
+        userFavoriteIds,
+        totalFavoriteCounts
+      });
     });
 
     els.grid.innerHTML = html;
@@ -333,4 +296,60 @@ export function initIndex(allData: Resource[], taxonomy: Record<string, string[]
   }
 
   init();
+}
+export function generateResourceCardHTML(d: Resource, options: {
+  currentLang: string,
+  taxonomy: Record<string, string[]>,
+  today: string,
+  translateTag: (t: string) => string,
+  userFavoriteIds: string[],
+  totalFavoriteCounts: Record<string, number>
+}): string {
+  const isFav = options.userFavoriteIds.includes(d.id);
+  const favCount = options.totalFavoriteCounts[d.id] || 0;
+  
+  let html = '<a href="/' + options.currentLang + '/resource/' + d.id + '" class="resource-card group relative bg-white border border-stone-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all flex flex-col sm:flex-row gap-0 sm:gap-3 items-stretch shadow-sm">';
+  
+  // Favorite Button (Star)
+  html += '<button type="button" class="btn-favorite absolute top-2 right-2 z-20 h-7 px-2 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border border-stone-200 shadow-sm transition-all hover:scale-105 active:scale-95" data-id="' + d.id + '" aria-label="Favorite">';
+  html += '<svg class="w-3.5 h-3.5 ' + (isFav ? 'text-amber-500 fill-amber-500' : 'text-stone-300 fill-none') + '" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
+  html += '<span class="fav-count text-[10px] font-black ml-1 ' + (isFav ? 'text-amber-600' : 'text-stone-500') + '">' + (favCount > 0 ? favCount : '0') + '</span>';
+  html += '</button>';
+
+  // Image / Icon
+  html += '<div class="relative w-full sm:w-36 sm:h-auto aspect-video sm:aspect-square bg-stone-50 flex-shrink-0 flex items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-stone-50">';
+  if (d.imgUrl) {
+    html += '<img src="' + d.imgUrl + '" class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-110 transition-transform" loading="lazy" decoding="async" width="300" height="300"/>';
+  } else {
+    html += '<svg class="w-10 h-10 text-stone-300"><use href="#cat-' + d.cat + '"/></svg>';
+  }
+  
+  if (d.cat === 'evenement' && d.next) {
+    const isNextToday = d.next.split('T')[0] === options.today;
+    html += '<div class="absolute bottom-2 left-2 px-2 py-1 rounded-md text-[8px] font-black uppercase ' + (isNextToday ? 'bg-emerald-600 text-white' : 'bg-white/90 text-stone-800 shadow-sm border border-stone-100') + '"><svg class="w-2.5 h-2.5 inline-block -mt-0.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z"></path><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg> ' + new Date(d.next).toLocaleDateString(options.currentLang, {day: 'numeric', month: 'short'}) + '</div>';
+  } else if (d.stars) {
+    html += '<div class="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-1 rounded-md text-[8px] font-black uppercase bg-white/90 text-emerald-600 shadow-sm border border-stone-100">';
+    html += '<svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>';
+    html += d.stars;
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Text Content & Badges
+  html += '<div class="p-4 flex flex-col flex-grow min-w-0">';
+  html += '<div class="flex flex-wrap gap-1 mb-2 pr-8">';
+  html += '<span class="px-1.5 py-0.5 rounded bg-stone-100 text-stone-700 text-[9px] font-black uppercase tracking-tight border border-stone-200">' + d.catLabel + '</span>';
+
+  const mandatoryTags = options.taxonomy[d.cat] || [];
+  const subCat = d.tags.find(t => mandatoryTags.includes(t));
+  if (subCat) {
+    html += '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-tight border border-emerald-200 shadow-sm">' + options.translateTag(subCat) + '</span>';
+  }
+  html += '</div>';
+  
+  html += '<h2 class="text-sm sm:text-base font-black text-stone-800 line-clamp-2 leading-tight mb-1 pr-6 group-hover:text-primary transition-colors">' + d.title + '</h2>';
+  html += '<p class="text-xs sm:text-sm text-stone-600 line-clamp-2 leading-relaxed">' + (d.desc || '') + '</p>';
+  html += '</div></a>';
+  
+  return html;
 }
