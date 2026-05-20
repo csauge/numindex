@@ -5,7 +5,7 @@ import Layout from '../../../layouts/Layout.astro';
 import { getCategoryLabel, getCategoryIcon, getCategoryType, ACTION_ICONS, getCategoryMandatoryTags } from '../../../utils/categories';
 import { supabase, getImageUrl } from '../../../lib/supabase/client';
 import type { Resource } from '../../../lib/supabase/types';
-import { getProfile, getNextEventDate } from '../../../lib/services';
+import { getProfile, getNextEventDate, sortOccurrences } from '../../../lib/services';
 import { parseRepoUrl } from '../../../lib/repo-utils';
 
 const { id, lang } = Astro.params;
@@ -300,7 +300,7 @@ const jsonLd = JSON.stringify(baseJsonLd);
           <div class="space-y-4">
             <h2 class="text-xs font-black uppercase tracking-widest text-stone-300">{t.occurrences}</h2>
             <div class="grid gap-3">
-              {res.metadata.occurrences.map((occ: any) => {
+              {sortOccurrences(res.metadata.occurrences).map((occ: any) => {
                 const isNext = occ.start === nextEventDate;
                 return (
                   <div class={`p-4 rounded-2xl border transition-all ${isNext ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-white border-stone-100'}`}>

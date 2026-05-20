@@ -44,5 +44,17 @@ describe('validation-utils', () => {
       const result = prepareMetadata('contenu', { rss_url: 'https://example.com/rss', published_at: '2023' });
       expect(result).toEqual({ rss_url: 'https://example.com/rss', published_at: '2023' });
     });
+
+    it('should prepare metadata for evenement with coordinates in occurrences', () => {
+      const result = prepareMetadata('evenement', {
+        occurrences: [
+          { start: '2026-01-01', end: '2026-01-02', address: 'Paris', lat: 48.8, lng: 2.3 }
+        ]
+      });
+      expect(result.occurrences).toHaveLength(1);
+      expect(result.occurrences[0].address).toBe('Paris');
+      expect(result.occurrences[0].lat).toBe(48.8);
+      expect(result.occurrences[0].lng).toBe(2.3);
+    });
   });
 });

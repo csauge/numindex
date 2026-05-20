@@ -147,7 +147,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
           occTimer = setTimeout(async () => {
             const findRes = await searchAddresses(val, lang);
             results.innerHTML = findRes.map(c => `
-              <button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50 border-b last:border-none" data-label="${c.label}">
+              <button type="button" class="w-full text-left px-4 py-2 hover:bg-stone-50 border-b last:border-none" data-label="${c.label}" data-lat="${c.lat}" data-lng="${c.lng}">
                 <p class="font-bold text-xs">${c.name}</p><p class="text-[9px] text-stone-400">${c.sub}</p>
               </button>`).join('');
             results.classList.remove('hidden');
@@ -155,6 +155,8 @@ export function initSuggestionForm(form: HTMLFormElement) {
               const label = (b as HTMLElement).dataset.label!;
               (e.target as HTMLInputElement).value = label;
               occurrences[idx].address = label;
+              occurrences[idx].lat = parseFloat((b as HTMLElement).dataset.lat!);
+              occurrences[idx].lng = parseFloat((b as HTMLElement).dataset.lng!);
               results.classList.add('hidden');
               updateUI();
             }));

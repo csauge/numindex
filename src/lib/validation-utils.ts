@@ -23,7 +23,9 @@ export function prepareMetadata(category: string, rawData: any) {
     metadata.occurrences = (rawData.occurrences || []).map((occ: any) => ({
       start: occ.start || '',
       end: occ.end || '',
-      address: occ.address || ''
+      address: occ.address || '',
+      lat: occ.lat,
+      lng: occ.lng
     }));
   } else if (category === 'contenu') {
     if (rawData.rss_url) {
