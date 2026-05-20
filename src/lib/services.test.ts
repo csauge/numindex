@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getNextEventDate, sortResources, getResourceGroup } from './services';
+import { getNextEventDate, sortResources, getResourceGroup, sortOccurrences } from './services';
 import type { Resource } from './supabase/types';
 
 // Mock browser-image-compression
@@ -8,6 +8,35 @@ vi.mock('browser-image-compression', () => ({
 }));
 
 describe('services.ts', () => {
+  describe('sortOccurrences', () => {
+    it('should sort occurrences by start date', () => {
+      const occurrences = [
+        { start: '2026-12-01', address: 'Later' },
+        { start: '2026-01-01', address: 'Earlier' },
+        { start: '2026-06-01', address: 'Middle' }
+      ];
+      const sorted = sortOccurrences(occurrences);
+      expect(sorted[0].address).toBe('Earlier');
+      expect(sorted[1].address).toBe('Middle');
+      expect(sorted[2].address).toBe('Later');
+    });
+
+    it('should handle empty or null occurrences', () => {
+      expect(sortOccurrences([])).toEqual([]);
+      expect(sortOccurrences(null as any)).toEqual([]);
+    });
+
+    it('should handle missing start dates', () => {
+      const occurrences = [
+        { start: '2026-12-01', address: 'A' },
+        { address: 'B' }
+      ];
+      const sorted = sortOccurrences(occurrences);
+      expect(sorted[0].address).toBe('B');
+      expect(sorted[1].address).toBe('A');
+    });
+  });
+
   describe('getResourceGroup', () => {
     const t = {
       popular: 'Populaire', others: 'Autres',

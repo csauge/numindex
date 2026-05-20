@@ -10,8 +10,8 @@ interface Props {
 
 const { resources, lang, autoActivate = false } = Astro.props;
 
-// Filtrer les ressources qui ont des coordonnées et sont des acteurs ou des événements
-const resourcesWithLocation = resources.filter(r => ['acteur', 'evenement'].includes(r.category) && r.metadata?.lat && r.metadata?.lng);
+// Filtrer les ressources qui peuvent avoir une localisation
+const geoResources = resources.filter(r => ['acteur', 'evenement'].includes(r.category));
 
 const translations = {
   fr: {
@@ -34,16 +34,45 @@ const translations = {
 
 const t = translations[lang];
 
-// Préparer les données pour le client
-const geoData = resourcesWithLocation.map(r => ({
-  id: r.id,
-  title: r.title,
-  lat: r.metadata.lat,
-  lng: r.metadata.lng,
-  category: r.category,
-  categoryLabel: getCategoryLabel(r.category, lang),
-  link: `/${lang}/resource/${r.id}`
-}));
+// Préparer les données pour le client : multi-pins pour les événements
+const now = new Date();
+const geoData = geoResources.flatMap(r => {
+  if (r.category === 'evenement' && r.metadata?.occurrences) {
+    // Pour les événements, on crée un pin par occurrence future avec coordonnées
+    const occPins = r.metadata.occurrences
+      .filter((occ: any) => {
+        const hasCoords = occ.lat && occ.lng;
+        const isFuture = !occ.end || new Date(occ.end) >= now || new Date(occ.start) >= now;
+        return hasCoords && isFuture;
+      })
+      .map((occ: any, index: number) => ({
+        id: `${r.id}-${index}`,
+        title: `${r.title} (${new Date(occ.start).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB')})`,
+        lat: occ.lat,
+        lng: occ.lng,
+        category: r.category,
+        categoryLabel: getCategoryLabel(r.category, lang),
+        link: `/${lang}/resource/${r.id}`
+      }));
+
+    if (occPins.length > 0) return occPins;
+  }
+
+  // Fallback ou Acteur : Pin racine si lat/lng présents
+  if (r.metadata?.lat && r.metadata?.lng) {
+    return [{
+      id: r.id,
+      title: r.title,
+      lat: r.metadata.lat,
+      lng: r.metadata.lng,
+      category: r.category,
+      categoryLabel: getCategoryLabel(r.category, lang),
+      link: `/${lang}/resource/${r.id}`
+    }];
+  }
+
+  return [];
+});
 ---
 
 <div class="relative w-full h-[600px] bg-base-200 rounded-3xl overflow-hidden border-4 border-base-300 shadow-inner group">

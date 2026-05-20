@@ -153,12 +153,22 @@ export async function fetchEntitiesForMapping() {
 export function getNextEventDate(resource: Resource): string | null {
   if (resource.category !== 'evenement' || !resource.metadata?.occurrences) return null;
   const now = new Date();
-  const futureDates = resource.metadata.occurrences
+  const futureDates = sortOccurrences(resource.metadata.occurrences)
     .map((occ: any) => new Date(occ.start))
-    .filter((d: Date) => d >= now)
-    .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+    .filter((d: Date) => d >= now);
     
   return futureDates.length > 0 ? futureDates[0].toISOString() : null;
+}
+
+/**
+ * Helper : Trie les occurrences par date de début
+ */
+export function sortOccurrences(occurrences: any[]) {
+  return [...(occurrences || [])].sort((a, b) => {
+    const dateA = a.start ? new Date(a.start).getTime() : 0;
+    const dateB = b.start ? new Date(b.start).getTime() : 0;
+    return dateA - dateB;
+  });
 }
 
 /**
