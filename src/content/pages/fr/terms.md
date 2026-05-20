@@ -26,9 +26,13 @@ Dans une démarche de sobriété numérique et de respect de la vie privée, not
 * **Droits RGPD :** Conformément à la réglementation (RGPD), vous disposez d'un droit d'accès, de rectification, de limitation, de portabilité et de suppression de vos données, exerçable à tout moment depuis les paramètres de votre compte ou en nous contactant.
 * **Cookies :** La plateforme n'utilise que les cookies strictement nécessaires au fonctionnement du site (session utilisateur) et, le cas échéant, des cookies analytiques anonymisés.
 
-## 3. Propriété Intellectuelle
+## 3. Propriété Intellectuelle et Licence
 
-L'ensemble des contenus, éléments structurels et graphiques du site sont protégés par le droit d'auteur. Toute reproduction ou représentation, intégrale ou partielle, faite sans notre consentement, est interdite. Les contenus publiés par les utilisateurs (descriptions d'initiatives) restent sous leur propre responsabilité.
+**numindex.org** est un outil **libre, open source et gratuit**.
+
+* **Logiciel :** Le code source de la plateforme est distribué sous licence **GNU GPLv3**. Cette licence vous garantit la liberté de consulter, partager, modifier et redistribuer le programme.
+* **Accès :** L'utilisation de la plateforme est entièrement gratuite et ne nécessite aucune contrepartie financière.
+* **Contenus :** Les contenus publiés par les utilisateurs (descriptions d'initiatives) restent sous leur propre responsabilité.
 
 ## 4. Responsabilité et Modération
 
