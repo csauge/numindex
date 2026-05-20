@@ -133,6 +133,9 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
   }
 
   async function updateMap() {
+    const lang = document.documentElement.lang || 'fr';
+    const now = new Date();
+
     const filtered = allResources.filter((r: any) => {
       const matchCat = currentCategory === 'all' || r.category === currentCategory;
       const matchSub = !currentSubCat || r.tags?.includes(currentSubCat);
@@ -156,25 +159,48 @@ const t = translations[lang as 'fr' | 'en'] || translations.fr;
           popupAnchor: [0, -32]
         });
 
-        const lang = document.documentElement.lang || 'fr';
-
         filtered.forEach((item: any) => {
-          if (item.metadata?.lat && item.metadata?.lng) {
+          let itemPins = [];
+          
+          if (item.category === 'evenement' && item.metadata?.occurrences) {
+            itemPins = item.metadata.occurrences
+              .filter((occ: any) => {
+                const hasCoords = occ.lat && occ.lng;
+                const endDate = occ.end || occ.start;
+                const isFuture = !endDate || new Date(endDate) >= now;
+                return hasCoords && isFuture;
+              })
+              .map((occ: any) => ({
+                lat: occ.lat,
+                lng: occ.lng,
+                title: `${item.title} (${new Date(occ.start).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB')})`
+              }));
+          }
+
+          if (itemPins.length === 0 && item.metadata?.lat && item.metadata?.lng) {
+            itemPins.push({
+              lat: item.metadata.lat,
+              lng: item.metadata.lng,
+              title: item.title
+            });
+          }
+
+          itemPins.forEach((pin: any) => {
             const categoryLabel = item.category === 'acteur' ? (lang === 'fr' ? 'Acteur' : 'Actor') : (lang === 'fr' ? 'Événement' : 'Event');
             const popupContent = `
               <div class="p-2">
                 <span class="text-[10px] font-black uppercase text-primary mb-1 block tracking-wider">${categoryLabel}</span>
-                <h4 class="font-black text-stone-800 mb-2 leading-tight">${item.title}</h4>
+                <h4 class="font-black text-stone-800 mb-2 leading-tight">${pin.title}</h4>
                 <a href="/${lang}/resource/${item.id}" class="btn btn-xs btn-primary rounded-lg no-underline text-white font-bold w-full">Détails</a>
               </div>
             `;
-            (window as any).L.marker([item.metadata.lat, item.metadata.lng], { icon: customIcon })
+            (window as any).L.marker([pin.lat, pin.lng], { icon: customIcon })
               .bindPopup(popupContent)
               .addTo(markers);
-          }
+          });
         });
         
-        if (filtered.length > 0) {
+        if (markers.getLayers().length > 0) {
           map.fitBounds(markers.getBounds(), { padding: [50, 50] });
         }
       }

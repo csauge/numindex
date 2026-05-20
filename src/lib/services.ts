@@ -273,3 +273,48 @@ export async function fetchSuggestionById(id: string) {
   }
   return data as Suggestion;
 }
+
+/**
+ * Helper : Génère les épingles pour la carte à partir d'une ressource
+ */
+export function getMapPins(resource: Resource, lang: 'fr' | 'en') {
+  const pins: any[] = [];
+  const now = new Date();
+
+  if (resource.category === 'evenement' && resource.metadata?.occurrences) {
+    // Événements : une épingle par occurrence future avec coordonnées
+    resource.metadata.occurrences.forEach((occ: any, index: number) => {
+      const hasCoords = occ.lat && occ.lng;
+      // On considère une occurrence future si sa date de fin (ou de début par défaut) n'est pas passée
+      const endDate = occ.end || occ.start;
+      const isFuture = !endDate || new Date(endDate) >= now;
+      
+      if (hasCoords && isFuture) {
+        pins.push({
+          id: `${resource.id}-${index}`,
+          title: `${resource.title} (${new Date(occ.start).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB')})`,
+          lat: occ.lat,
+          lng: occ.lng,
+          category: resource.category,
+          link: `/${lang}/resource/${resource.id}`
+        });
+      }
+    });
+
+    if (pins.length > 0) return pins;
+  }
+
+  // Fallback (Acteur ou Événement sans occurrences spécifiques)
+  if (resource.metadata?.lat && resource.metadata?.lng) {
+    pins.push({
+      id: resource.id,
+      title: resource.title,
+      lat: resource.metadata.lat,
+      lng: resource.metadata.lng,
+      category: resource.category,
+      link: `/${lang}/resource/${resource.id}`
+    });
+  }
+
+  return pins;
+}

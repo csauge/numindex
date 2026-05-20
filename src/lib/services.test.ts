@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getNextEventDate, sortResources, getResourceGroup, sortOccurrences } from './services';
+import { getNextEventDate, sortResources, getResourceGroup, sortOccurrences, getMapPins } from './services';
 import type { Resource } from './supabase/types';
 
 // Mock browser-image-compression
@@ -8,6 +8,66 @@ vi.mock('browser-image-compression', () => ({
 }));
 
 describe('services.ts', () => {
+  describe('getMapPins', () => {
+    it('should generate a single pin for an acteur with lat/lng', () => {
+      const resource = {
+        id: '1', title: 'Acteur A', category: 'acteur',
+        metadata: { lat: 48.8, lng: 2.3 }
+      } as unknown as Resource;
+      const pins = getMapPins(resource, 'fr');
+      expect(pins).toHaveLength(1);
+      expect(pins[0].title).toBe('Acteur A');
+      expect(pins[0].lat).toBe(48.8);
+    });
+
+    it('should generate multiple pins for an event with future occurrences', () => {
+      const now = new Date();
+      const futureDate = new Date(now.getTime() + 86400000).toISOString();
+      const resource = {
+        id: '2', title: 'Event B', category: 'evenement',
+        metadata: {
+          occurrences: [
+            { start: futureDate, lat: 45, lng: 5 },
+            { start: futureDate, lat: 46, lng: 6 }
+          ]
+        }
+      } as unknown as Resource;
+      const pins = getMapPins(resource, 'fr');
+      expect(pins).toHaveLength(2);
+      expect(pins[0].title).toContain('Event B');
+      expect(pins[0].lat).toBe(45);
+      expect(pins[1].lat).toBe(46);
+    });
+
+    it('should filter out past event occurrences', () => {
+      const now = new Date();
+      const pastDate = new Date(now.getTime() - 86400000).toISOString();
+      const futureDate = new Date(now.getTime() + 86400000).toISOString();
+      const resource = {
+        id: '3', title: 'Event C', category: 'evenement',
+        metadata: {
+          occurrences: [
+            { start: pastDate, lat: 45, lng: 5 },
+            { start: futureDate, lat: 46, lng: 6 }
+          ]
+        }
+      } as unknown as Resource;
+      const pins = getMapPins(resource, 'fr');
+      expect(pins).toHaveLength(1);
+      expect(pins[0].lat).toBe(46);
+    });
+
+    it('should fallback to root lat/lng if no valid occurrences found', () => {
+      const resource = {
+        id: '4', title: 'Event D', category: 'evenement',
+        metadata: { lat: 47, lng: 7, occurrences: [] }
+      } as unknown as Resource;
+      const pins = getMapPins(resource, 'fr');
+      expect(pins).toHaveLength(1);
+      expect(pins[0].lat).toBe(47);
+    });
+  });
+
   describe('sortOccurrences', () => {
     it('should sort occurrences by start date', () => {
       const occurrences = [
