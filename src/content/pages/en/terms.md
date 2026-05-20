@@ -26,9 +26,13 @@ In our approach to digital sobriety and respect for privacy, our data collection
 * **GDPR Rights:** In accordance with regulations (GDPR), you have the right to access, rectify, limit, port, and delete your data, which can be exercised at any time from your account settings or by contacting us.
 * **Cookies:** The platform only uses cookies strictly necessary for the operation of the site (user sessions) and, if applicable, anonymized analytical cookies.
 
-## 3. Intellectual Property
+## 3. Intellectual Property and License
 
-All content, structural, and graphic elements of the site are protected by copyright. Any reproduction or representation, whole or in part, without our consent, is prohibited. Content published by users (initiative descriptions) remains their own responsibility.
+**numindex.org** is a **free (libre), open source, and gratis** tool.
+
+* **Software:** The platform's source code is distributed under the **GNU GPLv3** license. This license guarantees your freedom to view, share, change, and redistribute the program.
+* **Access:** Using the platform is entirely free of charge and requires no financial contribution.
+* **Content:** Content published by users (initiative descriptions) remains their own responsibility.
 
 ## 4. Responsibility and Moderation
 
