@@ -6,6 +6,7 @@ export function combineAuthWithProfiles(users: any[], profiles: any[]) {
       email: u.email,
       full_name: p?.full_name || null,
       role: p?.role || 'user',
+      digest_opt_in: p?.digest_opt_in || false,
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at
     };

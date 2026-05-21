@@ -80,6 +80,20 @@
     color: #ffffff !important; /* Force le texte en blanc au survol */
   }
 
+  /* Style unifié pour les checkboxes */
+  .checkbox {
+    border-color: #d8e2dc !important; /* Stone-200 / B3 */
+    border-radius: 8px !important;
+    transition: all 0.2s ease;
+  }
+
+  .checkbox:checked {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+    --chkbg: 4 120 87 !important;
+    --chkfg: #ffffff !important;
+  }
+
   /* Boutons outline */
   .btn-outline.btn-primary {
     color: #047857 !important;

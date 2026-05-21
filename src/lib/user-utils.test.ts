@@ -8,8 +8,8 @@ describe('combineAuthWithProfiles', () => {
       { id: '2', email: 'bob@test.com', created_at: '2021-01-01', last_sign_in_at: null }
     ];
     const profiles = [
-      { id: '1', full_name: 'Alice Smith', role: 'admin' },
-      { id: '2', full_name: 'Bob Jones', role: 'user' }
+      { id: '1', full_name: 'Alice Smith', role: 'admin', digest_opt_in: true },
+      { id: '2', full_name: 'Bob Jones', role: 'user', digest_opt_in: false }
     ];
 
     const result = combineAuthWithProfiles(authUsers, profiles);
@@ -20,6 +20,7 @@ describe('combineAuthWithProfiles', () => {
       email: 'alice@test.com',
       full_name: 'Alice Smith',
       role: 'admin',
+      digest_opt_in: true,
       created_at: '2021-01-01',
       last_sign_in_at: '2021-01-02'
     });
@@ -28,6 +29,7 @@ describe('combineAuthWithProfiles', () => {
       email: 'bob@test.com',
       full_name: 'Bob Jones',
       role: 'user',
+      digest_opt_in: false,
       created_at: '2021-01-01',
       last_sign_in_at: null
     });
@@ -46,6 +48,7 @@ describe('combineAuthWithProfiles', () => {
       email: 'charlie@test.com',
       full_name: null,
       role: 'user',
+      digest_opt_in: false,
       created_at: '2021-01-01',
       last_sign_in_at: null
     });

@@ -161,8 +161,16 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, role)
-    VALUES (new.id, new.raw_user_meta_data->>'full_name', 'user');
+    INSERT INTO public.profiles (id, full_name, role, digest_opt_in)
+    VALUES (
+        new.id, 
+        new.raw_user_meta_data->>'full_name', 
+        'user',
+        CASE 
+          WHEN (new.raw_user_meta_data->>'digest_opt_in') = 'true' THEN true 
+          ELSE false 
+        END
+    );
     RETURN new;
 END;
 $$;

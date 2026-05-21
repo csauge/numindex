@@ -13,6 +13,7 @@ const translations = {
     submit: "S'inscrire",
     hasAccount: "Déjà un compte ?",
     login: "Se connecter",
+    digest: "Recevoir le résumé mensuel des nouvelles ressources",
     error: "Erreur lors de la création du compte.",
     success: "Compte créé ! Redirection...",
     checkEmail: "Vérifiez vos emails ! Un lien de confirmation vous a été envoyé."
@@ -25,6 +26,7 @@ const translations = {
     submit: "Sign up",
     hasAccount: "Already have an account?",
     login: "Login",
+    digest: "Receive the monthly summary of new resources",
     error: "Error creating account.",
     success: "Account created! Redirecting...",
     checkEmail: "Check your emails! A confirmation link has been sent to you."
@@ -50,6 +52,13 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         <div class="form-control">
           <label class="label"><span class="form-label">{t.password}</span></label>
           <input type="password" name="password" required class="input input-bordered rounded-2xl w-full" />
+        </div>
+
+        <div class="form-control mt-4">
+          <label class="label cursor-pointer flex items-center gap-3 p-0 hover:bg-transparent">
+            <input type="checkbox" name="digest_opt_in" class="checkbox checkbox-sm shrink-0" />
+            <span class="text-[13px] text-stone-500 font-medium leading-tight flex-1">{t.digest}</span>
+          </label>
         </div>
         
         <div id="error-message" class="text-error text-sm font-bold hidden bg-red-50 p-3 rounded-xl border border-red-100 text-center">
@@ -136,6 +145,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const fullName = formData.get('full_name') as string;
+    const digestOptIn = formData.get('digest_opt_in') === 'on';
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -143,6 +153,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
       options: {
         data: {
           full_name: fullName,
+          digest_opt_in: digestOptIn
         }
       }
     });
