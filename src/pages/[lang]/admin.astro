@@ -178,6 +178,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 
       const { data: resources } = await supabase.from('resources').select('*');
       const profiles = await fetchAllProfiles();
+      const currentUserId = session.user.id;
 
       loadingState?.classList.add('hidden');
       if (suggestions.some(s => s.action === 'update')) diffNotice?.classList.remove('hidden');
@@ -190,7 +191,8 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           diffWith: original,
           profiles,
           allResources: resources || [],
-          categoriesData: categoriesData
+          categoriesData: categoriesData,
+          currentUserId: currentUserId
         });
       }).join('');
       attachEvents();

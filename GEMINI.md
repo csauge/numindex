@@ -12,6 +12,7 @@ Ce document définit les règles essentielles et les standards d'ingénierie pou
 
 ## 2. Standards d'Ingénierie
 - **Tests :** Privilégier les tests unitaires (Vitest) qui sont plus rapides à exécuter pour valider la logique métier. Réserver les tests E2E (Playwright) à la validation des parcours utilisateurs critiques et de l'intégration globale.
+- **Modération :** Un administrateur ne peut pas modérer (approuver ou rejeter) une suggestion qu'il a lui-même soumise.
 - **Code :** Clean Code, modulaire, lisible, typage strict (TypeScript). Supprimer systématiquement le code mort.
 - **Composants :** Taille maximale ~300 lignes. La logique complexe doit être externalisée dans `src/lib`.
 - **SSR vs Static :** Utiliser le SSR pour les données dynamiques (Admin, Détails ressource, Catégories) et le statique pour le contenu fixe (About, Guide, Terms).

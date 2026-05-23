@@ -11,14 +11,20 @@ export interface PreviewOptions {
   profiles?: Profile[];
   allResources?: Resource[];
   categoriesData?: any;
+  currentUserId?: string | null;
 }
 
 export function renderResourcePreview(res: Partial<Suggestion & Resource>, options: PreviewOptions) {
-  const { lang, isModeration, isOwner, hideButtons, diffWith, profiles = [], allResources = [], categoriesData = {} } = options;
+  const { lang, isModeration, isOwner, hideButtons, diffWith, profiles = [], allResources = [], categoriesData = {}, currentUserId } = options;
   
   const action = (res as Suggestion).action || 'create';
   const actionClass = getActionClass(action);
   const actionIcon = ACTION_ICONS[action as keyof typeof ACTION_ICONS] || ACTION_ICONS.create;
+
+  // Proposer info
+  const submittedBy = (res as Suggestion).submitted_by;
+  const proposer = profiles.find(p => p.id === submittedBy)?.full_name || '...';
+  const isSubmitter = currentUserId && submittedBy === currentUserId;
 
   const isMod = (field: string) => {
     if (!diffWith || action !== 'update') return false;
@@ -68,10 +74,6 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
   };
 
   const diffClass = "ring-2 ring-red-500 ring-offset-2 rounded-sm";
-  
-  // Proposer info
-  const submittedBy = (res as Suggestion).submitted_by;
-  const proposer = profiles.find(p => p.id === submittedBy)?.full_name || '...';
 
   const cat = res.category || 'acteur';
   const catInfo = categoriesData[cat];
@@ -95,7 +97,8 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
       new: 'Nouveau',
       update: 'Modification',
       delete: 'Suppression',
-      preview: 'Aperçu'
+      preview: 'Aperçu',
+      selfModeration: 'Auto-modération impossible'
     },
     en: {
       target: 'Preview:',
@@ -112,7 +115,8 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
       new: 'New',
       update: 'Update',
       delete: 'Delete',
-      preview: 'Preview'
+      preview: 'Preview',
+      selfModeration: 'Self-moderation not allowed'
     }
   }[lang];
 
@@ -270,9 +274,11 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
 
       ${(isModeration || (isOwner && (res as Suggestion).status === 'pending')) && !hideButtons ? `
         <div class="flex md:flex-col gap-2 w-full md:w-auto">
-          ${isModeration ? `<button id="approve-${(res as Suggestion).id}" class="btn btn-primary btn-sm flex-grow approve-btn" data-id="${(res as Suggestion).id}">${t.approve}</button>` : ''}
+          ${isModeration && !isSubmitter ? `<button id="approve-${(res as Suggestion).id}" class="btn btn-primary btn-sm flex-grow approve-btn" data-id="${(res as Suggestion).id}">${t.approve}</button>` : ''}
           ${action !== 'delete' ? `<a href="/${lang}/propose?sid=${(res as Suggestion).id}${isModeration ? '&moderation=true' : '&redirect=profile'}" class="btn btn-outline btn-sm flex-grow text-center">${t.correct}</a>` : ''}
-          <button id="${isModeration ? 'reject' : 'cancel'}-${(res as Suggestion).id}" class="btn btn-ghost btn-sm text-error flex-grow ${isModeration ? 'reject-btn' : 'cancel-btn'}" data-id="${(res as Suggestion).id}">${isModeration ? t.reject : t.cancel}</button>
+          ${isModeration && !isSubmitter ? `<button id="reject-${(res as Suggestion).id}" class="btn btn-ghost btn-sm text-error flex-grow reject-btn" data-id="${(res as Suggestion).id}">${t.reject}</button>` : ''}
+          ${!isModeration ? `<button id="cancel-${(res as Suggestion).id}" class="btn btn-ghost btn-sm text-error flex-grow cancel-btn" data-id="${(res as Suggestion).id}">${t.cancel}</button>` : ''}
+          ${isModeration && isSubmitter ? `<span class="text-[9px] font-bold text-stone-400 italic text-center px-4 py-2 bg-stone-50 rounded-lg border border-stone-100">${t.selfModeration}</span>` : ''}
         </div>
       ` : ''}
     </article>

@@ -35,3 +35,8 @@ We automatically audit the performance and eco-design of our platform with every
 </div>
 
 Join us in this endeavor and help enrich our directory of positive-impact initiatives.
+
+## Creation
+
+**numindex.org** was created by [Christophe Saugé](https://www.linkedin.com/in/csauge).
+

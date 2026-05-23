@@ -35,3 +35,8 @@ Nous auditons automatiquement les performances et l'écoconception de notre plat
 </div>
 
 Rejoignez-nous dans cette démarche et contribuez à enrichir notre répertoire d'initiatives à impact positif.
+
+## Création
+
+**numindex.org** a été créé par [Christophe Saugé](https://www.linkedin.com/in/csauge).
+
