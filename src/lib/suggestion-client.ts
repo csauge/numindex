@@ -81,7 +81,14 @@ export function initSuggestionForm(form: HTMLFormElement) {
 
   function updateOptionalTags() {
     const cat = elements.cat.value;
-    const tags = CATEGORIES[cat].optionalTags;
+    const mandatory = elements.mandatoryTag.value;
+    let tags = CATEGORIES[cat].optionalTags;
+
+    // Filter 'Mesure' tag: only for 'Logiciel'
+    if (cat === 'outil' && mandatory !== 'Logiciel') {
+      tags = tags.filter((t: string) => t !== 'Mesure');
+    }
+
     elements.optionalTagsList!.innerHTML = tags.map((tag: string) => {
       const isChecked = selectedOptionalTags.includes(tag);
       return `<button type="button" data-tag="${tag}" class="btn btn-xs ${isChecked ? 'btn-primary' : 'btn-outline'}">${tag}</button>`;
@@ -288,7 +295,10 @@ export function initSuggestionForm(form: HTMLFormElement) {
     updateUI();
   });
 
-  elements.mandatoryTag.addEventListener('change', updateUI);
+  elements.mandatoryTag.addEventListener('change', () => {
+    updateOptionalTags();
+    updateUI();
+  });
 
   async function init() {
     entities = await fetchEntities();
