@@ -16,6 +16,8 @@ describe('notification-utils.ts', () => {
       expect(result.title).toBe('Test Resource');
       expect(result.catLabel).toBe('Acteur');
       expect(result.actionLabel).toBe('Création');
+      expect(result.actionLabelDetailed).toBe('de création');
+      expect(result.successMessage).toBe('Elle est désormais visible sur le site !');
       expect(result.dateStr).toBe('23/05/2026');
       expect(result.summary).toBe('Acteur • Création • Envoyé le 23/05/2026');
     });
@@ -27,6 +29,8 @@ describe('notification-utils.ts', () => {
       expect(result.title).toBe('Sans titre');
       expect(result.catLabel).toBe('Inconnu');
       expect(result.actionLabel).toBe('Inconnu');
+      expect(result.actionLabelDetailed).toBe('Inconnu');
+      expect(result.successMessage).toBe('');
       expect(result.dateStr).toBe('Inconnue');
     });
 
@@ -39,6 +43,7 @@ describe('notification-utils.ts', () => {
       const result = formatSuggestionForEmail(suggestion);
       expect(result.catLabel).toBe('something-new');
       expect(result.actionLabel).toBe('mystery');
+      expect(result.actionLabelDetailed).toBe('mystery');
     });
   });
 });

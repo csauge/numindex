@@ -20,7 +20,7 @@ export async function sendDailyAdminDigest(supabase, brevoApiKey, contactEmail) 
   // 1. Récupérer TOUTES les suggestions en attente
   const { data: pendingSuggestions, error: suggestionsError } = await supabase
     .from('suggestions')
-    .select('id, title, category, tags, action, created_at')
+    .select('id, title, description, category, tags, action, created_at')
     .eq('status', 'pending')
     .order('created_at', { ascending: true });
 
@@ -75,15 +75,20 @@ export async function sendDailyAdminDigest(supabase, brevoApiKey, contactEmail) 
   // 4. Générer le contenu de l'email
   const suggestionListHtml = pendingSuggestions.map(s => {
     const formatted = formatSuggestionForEmail(s);
+    const tagHtml = (s.tags || []).map(t => `<span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${t}</span>`).join('');
+    const descriptionHtml = s.description ? `<div style="color: #444; font-size: 12px; margin-top: 4px; font-style: italic;">${s.description.length > 120 ? s.description.substring(0, 120) + '...' : s.description}</div>` : '';
     
     return `
       <tr>
-        <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-family: Arial, sans-serif; font-size: 13px;">
-          <div style="font-weight: bold; color: #1c1917;">${formatted.title}</div>
-          <div style="color: #78716c; font-size: 11px;">${formatted.summary}</div>
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-family: Arial, sans-serif;">
+          <div style="font-weight: bold; color: #1c1917; font-size: 14px;">${formatted.title}</div>
+          <div style="color: #059669; font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 2px 0;">${formatted.catLabel} • ${formatted.actionLabel}</div>
+          ${descriptionHtml}
+          <div style="margin-top: 6px;">${tagHtml}</div>
+          <div style="color: #a8a29e; font-size: 10px; margin-top: 4px;">Envoyé le ${formatted.dateStr}</div>
         </td>
-        <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; vertical-align: middle;">
-          <a href="https://numindex.org/fr/admin" style="color: #059669; text-decoration: none; font-size: 12px; font-weight: bold;">Modérer →</a>
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; vertical-align: middle; min-width: 80px;">
+          <a href="https://numindex.org/fr/admin" style="color: #059669; text-decoration: none; font-size: 12px; font-weight: bold; border: 1px solid #059669; padding: 4px 8px; border-radius: 4px;">Modérer</a>
         </td>
       </tr>
     `;
