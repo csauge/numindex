@@ -1,4 +1,4 @@
--- SQL Schema for numindex.org 🌿 (Synchronized with migrations up to 20260327000000)
+-- SQL Schema for numindex.org 🌿 (Synchronized with migrations up to 20260523080000)
 
 -- 0. Types & Helpers
 CREATE TYPE public.user_role AS ENUM ('user', 'admin');
@@ -276,3 +276,42 @@ FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 -- 14. Storage Policies (for 'suggestions' bucket)
 CREATE POLICY "Public Upload" ON storage.objects AS PERMISSIVE FOR INSERT TO public WITH CHECK (bucket_id = 'suggestions'::text);
 CREATE POLICY "Public View" ON storage.objects AS PERMISSIVE FOR SELECT TO public USING (bucket_id = 'suggestions'::text);
+
+-- 15. Suggestion Status Change Webhook
+CREATE OR REPLACE FUNCTION public.on_suggestion_status_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  webhook_url text;
+  webhook_secret text;
+BEGIN
+  -- Configuration (Local dev values)
+  webhook_url := 'https://purebred-panic-come.ngrok-free.dev/api/webhooks/suggestion-moderated';
+  webhook_secret := 'dev-secret-123';
+
+  -- Only trigger if status changed from 'pending' to 'approved' or 'rejected'
+  IF (OLD.status = 'pending' AND (NEW.status = 'approved' OR NEW.status = 'rejected')) THEN
+    PERFORM net.http_post(
+      url := webhook_url,
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'X-Webhook-Secret', webhook_secret
+      ),
+      body := jsonb_build_object(
+        'record', row_to_json(NEW),
+        'old_record', row_to_json(OLD)
+      )
+    );
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER tr_on_suggestion_status_change
+  AFTER UPDATE OF status ON public.suggestions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.on_suggestion_status_change();

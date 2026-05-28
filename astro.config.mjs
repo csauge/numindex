@@ -28,6 +28,9 @@ export default defineConfig({
   }),
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      allowedHosts: ['purebred-panic-come.ngrok-free.dev']
+    },
     optimizeDeps: {
       include: ['browser-image-compression'],
     },
