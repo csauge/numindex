@@ -110,6 +110,7 @@ SET search_path = ''
 AS $$
 DECLARE
     s public.suggestions%ROWTYPE;
+    new_resource_id uuid;
 BEGIN
     -- 1. Get the suggestion
     SELECT * INTO s FROM public.suggestions WHERE id = suggestion_id AND status = 'pending';
@@ -128,7 +129,12 @@ BEGIN
             title, description, link, category, image_url, tags, related_ids, metadata, created_by, updated_by
         ) VALUES (
             s.title, s.description, s.link, s.category, s.image_url, s.tags, s.related_ids, s.metadata, s.submitted_by, s.submitted_by
-        );
+        )
+        RETURNING id INTO new_resource_id;
+        
+        -- Update the suggestion with the new resource ID
+        UPDATE public.suggestions SET resource_id = new_resource_id WHERE id = suggestion_id;
+        
     ELSIF s.action = 'update' THEN
         IF s.resource_id IS NULL THEN
             RAISE EXCEPTION 'Resource ID is required for update action';
