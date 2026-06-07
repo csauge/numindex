@@ -23,11 +23,19 @@ test.describe('Moderation Flow [TEST]', () => {
     });
   });
 
-  test('Complete Moderation Lifecycle: Propose, Correct, Approve, Update, Delete', async ({ page }) => {
+  test('Complete Moderation Lifecycle: Propose, Correct, Approve, Update, Delete', async ({ page, browser }) => {
     const uniqueId = Math.floor(Math.random() * 100000);
     const resourceTitle = `[TEST] Resource ${uniqueId}`;
     const correctedTitle = `[TEST] Corrected ${uniqueId}`;
     const updatedTitle = `[TEST] Updated ${uniqueId}`;
+
+    // Create second admin context for moderation
+    const admin2Context = await browser.newContext({ storageState: 'playwright/.auth/user2.json' });
+    const admin2Page = await admin2Context.newPage();
+    admin2Page.on('dialog', dialog => {
+      console.log(`[TEST] Admin2 Dialog appeared: ${dialog.message()}`);
+      dialog.accept();
+    });
 
     // 1. Propose
     await page.goto('/fr/propose');
@@ -53,11 +61,12 @@ test.describe('Moderation Flow [TEST]', () => {
     await expect(page.locator('#toast-container')).toBeVisible();
     await page.waitForURL(/\/fr\/admin\/?$/);
 
-    // 3. Approval
-    const correctedSuggestion = page.locator('.suggestion-card').filter({ hasText: correctedTitle });
+    // 3. Approval (Admin 2)
+    await admin2Page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    const correctedSuggestion = admin2Page.locator('.suggestion-card').filter({ hasText: correctedTitle });
     await expect(correctedSuggestion).toBeVisible();
     const correctedId = await correctedSuggestion.getAttribute('data-id');
-    await page.click(`#approve-${correctedId}`);
+    await admin2Page.click(`#approve-${correctedId}`);
     await expect(correctedSuggestion).not.toBeVisible({ timeout: 10000 });
 
     // 4. Update Proposal & Diff Highlighting
@@ -74,36 +83,38 @@ test.describe('Moderation Flow [TEST]', () => {
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
 
-    // Verify Diff in Admin
-    await page.goto('/fr/admin', { waitUntil: 'networkidle' });
-    const updateSuggestion = page.locator('.suggestion-card').filter({ hasText: updatedTitle });
+    // Verify Diff in Admin & Approve (Admin 2)
+    await admin2Page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    const updateSuggestion = admin2Page.locator('.suggestion-card').filter({ hasText: updatedTitle });
     await expect(updateSuggestion).toBeVisible();
     await expect(updateSuggestion.locator('h2')).toHaveClass(/ring-red-500/); // Diff highlight
     
     const updateId = await updateSuggestion.getAttribute('data-id');
-    await page.click(`#approve-${updateId}`);
+    await admin2Page.click(`#approve-${updateId}`);
     await expect(updateSuggestion).not.toBeVisible();
 
-    // 5. Deletion Proposal & Approval
+    // 5. Deletion Proposal & Approval (Admin 2)
     await page.goto(`/fr/propose?action=delete&id=${resourceId}`);
     await page.fill('textarea[name="reason"]', 'Test deletion');
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
 
-    await page.goto('/fr/admin', { waitUntil: 'networkidle' });
-    const deleteSuggestion = page.locator('.suggestion-card').filter({ hasText: updatedTitle }).filter({ hasText: 'Suppression' });
+    await admin2Page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    const deleteSuggestion = admin2Page.locator('.suggestion-card').filter({ hasText: updatedTitle }).filter({ hasText: 'Suppression' });
     await expect(deleteSuggestion).toBeVisible();
     const deleteId = await deleteSuggestion.getAttribute('data-id');
-    await page.click(`#approve-${deleteId}`);
+    await admin2Page.click(`#approve-${deleteId}`);
     await expect(deleteSuggestion).not.toBeVisible();
 
     // 6. Final verification
     await page.goto('/fr', { waitUntil: 'networkidle' });
     await page.fill('#search-input', updatedTitle);
     await expect(page.locator('.resource-card').filter({ hasText: updatedTitle })).not.toBeVisible({ timeout: 10000 });
+
+    await admin2Context.close();
   });
 
-  test('Rejection workflow', async ({ page }) => {
+  test('Rejection workflow', async ({ page, browser }) => {
     const uniqueId = Math.floor(Math.random() * 100000);
     const rejectedTitle = `[TEST] To Be Rejected ${uniqueId}`;
     await page.goto('/fr/propose');
@@ -113,28 +124,46 @@ test.describe('Moderation Flow [TEST]', () => {
     await page.click('#submit-btn');
     await expect(page.locator('#toast-container')).toBeVisible();
 
-    await page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    // Create second admin context for moderation
+    const admin2Context = await browser.newContext({ storageState: 'playwright/.auth/user2.json' });
+    const admin2Page = await admin2Context.newPage();
+    admin2Page.on('dialog', dialog => {
+      console.log(`[TEST] Admin2 Dialog appeared: ${dialog.message()}`);
+      dialog.accept();
+    });
+
+    await admin2Page.goto('/fr/admin', { waitUntil: 'networkidle' });
     
     // Wait for loading to finish
-    await expect(page.locator('#loading-state')).not.toBeVisible();
+    await expect(admin2Page.locator('#loading-state')).not.toBeVisible();
     
-    const suggestionCard = page.locator('.suggestion-card').filter({ hasText: rejectedTitle });
+    const suggestionCard = admin2Page.locator('.suggestion-card').filter({ hasText: rejectedTitle });
     await expect(suggestionCard).toBeVisible({ timeout: 15000 });
     
     const id = await suggestionCard.getAttribute('data-id');
     console.log(`[TEST] Rejecting card with ID: ${id}`);
     
     // Use dispatchEvent to bypass potential overlay issues if force click doesn't work
-    await page.click(`#reject-${id}`, { force: true });
+    await admin2Page.click(`#reject-${id}`, { force: true });
     
     // UI should remove the card immediately after success
-    await expect(page.locator('.suggestion-card').filter({ hasText: rejectedTitle })).not.toBeVisible({ timeout: 15000 });
+    await expect(admin2Page.locator('.suggestion-card').filter({ hasText: rejectedTitle })).not.toBeVisible({ timeout: 15000 });
+
+    await admin2Context.close();
   });
 
-  test('Bidirectional relations', async ({ page }) => {
+  test('Bidirectional relations', async ({ page, browser }) => {
     const uniqueId = Math.floor(Math.random() * 100000);
     const entityTitle = `[TEST] Entity ${uniqueId}`;
     const linkedTitle = `[TEST] Linked Resource ${uniqueId}`;
+
+    // Create second admin context for moderation
+    const admin2Context = await browser.newContext({ storageState: 'playwright/.auth/user2.json' });
+    const admin2Page = await admin2Context.newPage();
+    admin2Page.on('dialog', dialog => {
+      console.log(`[TEST] Admin2 Dialog appeared: ${dialog.message()}`);
+      dialog.accept();
+    });
 
     // 1. Propose & Approve Entity
     await page.goto('/fr/propose');
@@ -147,12 +176,12 @@ test.describe('Moderation Flow [TEST]', () => {
     await expect(page.locator('#toast-container')).toBeVisible();
     await page.waitForURL(/\/fr\/?$/);
     
-    await page.goto('/fr/admin', { waitUntil: 'networkidle' });
-    await expect(page.locator('#loading-state')).toBeHidden();
-    const entityCard = page.locator('.suggestion-card').filter({ hasText: entityTitle });
+    await admin2Page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    await expect(admin2Page.locator('#loading-state')).toBeHidden();
+    const entityCard = admin2Page.locator('.suggestion-card').filter({ hasText: entityTitle });
     await expect(entityCard).toBeVisible({ timeout: 15000 });
     const entityId = await entityCard.getAttribute('data-id');
-    await page.click(`#approve-${entityId}`);
+    await admin2Page.click(`#approve-${entityId}`);
     await expect(entityCard).not.toBeVisible();
 
     // 2. Propose Linked Resource
@@ -170,12 +199,12 @@ test.describe('Moderation Flow [TEST]', () => {
     await page.waitForURL(/\/fr\/?$/);
 
     // 3. Approve Linked Resource
-    await page.goto('/fr/admin', { waitUntil: 'networkidle' });
-    await expect(page.locator('#loading-state')).toBeHidden();
-    const linkedCard = page.locator('.suggestion-card').filter({ hasText: linkedTitle });
+    await admin2Page.goto('/fr/admin', { waitUntil: 'networkidle' });
+    await expect(admin2Page.locator('#loading-state')).toBeHidden();
+    const linkedCard = admin2Page.locator('.suggestion-card').filter({ hasText: linkedTitle });
     await expect(linkedCard).toBeVisible({ timeout: 15000 });
     const linkedId = await linkedCard.getAttribute('data-id');
-    await page.click(`#approve-${linkedId}`);
+    await admin2Page.click(`#approve-${linkedId}`);
     await expect(linkedCard).not.toBeVisible();
 
     // 4. Verify relations on detail pages
@@ -186,5 +215,7 @@ test.describe('Moderation Flow [TEST]', () => {
     await page.goto('/fr');
     await page.locator('.resource-card').filter({ hasText: entityTitle }).click();
     await expect(page.locator('a:has-text("' + linkedTitle + '")')).toBeVisible();
+
+    await admin2Context.close();
   });
 });
