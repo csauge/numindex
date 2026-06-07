@@ -1,3 +1,9 @@
+# Instructions pour l'Agent (Économie de Quota)
+- Interdiction de faire du bavardage ou des politesses (sois ultra-concis).
+- Ne réécris JAMAIS un fichier entier. Fournis uniquement des micro-diffs de code.
+- Limite tes réponses textuelles à un maximum de 200 tokens.
+- AVANT de lire un gros fichier ou de lancer une recherche globale, demande-moi une confirmation explicite.
+
 # Mandats numindex.org 🌿
 
 Ce document définit les règles essentielles et les standards d'ingénierie pour le développement de numindex.org.
@@ -33,7 +39,7 @@ Ce document définit les règles essentielles et les standards d'ingénierie pou
 1.  **Qualité :** Nettoyage du code (`console.log`, commentaires inutiles), factorisation.
 2.  **Sobriété/Perf :** Exécution de `npm run verify-sobriety`, vérification RGAA.
 3.  **Validation :** `npm run build`, `npm run test:unit`, `npm run test:e2e`.
-4.  **Documentation :** Mettre à jour `README.md`, `GEMINI.md` et le schéma SQL (`supabase_schema.sql`) si nécessaire.
+4.  **Documentation :** Mettre à jour `README.md`, `AGENTS.md` (anciennement `GEMINI.md`) et le schéma SQL (`supabase_schema.sql`) si nécessaire.
 5.  **Git (Flux de travail PR) :** **INTERDICTION ABSOLUE** de pousser des modifications directement sur la branche `main`. Toute livraison doit suivre le processus suivant (toujours avec l'accord préalable de l'utilisateur) :
     - Créer une nouvelle branche (ex: `feature/nom-de-la-fonctionnalite` ou `fix/correction-bug`).
     - Commiter les changements et pousser la branche sur le dépôt distant.
