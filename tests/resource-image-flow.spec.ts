@@ -11,7 +11,7 @@ test.describe('Resource Image Flow [TEST]', () => {
     } catch (e) {}
   });
 
-  test('Should display resource image in grid after approval', async ({ page }) => {
+  test('Should display resource image in grid after approval', async ({ page, browser }) => {
     // Mock confirm
     await page.addInitScript(() => {
       window.confirm = () => true;
@@ -44,9 +44,16 @@ test.describe('Resource Image Flow [TEST]', () => {
       await page.click('#submit-btn');
       await page.waitForURL(/\/fr\/?$/);
 
+      // Create second admin context for moderation
+      const admin2Context = await browser.newContext({ storageState: 'playwright/.auth/user2.json' });
+      const admin2Page = await admin2Context.newPage();
+      await admin2Page.addInitScript(() => {
+        window.confirm = () => true;
+      });
+
       // 3. Modérer la ressource (Approuver)
-      await page.goto('/fr/admin');
-      const suggestionCard = page.locator('.suggestion-card').filter({ hasText: resourceTitle });
+      await admin2Page.goto('/fr/admin');
+      const suggestionCard = admin2Page.locator('.suggestion-card').filter({ hasText: resourceTitle });
       await expect(suggestionCard).toBeVisible();
       
       // Verify image is visible in admin
@@ -54,8 +61,7 @@ test.describe('Resource Image Flow [TEST]', () => {
       
       await suggestionCard.locator('.approve-btn').click();
       await expect(suggestionCard).not.toBeVisible();
-
-      // 4. Vérifier dans la grille (Accueil)
+      await admin2Context.close();
       await page.goto('/fr');
       const resourceCard = page.locator('.resource-card').filter({ hasText: resourceTitle });
       await expect(resourceCard).toBeVisible();

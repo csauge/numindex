@@ -199,9 +199,16 @@ test.describe('Authentication & Authorization Permissions', () => {
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
 
-    // 2. Vérifier dans Admin
-    await page.goto('/fr/admin');
-    const suggestionCard = page.locator('.suggestion-card').filter({ hasText: resourceTitle });
+    // Create second admin context for moderation
+    const admin2Context = await browser.newContext({ storageState: 'playwright/.auth/user2.json' });
+    const admin2Page = await admin2Context.newPage();
+    await admin2Page.addInitScript(() => {
+      window.confirm = () => true;
+    });
+
+    // 2. Vérifier dans Admin (avec admin2)
+    await admin2Page.goto('/fr/admin');
+    const suggestionCard = admin2Page.locator('.suggestion-card').filter({ hasText: resourceTitle });
     await expect(suggestionCard).toBeVisible();
     
     // Check tags are visible
@@ -229,9 +236,9 @@ test.describe('Authentication & Authorization Permissions', () => {
     await page.click('#submit-btn');
     await page.waitForURL(/\/fr\/?$/);
 
-    // 6. Modérer la mise à jour
-    await page.goto('/fr/admin');
-    const updateSuggestion = page.locator('.suggestion-card').filter({ hasText: updatedTitle });
+    // 6. Modérer la mise à jour (avec admin2)
+    await admin2Page.goto('/fr/admin');
+    const updateSuggestion = admin2Page.locator('.suggestion-card').filter({ hasText: updatedTitle });
     await expect(updateSuggestion).toBeVisible();
 
     // Target ID should be visible for updates
@@ -239,10 +246,13 @@ test.describe('Authentication & Authorization Permissions', () => {
 
     await updateSuggestion.locator('.approve-btn').click();
     await expect(updateSuggestion).not.toBeVisible();
+    
+    await admin2Context.close();
 
     // 7. Vérifier les détails (Modifié le)
     await page.goto(resourceUrl);
-    await expect(page.locator('p:has-text("Modifié le")')).toBeVisible();  });
+    await expect(page.locator('p:has-text("Modifié le")')).toBeVisible();
+  });
 
   test('New user registration should login automatically and redirect to home', async ({ browser }) => {
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
