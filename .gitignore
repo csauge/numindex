@@ -1,17 +1,10 @@
-# Astro
+# Core Build & Dev Directories
 .astro/
 dist/
-
-# Dependencies
 node_modules/
+.wrangler/
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Playwright Tests
+# Test Reports & Caches
 /test-results/
 /playwright-report/
 /blob-report/
@@ -19,18 +12,37 @@ pnpm-debug.log*
 /playwright/.cache/
 /playwright/.auth/
 
-# Environment
+# Environment & Secrets
 .env
-.env.production
-.env.local
-.env.test
+.env.*
+!.env.example
 
-# OS
+# OS Files
 .DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Workspace (local files)
-.wrangler/
-playwright-report/
-test-results/
+# IDEs & Editor Configuration
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary Files & Caches
+.temp/
+tmp/
+.cache/
+.eslintcache
+
+# Supabase Local Files
+supabase/.branches/
+supabase/.temp/
 supabase/snippets/
