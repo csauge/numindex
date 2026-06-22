@@ -7,7 +7,7 @@ test.describe('Formulaire de proposition - Limites de caractères', () => {
 
     // Vérifier les champs principaux
     const titleInput = page.locator('input[name="title"]');
-    await expect(titleInput).toHaveAttribute('maxlength', '100');
+    await expect(titleInput).toHaveAttribute('maxlength', '120');
 
     const descInput = page.locator('textarea[name="description"]');
     await expect(descInput).toHaveAttribute('maxlength', '1000');

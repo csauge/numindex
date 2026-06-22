@@ -1,13 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getImageUrl } from './client';
 
-// Mock supabase client
-vi.mock('./client', async (importOriginal) => {
-  const actual = await importOriginal<any>();
+// Hoist env stubbing so it runs before importing client
+vi.hoisted(() => {
+  vi.stubEnv('PUBLIC_SUPABASE_URL', 'https://mock.supabase.co');
+  vi.stubEnv('PUBLIC_SUPABASE_ANON_KEY', 'mock-anon-key');
+});
+
+// Mock supabase-js so createClient returns a mocked storage client
+vi.mock('@supabase/supabase-js', () => {
   return {
-    ...actual,
-    // We only mock the supabase object used inside getImageUrl
-    supabase: {
+    createClient: () => ({
       storage: {
         from: () => ({
           getPublicUrl: (path: string) => ({
@@ -15,9 +17,11 @@ vi.mock('./client', async (importOriginal) => {
           })
         })
       }
-    }
+    })
   };
 });
+
+import { getImageUrl } from './client';
 
 describe('getImageUrl', () => {
   it('should return null if path is null or undefined', () => {
@@ -37,6 +41,7 @@ describe('getImageUrl', () => {
   it('should return a public URL for standard paths', () => {
     const path = 'some-image.png';
     const result = getImageUrl(path);
+    expect(result).not.toBeNull();
     expect(result).toContain(path);
     expect(result).toMatch(/^http/);
   });

@@ -128,31 +128,35 @@ test.describe('Authentication & Authorization Permissions', () => {
     // Manually confirm the user
     execSync(`npx supabase db query "UPDATE auth.users SET email_confirmed_at = now(), last_sign_in_at = now() WHERE email = '${userEmail}';"`);
     
+    // Use a fresh page to avoid any navigation interruptions from the registration page
+    await page.close();
+    const loginPage = await context.newPage();
+
     // 2. Sign in then Sign out
-    await page.goto('/fr/login');
-    await page.fill('input[name="email"]', userEmail);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/fr\/?$/);
+    await loginPage.goto('/fr/login');
+    await loginPage.fill('input[name="email"]', userEmail);
+    await loginPage.fill('input[name="password"]', password);
+    await loginPage.click('button[type="submit"]');
+    await loginPage.waitForURL(/\/fr\/?$/);
     
-    await page.click('#user-info [role="button"]');
-    await page.click('#logout-btn');
-    await page.waitForURL(/\/fr\/?$/);
-    await expect(page.locator('#login-link')).toBeVisible();
+    await loginPage.click('#user-info [role="button"]');
+    await loginPage.click('#logout-btn');
+    await loginPage.waitForURL(/\/fr\/?$/);
+    await expect(loginPage.locator('#login-link')).toBeVisible();
 
     // 3. Visit propose (as visitor) -> should redirect to login
-    await page.goto('/fr/propose');
-    await expect(page).toHaveURL(/\/fr\/login\?redirect=.*propose/);
+    await loginPage.goto('/fr/propose');
+    await expect(loginPage).toHaveURL(/\/fr\/login\?redirect=.*propose/);
     
     // 4. Login
-    await page.fill('input[name="email"]', userEmail);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
+    await loginPage.fill('input[name="email"]', userEmail);
+    await loginPage.fill('input[name="password"]', password);
+    await loginPage.click('button[type="submit"]');
 
     // 5. Should be back on propose
-    await page.waitForURL(url => url.pathname.includes('/fr/propose'), { timeout: 20000 });
-    await expect(page).toHaveURL(/\/fr\/propose/);
-    await expect(page.locator('h2:has-text("Proposer")')).toBeVisible();
+    await loginPage.waitForURL(url => url.pathname.includes('/fr/propose'), { timeout: 20000 });
+    await expect(loginPage).toHaveURL(/\/fr\/propose/);
+    await expect(loginPage.locator('h2:has-text("Proposer")')).toBeVisible();
 
     await context.close();
   });
