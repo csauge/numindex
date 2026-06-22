@@ -81,6 +81,7 @@ test.describe('Moderation Flow [TEST]', () => {
     await page.goto(`/fr/propose?action=update&id=${resourceId}`);
     await page.fill('input[name="title"]', updatedTitle);
     await page.click('#submit-btn');
+    await expect(page.locator('#toast-container')).toBeVisible({ timeout: 10000 });
     await page.waitForURL(/\/fr\/?$/);
 
     // Verify Diff in Admin & Approve (Admin 2)
