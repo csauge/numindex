@@ -31,7 +31,7 @@ Ce document définit les règles essentielles et les standards d'ingénierie pou
     - `version_date` : Date ISO (Date de mise à jour pour les outils).
     - `rss_url` : String (URL du flux RSS pour les podcasts).
     - `last_episode_title` : String (Titre du dernier épisode récupéré via RSS).
-    - `occurrences` : Array d'objets `{ start, end, address }` (Dates multiples pour les événements).
+    - `occurrences` : Array d'objets `{ start, end, timezone, address }` (Dates multiples pour les événements).
     - `online` : Boolean (Indicateur de ressource en ligne/distanciel).
 - **Triggers :** Gestion automatique de `updated_at` et des compteurs de favoris.
 
