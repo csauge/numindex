@@ -234,12 +234,20 @@ export function renderResourcePreview(res: Partial<Suggestion & Resource>, optio
           <div class="mb-4 space-y-2 ${isMod('occurrences') ? diffClass : ''}">
             <p class="text-[9px] font-black text-stone-400 uppercase tracking-widest">${t.occurrences}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              ${res.metadata.occurrences.map((occ: any) => `
-                <div class="text-[10px] bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col">
-                  <span class="font-bold text-stone-700">${occ.start ? new Date(occ.start).toLocaleDateString(lang, { day: 'numeric', month: 'short', year: 'numeric' }) : '...'}</span>
-                  ${occ.address ? `<span class="text-stone-500 italic">${occ.address}</span>` : ''}
-                </div>
-              `).join('')}
+              ${res.metadata.occurrences.map((occ: any) => {
+                const tz = occ.timezone || 'Europe/Paris';
+                const d = occ.start ? new Date(occ.start) : null;
+                const startFmt = d ? d.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: tz }) : '...';
+                const isSameDay = d && occ.end && (d.toLocaleDateString('en-US', { timeZone: tz }) === new Date(occ.end).toLocaleDateString('en-US', { timeZone: tz }));
+                const endFmt = occ.end ? ` → ${isSameDay ? new Date(occ.end).toLocaleTimeString(lang === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit', timeZone: tz }) : new Date(occ.end).toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: tz })}` : '';
+                return `
+                  <div class="text-[10px] bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col">
+                    <span class="font-bold text-stone-700">${startFmt}${endFmt}</span>
+                    <span class="text-stone-400 text-[9px] font-mono">${tz}</span>
+                    ${occ.address ? `<span class="text-stone-500 italic mt-0.5">${occ.address}</span>` : ''}
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
         ` : ''}

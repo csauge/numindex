@@ -147,17 +147,21 @@ export async function fetchEntitiesForMapping() {
   return (data || []) as Resource[];
 }
 
+
 /**
  * Helper : Trouve la prochaine date d'un événement
  */
 export function getNextEventDate(resource: Resource): string | null {
   if (resource.category !== 'evenement' || !resource.metadata?.occurrences) return null;
   const now = new Date();
-  const futureDates = sortOccurrences(resource.metadata.occurrences)
-    .map((occ: any) => new Date(occ.start))
-    .filter((d: Date) => d >= now);
+  const sorted = sortOccurrences(resource.metadata.occurrences);
+  const futureOccurrences = sorted.filter((occ: any) => {
+    if (!occ.start) return false;
+    const targetDate = occ.end ? new Date(occ.end) : new Date(occ.start);
+    return !isNaN(targetDate.getTime()) && targetDate >= now;
+  });
     
-  return futureDates.length > 0 ? futureDates[0].toISOString() : null;
+  return futureOccurrences.length > 0 ? futureOccurrences[0].start : null;
 }
 
 /**

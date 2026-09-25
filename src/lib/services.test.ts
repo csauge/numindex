@@ -172,6 +172,33 @@ describe('services.ts', () => {
       expect(getNextEventDate(resource)).toBeNull();
     });
 
+    it('should return start date if event is ongoing (end date in future)', () => {
+      const now = new Date();
+      const pastStart = new Date(now.getTime() - 3600000).toISOString();
+      const futureEnd = new Date(now.getTime() + 3600000).toISOString();
+
+      const resource = {
+        category: 'evenement',
+        metadata: {
+          occurrences: [{ start: pastStart, end: futureEnd, timezone: 'Europe/Paris' }]
+        }
+      } as unknown as Resource;
+
+      expect(getNextEventDate(resource)).toBe(pastStart);
+    });
+
+    it('should correctly parse start date with timezone offset', () => {
+      const futureTzDate = '2099-06-15T18:30:00-04:00';
+      const resource = {
+        category: 'evenement',
+        metadata: {
+          occurrences: [{ start: futureTzDate, timezone: 'America/New_York' }]
+        }
+      } as unknown as Resource;
+
+      expect(getNextEventDate(resource)).toBe(futureTzDate);
+    });
+
     it('should return null for non-event categories', () => {
       const resource = { category: 'outil' } as Resource;
       expect(getNextEventDate(resource)).toBeNull();

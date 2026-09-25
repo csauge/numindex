@@ -105,10 +105,31 @@ const formatDate = (dateStr: string, options: Intl.DateTimeFormatOptions = { day
   return new Date(dateStr).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', options);
 };
 
-const formatDateTime = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { 
-    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+const formatDateTime = (dateStr: string, timeZone: string = 'Europe/Paris') => {
+  const d = new Date(dateStr);
+  const dateFmt = d.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { 
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    timeZone
   });
+  return `${dateFmt} (${timeZone})`;
+};
+
+const formatOccurrenceRange = (startStr: string, endStr?: string, timeZone: string = 'Europe/Paris') => {
+  if (!startStr) return '';
+  const dStart = new Date(startStr);
+  const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
+  const startFmt = dStart.toLocaleDateString(locale, { 
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone 
+  });
+  if (!endStr) return `${startFmt} (${timeZone})`;
+
+  const dEnd = new Date(endStr);
+  const isSameDay = dStart.toLocaleDateString('en-US', { timeZone }) === dEnd.toLocaleDateString('en-US', { timeZone });
+  const endFmt = isSameDay 
+    ? dEnd.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone })
+    : dEnd.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone });
+
+  return `${startFmt} → ${endFmt} (${timeZone})`;
 };
 
 const nextEventDate = getNextEventDate(res as Resource);
@@ -260,12 +281,7 @@ const jsonLd = JSON.stringify(baseJsonLd);
                 {t.version} : {formatDate(res.metadata.version_date)}
               </span>
             )}
-            {nextEventDate && (
-              <span class="flex items-center gap-1 text-[10px] font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-1 rounded border border-emerald-100 shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                {t.nextEvent} : {formatDateTime(nextEventDate)}
-              </span>
-            )}
+
           </div>
           <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
             <h1 class="text-3xl md:text-4xl font-black text-stone-800 leading-tight">{res.title}</h1>
@@ -301,14 +317,13 @@ const jsonLd = JSON.stringify(baseJsonLd);
             <h2 class="text-xs font-black uppercase tracking-widest text-stone-300">{t.occurrences}</h2>
             <div class="grid gap-3">
               {sortOccurrences(res.metadata.occurrences).map((occ: any) => {
-                const isNext = occ.start === nextEventDate;
+                const isNext = nextEventDate && occ.start && new Date(occ.start).getTime() === new Date(nextEventDate).getTime();
                 return (
                   <div class={`p-4 rounded-2xl border transition-all ${isNext ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-white border-stone-100'}`}>
                     <div class="flex justify-between items-start">
                       <div>
                         <p class={`text-sm font-bold ${isNext ? 'text-emerald-800' : 'text-stone-700'}`}>
-                          {formatDateTime(occ.start)} 
-                          {occ.end && ` → ${formatDateTime(occ.end)}`}
+                          {formatOccurrenceRange(occ.start, occ.end, occ.timezone)}
                         </p>
                         {occ.address && <p class="text-xs text-stone-400 mt-1">{occ.address}</p>}
                       </div>

@@ -108,19 +108,50 @@ export function initSuggestionForm(form: HTMLFormElement) {
     });
   }
 
+  const defaultTz = typeof Intl !== 'undefined' && Intl.DateTimeFormat ? (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris') : 'Europe/Paris';
+  const commonTimezones = [
+    'Europe/Paris',
+    'Europe/London',
+    'Europe/Berlin',
+    'Europe/Brussels',
+    'America/New_York',
+    'America/Chicago',
+    'America/Los_Angeles',
+    'Asia/Tokyo',
+    'UTC'
+  ];
+
+  function formatForDatetimeLocal(datetimeStr: string): string {
+    if (!datetimeStr) return '';
+    const match = datetimeStr.trim().match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+    return match ? match[1] : datetimeStr;
+  }
+
   function renderOccurrences() {
-    elements.occurrencesList!.innerHTML = occurrences.map((occ, index) => `
+    elements.occurrencesList!.innerHTML = occurrences.map((occ, index) => {
+      const occTz = occ.timezone || defaultTz;
+      const tzOptionsList = Array.from(new Set([occTz, ...commonTimezones]))
+        .map(tz => `<option value="${tz}" ${tz === occTz ? 'selected' : ''}>${tz}</option>`)
+        .join('');
+
+      return `
       <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 relative space-y-3">
         <button type="button" class="btn btn-xs btn-circle btn-ghost absolute top-2 right-2 remove-occ" data-index="${index}">✕</button>
         <div class="grid grid-cols-2 gap-2">
           <div class="form-control">
             <label class="label p-1"><span class="label-text text-[10px] uppercase font-bold text-stone-400">${t.start}</span></label>
-            <input type="datetime-local" class="input input-sm input-bordered occ-start" value="${occ.start || ''}" data-index="${index}" />
+            <input type="datetime-local" class="input input-sm input-bordered occ-start" value="${formatForDatetimeLocal(occ.start || '')}" data-index="${index}" />
           </div>
           <div class="form-control">
             <label class="label p-1"><span class="label-text text-[10px] uppercase font-bold text-stone-400">${t.end}</span></label>
-            <input type="datetime-local" class="input input-sm input-bordered occ-end" value="${occ.end || ''}" data-index="${index}" />
+            <input type="datetime-local" class="input input-sm input-bordered occ-end" value="${formatForDatetimeLocal(occ.end || '')}" data-index="${index}" />
           </div>
+        </div>
+        <div class="form-control">
+          <label class="label p-1"><span class="label-text text-[10px] uppercase font-bold text-stone-400">Fuseau Horaire / Timezone</span></label>
+          <select class="select select-sm select-bordered occ-tz" data-index="${index}">
+            ${tzOptionsList}
+          </select>
         </div>
         <div class="form-control relative">
           <label class="label p-1"><span class="label-text text-[10px] uppercase font-bold text-stone-400">${t.address}</span></label>
@@ -128,12 +159,21 @@ export function initSuggestionForm(form: HTMLFormElement) {
           <div class="occ-addr-results absolute left-0 right-0 top-full mt-1 bg-white border rounded-lg shadow-xl z-50 hidden max-h-48 overflow-y-auto" data-index="${index}"></div>
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
 
     elements.occurrencesList!.querySelectorAll('.remove-occ').forEach(btn => {
       btn.addEventListener('click', () => {
         occurrences.splice(parseInt((btn as HTMLElement).dataset.index!), 1);
         renderOccurrences();
+        updateUI();
+      });
+    });
+
+    elements.occurrencesList!.querySelectorAll('.occ-tz').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const idx = parseInt((e.target as HTMLSelectElement).dataset.index!);
+        occurrences[idx].timezone = (e.target as HTMLSelectElement).value;
         updateUI();
       });
     });
@@ -284,7 +324,7 @@ export function initSuggestionForm(form: HTMLFormElement) {
   });
 
   elements.addOccurrenceBtn!.addEventListener('click', () => {
-    occurrences.push({ start: '', end: '', address: elements.addressVal.value || '' });
+    occurrences.push({ start: '', end: '', timezone: defaultTz, address: elements.addressVal.value || '' });
     renderOccurrences();
   });
 
