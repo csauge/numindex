@@ -8,7 +8,7 @@ Les présentes conditions d'utilisation et mentions légales régissent l'accès
 ## 1. Éditeur et Hébergement
 
 **Éditeur du site :**  
-Le site numindex.org est une plateforme collaborative dédiée au recensement d'acteurs et de ressources du numérique responsable.
+Le site numindex.org est une plateforme collaborative dédiée au recensement d'acteurs et de ressources du numérique engagé & responsable.
 
 **Nom de domaine :**  
 Le nom de domaine `numindex.org` a été acquis auprès d'**Infomaniak Network SA**, un hébergeur indépendant et éco-responsable basé en Suisse.

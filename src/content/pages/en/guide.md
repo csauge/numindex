@@ -4,24 +4,24 @@ subtitle: "Rules and criteria for accepting resources on numindex."
 ---
 ## General Principles
 
-Any proposal must provide genuine value to the Sustainable IT (NR - Numérique Responsable) community. Purely commercial content, greenwashing, or initiatives where Sustainable IT is only a secondary sales argument will be rejected.
+Any proposal must provide genuine value to the Committed & Sustainable Digital community (eco-design, social impact, democracy, engaged AI). Purely commercial content, greenwashing, or initiatives where commitment is only a secondary sales argument will be rejected.
 
 ## Stakeholders (Companies, Associations, Institutions)
 
-* **Companies / Organizations:** Their core business or primary mission must be **exclusively or predominantly** dedicated to Sustainable IT (eco-design, accessibility, ethics, hardware reuse).
+* **Companies / Organizations:** Their core business or primary mission must be **exclusively or predominantly** dedicated to Committed & Sustainable IT (eco-design, accessibility, ethics, hardware reuse, AI for good).
 * A simple CSR policy or internal charter is insufficient if the company's activity is not aligned.
 * Proven track records or concrete evidence of actions are expected.
-* **Individuals:** The individual must have recognized and demonstrable expertise in Sustainable IT: publications (books, reference articles), conferences, major open-source contributions, or strong peer recognition within the ecosystem.
+* **Individuals:** The individual must have recognized and demonstrable expertise in the field: publications (books, reference articles), conferences, major open-source contributions, or strong peer recognition within the ecosystem.
 
 ## Tools (Software, Frameworks, Training)
 
-* The tool must demonstrate a strong and native commitment to at least one of the Sustainable IT pillars (e.g., an accessibility audit tool, a certified green host, an eco-designed framework).
+* The tool must demonstrate a strong and native commitment to at least one of the pillars (e.g., an accessibility audit tool, a certified green host, an eco-designed framework, ethical/open AI).
 * **Preference for Openness:** Open Source, free, or "libre" tools with total transparency regarding their own environmental footprint and accessibility compliance (e.g., RGAA) will be prioritized.
-* If it is a paid tool, it must be widely adopted by the Sustainable IT community or offer unique features that justify its presence.
+* If it is a paid tool, it must be widely adopted by the community or offer unique features that justify its presence.
 
 ## Events (Conferences, Trade Shows, Workshops)
 
-* The central theme of the event **must be** Sustainable IT, or one of its direct components (Inclusive Design, Green IT, Tech for Good).
+* The central theme of the event **must be** Committed & Sustainable Digital, or one of its direct components (Inclusive Design, Green IT, Tech for Good, Engaged AI).
 * A single "round table" on the subject within a generalist event is not sufficient.
 
 ## Content (Articles, Reports, Books, Podcasts)
