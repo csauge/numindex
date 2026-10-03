@@ -8,7 +8,7 @@ These terms of use and legal notices govern the access to and use of the **numin
 ## 1. Publisher and Hosting
 
 **Site Publisher:**  
-The numindex.org website is a collaborative platform dedicated to listing responsible digital actors and resources.
+The numindex.org website is a collaborative platform dedicated to listing committed and sustainable digital actors and resources.
 
 **Domain Name:**  
 The domain name `numindex.org` was acquired from **Infomaniak Network SA**, an independent and eco-responsible host based in Switzerland.

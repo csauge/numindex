@@ -3,15 +3,15 @@ title: "About"
 subtitle: "Learn more about the mission and values of numindex.org."
 ---
 
-Welcome to **numindex.org**. Our mission is to promote joyful, conscious, and sustainable digital practices by indexing the best resources (tools, guides, associations, events) that share these values.
+Welcome to **numindex.org**. Our mission is to promote joyful, conscious, committed, and sustainable digital practices by indexing the best resources (tools, guides, associations, events, engaged AI) that leverage technology for the environment, society, and democracy.
 
 ## Our Mission
 
-Numindex was created to support the ecological transition in the tech sector through three main pillars:
+Numindex was created to support the ecological and civic transition in the tech sector through three main pillars:
 
-* **Interactive Mapping:** We inventory actors, initiatives, and resources related to responsible digital technology to make them easily accessible to everyone.
-* **Knowledge Sharing:** We spread best practices in ecodesign, accessibility, and ethics, helping every professional design more virtuous services.
-* **Networking:** We are committed to connecting engaged organizations and changemakers to build a more sober digital ecosystem together.
+* **Interactive Mapping:** We inventory actors, initiatives, and resources related to committed and sustainable digital technology to make them easily accessible to everyone.
+* **Knowledge Sharing:** We spread best practices in ecodesign, engaged and responsible AI, accessibility, and ethics, helping every professional design more virtuous services.
+* **Networking:** We are committed to connecting engaged organizations and changemakers to build a more sober and purposeful tech ecosystem together.
 
 ## Our Commitment
 
