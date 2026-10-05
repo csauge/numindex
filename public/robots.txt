@@ -4,7 +4,9 @@ Allow: /
 # Sitemaps
 Sitemap: https://numindex.org/sitemap.xml
 
-# Disallow admin and auth pages
+# Disallow propose, admin and auth pages
+Disallow: /fr/propose
+Disallow: /en/propose
 Disallow: /fr/admin
 Disallow: /en/admin
 Disallow: /fr/profile
@@ -13,3 +15,7 @@ Disallow: /fr/login
 Disallow: /en/login
 Disallow: /fr/register
 Disallow: /en/register
+Disallow: /fr/forgot-password
+Disallow: /en/forgot-password
+Disallow: /fr/reset-password
+Disallow: /en/reset-password

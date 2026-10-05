@@ -44,6 +44,32 @@ export const TAG_TRANSLATIONS: Record<string, string> = {
 
 export type CategoryKey = 'acteur' | 'evenement' | 'contenu' | 'outil';
 
+export const CATEGORY_MAPPING: Record<string, CategoryKey> = {
+  'acteurs': 'acteur',
+  'evenements': 'evenement',
+  'contenus': 'contenu',
+  'outils': 'outil',
+  'actors': 'acteur',
+  'events': 'evenement',
+  'contents': 'contenu',
+  'tools': 'outil'
+};
+
+export const LOCALIZED_CATEGORY_SLUGS: Record<'fr' | 'en', Record<CategoryKey, string>> = {
+  fr: {
+    acteur: 'acteurs',
+    evenement: 'evenements',
+    contenu: 'contenus',
+    outil: 'outils'
+  },
+  en: {
+    acteur: 'actors',
+    evenement: 'events',
+    contenu: 'contents',
+    outil: 'tools'
+  }
+};
+
 export interface CategoryInfo {
   fr: string;
   en: string;

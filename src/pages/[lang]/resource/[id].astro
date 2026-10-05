@@ -239,11 +239,11 @@ const jsonLd = JSON.stringify(baseJsonLd);
           })()}
           
           <div class="flex gap-2">
-            <a href={`/${lang}/propose?id=${res.id}&action=update`} class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-primary gap-1.5">
+            <a href={`/${lang}/propose?id=${res.id}&action=update`} rel="nofollow" class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-primary gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.update} /></svg>
               {t.edit}
             </a>
-            <a href={`/${lang}/propose?id=${res.id}&action=delete`} class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-error gap-1.5">
+            <a href={`/${lang}/propose?id=${res.id}&action=delete`} rel="nofollow" class="btn btn-ghost btn-sm flex-1 text-[10px] uppercase font-bold text-stone-400 hover:text-error gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ACTION_ICONS.delete} /></svg>
               {t.report}
             </a>
