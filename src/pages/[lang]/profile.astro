@@ -71,7 +71,7 @@ const translations = {
 const t = translations[lang as keyof typeof translations] || translations.fr;
 ---
 
-<Layout title={t.title} lang={lang as string}>
+<Layout title={t.title} lang={lang as string} noindex={true}>
   <div id="profile-content" class="max-w-4xl mx-auto py-8 hidden">
     <div class="mb-8">
       <a href={`/${lang}`} class="back-link group">

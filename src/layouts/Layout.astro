@@ -8,11 +8,14 @@ interface Props {
   description?: string;
   ogImage?: string;
   canonicalURL?: URL;
+  alternateLinks?: { href: URL; hreflang: string }[];
+  xDefaultURL?: URL;
   type?: 'website' | 'article';
   lang?: string;
   jsonLd?: string;
+  noindex?: boolean;
 }
-const { title, description, ogImage, canonicalURL, type, lang = 'fr', jsonLd } = Astro.props;
+const { title, description, ogImage, canonicalURL, alternateLinks, xDefaultURL, type, lang = 'fr', jsonLd, noindex } = Astro.props;
 
 const translations = {
   fr: { propose: "Ajouter", skip: "Passer au contenu", admin: "Modérer", login: "Connexion", logout: "Déconnexion" },
@@ -24,7 +27,7 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
 <!doctype html>
 <html lang={lang} data-theme="numindex">
   <head>
-    <SEO {title} {description} {ogImage} {canonicalURL} {type} {lang} {jsonLd} />
+    <SEO {title} {description} {ogImage} {canonicalURL} {alternateLinks} {xDefaultURL} {type} {lang} {jsonLd} {noindex} />
     <style is:global>
       /* Style pour le lien d'évitement (Accessibilité) */
       .skip-link {

@@ -4,9 +4,12 @@ interface Props {
   description?: string;
   ogImage?: string;
   canonicalURL?: URL;
+  alternateLinks?: { href: URL; hreflang: string }[];
+  xDefaultURL?: URL;
   type?: 'website' | 'article';
   lang?: string;
   jsonLd?: string;
+  noindex?: boolean;
 }
 
 const {
@@ -16,6 +19,7 @@ const {
   type = 'website',
   lang = 'fr',
   jsonLd,
+  noindex = false,
 } = Astro.props;
 
 const siteName = 'numindex.org';
@@ -36,7 +40,7 @@ const canonicalURL = Astro.props.canonicalURL
 
 // i18n alternate links
 const locales = ['fr', 'en'];
-const alternateLinks = locales.map((l) => {
+const alternateLinks = Astro.props.alternateLinks || locales.map((l) => {
   // Replace current locale prefix with alternate locale
   // Handles /fr, /fr/..., /en, /en/...
   let alternatePath = currentPath.replace(/^\/(fr|en)/, `/${l}`);
@@ -48,7 +52,7 @@ const alternateLinks = locales.map((l) => {
 });
 
 // x-default should point to the default language version (French)
-const xDefaultURL = new URL(currentPath.replace(/^\/(fr|en)/, '/fr'), Astro.site);
+const xDefaultURL = Astro.props.xDefaultURL || new URL(currentPath.replace(/^\/(fr|en)/, '/fr'), Astro.site);
 ---
 
 <!-- Global Metadata -->
@@ -87,7 +91,7 @@ const xDefaultURL = new URL(currentPath.replace(/^\/(fr|en)/, '/fr'), Astro.site
 <meta property="twitter:image" content={new URL(ogImage, Astro.url)} />
 
 <!-- Robots -->
-<meta name="robots" content="index, follow" />
+<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
 
 {jsonLd && (
   <script type="application/ld+json" set:html={jsonLd} />

@@ -5,30 +5,35 @@ import Layout from "../../layouts/Layout.astro";
 import ResourceIcons from "../../components/ResourceIcons.astro";
 import FilterBar from "../../components/FilterBar.astro";
 import ResourceGrid from "../../components/ResourceGrid.astro";
-import { CATEGORIES, getCategoryLabel, TAG_TRANSLATIONS } from "../../utils/categories";
+import { CATEGORIES, getCategoryLabel, TAG_TRANSLATIONS, CATEGORY_MAPPING, LOCALIZED_CATEGORY_SLUGS } from "../../utils/categories";
 import { getImageUrl } from "../../lib/supabase/client";
 import { fetchAllResources, getNextEventDate } from "../../lib/services";
 
 const { lang, category } = Astro.params;
 
-// Map plural URL to category key
-const categoryMapping: Record<string, string> = {
-  'acteurs': 'acteur',
-  'evenements': 'evenement',
-  'contenus': 'contenu',
-  'outils': 'outil',
-  'actors': 'acteur',
-  'events': 'evenement',
-  'contents': 'contenu',
-  'tools': 'outil'
-};
-
-const categoryKey = categoryMapping[category as string];
+const categoryKey = CATEGORY_MAPPING[category as string];
 
 // If not a valid category, 404
 if (!categoryKey) {
   return Astro.redirect(`/${lang}`);
 }
+
+const currentLang = (lang === 'en' ? 'en' : 'fr') as 'fr' | 'en';
+const expectedSlug = LOCALIZED_CATEGORY_SLUGS[currentLang]?.[categoryKey];
+
+// 301 redirect to localized canonical slug if needed (e.g. /fr/tools -> /fr/outils)
+if (expectedSlug && category !== expectedSlug) {
+  return Astro.redirect(`/${currentLang}/${expectedSlug}`, 301);
+}
+
+const frSlug = LOCALIZED_CATEGORY_SLUGS.fr[categoryKey];
+const enSlug = LOCALIZED_CATEGORY_SLUGS.en[categoryKey];
+const canonicalURL = new URL(`/${currentLang}/${expectedSlug}`, Astro.site);
+const alternateLinks = [
+  { href: new URL(`/fr/${frSlug}`, Astro.site), hreflang: 'fr' },
+  { href: new URL(`/en/${enSlug}`, Astro.site), hreflang: 'en' }
+];
+const xDefaultURL = new URL(`/fr/${frSlug}`, Astro.site);
 
 const allRessources = await fetchAllResources();
 const filteredResources = allRessources.filter(r => r.category === categoryKey);
@@ -148,7 +153,7 @@ const jsonLd = JSON.stringify({
 });
 ---
 
-<Layout title={t.title} description={extendedDesc} lang={lang as string} jsonLd={jsonLd}>
+<Layout title={t.title} description={extendedDesc} lang={lang as string} jsonLd={jsonLd} {canonicalURL} {alternateLinks} {xDefaultURL}>
   <ResourceIcons />
 
   <section class="max-w-7xl mx-auto px-4">
