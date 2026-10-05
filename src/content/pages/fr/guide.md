@@ -21,7 +21,7 @@ Toute proposition doit apporter une réelle valeur à la communauté du Numériq
 
 *   Le thème central de l'événement **doit être** le Numérique Engagé & Responsable, ou l'une de ses composantes directes (Design Inclusif, Green IT, Tech for Good, IA engagée). Une simple "table ronde" sur le sujet au sein d'un événement généraliste n'est pas suffisante.
 
-## Contenus (Articles, Rapports, Livres, Podcasts)
+## Contenus (Articles, Rapports, Livres, Podcasts, Publications)
 
 *   Le contenu doit être sourcé, pédagogique et apporter un éclairage technique, stratégique ou scientifique.
 *   Il doit être accessible (au moins en partie, via un résumé détaillé si c'est un livre payant).

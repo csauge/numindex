@@ -10,5 +10,10 @@ describe('Categories mapping and translation', () => {
     expect(CATEGORIES.outil.mandatoryTags).toContain('Travail');
     expect(TAG_TRANSLATIONS['Travail']).toBe('Work');
   });
+
+  it('has publication subcategory in content with translation', () => {
+    expect(CATEGORIES.contenu.mandatoryTags).toContain('Publication');
+    expect(TAG_TRANSLATIONS['Publication']).toBe('Publication');
+  });
 });
 

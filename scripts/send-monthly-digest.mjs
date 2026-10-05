@@ -77,7 +77,7 @@ async function sendMonthlyDigest() {
   const MANDATORY_TAGS = [
     'Entreprise', 'Association', 'Institution', 'Coopérative', 'Collectif', 'Personne',
     'Conférence', 'Atelier', 'Webinaire', 'Meetup', 'Salon',
-    'Article', 'Livre', 'Rapport', 'Podcast', 'Vidéo', 'Infographie',
+    'Article', 'Livre', 'Rapport', 'Podcast', 'Vidéo', 'Infographie', 'Publication',
     'Logiciel', 'Référentiel', 'Guide', 'Jeu', 'Formation', 'Loi', 'Travail'
   ];
 
