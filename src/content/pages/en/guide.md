@@ -24,7 +24,7 @@ Any proposal must provide genuine value to the Committed & Sustainable Digital c
 * The central theme of the event **must be** Committed & Sustainable Digital, or one of its direct components (Inclusive Design, Green IT, Tech for Good, Engaged AI).
 * A single "round table" on the subject within a generalist event is not sufficient.
 
-## Content (Articles, Reports, Books, Podcasts)
+## Content (Articles, Reports, Books, Podcasts, Publications)
 
 * Content must be sourced, educational, and provide technical, strategic, or scientific insight.
 * It must be accessible (at least in part, via a detailed summary if it is a paid book).
