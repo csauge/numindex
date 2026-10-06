@@ -150,12 +150,10 @@ const geoData = resources.flatMap(r => getMapPins(r, lang as 'fr' | 'en').map(pi
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      // Tuiles OpenStreetMap International (plus localisées que CartoDB Light)
-      // On utilise CartoDB Voyager qui supporte bien l'internationalisation
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 20
+      // Tuiles OpenStreetMap standard (sans API key, gratuites)
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
       }).addTo(map);
 
       // Icone personnalisée
