@@ -16,6 +16,11 @@ describe('Categories mapping and translation', () => {
     expect(TAG_TRANSLATIONS['Publication']).toBe('Publication');
   });
 
+  it('has portail subcategory in content with translation', () => {
+    expect(CATEGORIES.contenu.mandatoryTags).toContain('Portail');
+    expect(TAG_TRANSLATIONS['Portail']).toBe('Portal');
+  });
+
   it('maps category URLs to valid internal category keys', () => {
     expect(CATEGORY_MAPPING['tools']).toBe('outil');
     expect(CATEGORY_MAPPING['outils']).toBe('outil');

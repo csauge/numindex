@@ -365,7 +365,20 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
           const path = window.location.pathname;
           const search = window.location.search;
           const targetLang = toggle.checked ? 'en' : 'fr';
-          const newPath = path.replace(/^\/(fr|en)/, `/${targetLang}`);
+          
+          // Map localized category slugs if applicable
+          const frToEn: Record<string, string> = { 'acteurs': 'actors', 'evenements': 'events', 'contenus': 'contents', 'outils': 'tools' };
+          const enToFr: Record<string, string> = { 'actors': 'acteurs', 'events': 'evenements', 'contents': 'contenus', 'tools': 'outils' };
+          
+          let segments = path.split('/').filter(Boolean);
+          if (segments[0] === 'fr' || segments[0] === 'en') {
+            segments[0] = targetLang;
+            if (segments[1]) {
+              if (targetLang === 'en' && frToEn[segments[1]]) segments[1] = frToEn[segments[1]];
+              if (targetLang === 'fr' && enToFr[segments[1]]) segments[1] = enToFr[segments[1]];
+            }
+          }
+          const newPath = '/' + segments.join('/');
           window.location.href = newPath + search;
         };
       }
