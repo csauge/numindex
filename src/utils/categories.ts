@@ -17,6 +17,7 @@ export const TAG_TRANSLATIONS: Record<string, string> = {
   'Vidéo': 'Video',
   'Infographie': 'Infographic',
   'Publication': 'Publication',
+  'Portail': 'Portal',
   'Logiciel': 'Software',
   'Référentiel': 'Framework',
   'Guide': 'Guide',
@@ -97,7 +98,7 @@ export const CATEGORIES: Record<CategoryKey, CategoryInfo> = {
     fr: 'Contenu',
     en: 'Content',
     icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2zM14 4v4h4m-9 4h6m-6 4h6',
-    mandatoryTags: ['Article', 'Livre', 'Rapport', 'Podcast', 'Vidéo', 'Infographie', 'Publication'],
+    mandatoryTags: ['Article', 'Livre', 'Rapport', 'Podcast', 'Vidéo', 'Infographie', 'Publication', 'Portail'],
     optionalTags: ['Débutant', 'Expert']
   },
   outil: {
