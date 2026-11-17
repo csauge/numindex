@@ -69,7 +69,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
              <div style="margin: 30px 0; text-align: center;">
                <a href="https://numindex.org/fr/resource/${record.resource_id || ''}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Voir la ressource</a>
              </div>` : ''}`
-          : `<p>Votre suggestion n'a pas été retenue pour le moment. Nous vous remercions tout de même pour votre intérêt pour numindex.org.</p>`
+          : `<p>Votre suggestion n'a pas été retenue pour le moment. Nous vous remercions tout de même pour votre intérêt pour numindex.org.</p>
+             ${record.metadata?.rejection_reason ? `
+             <div style="margin: 20px 0; padding: 15px; background-color: #f8fafc; border-left: 4px solid #ef4444; border-radius: 4px;">
+               <strong style="color: #1e293b;">Motif du refus :</strong>
+               <p style="margin: 8px 0 0; color: #475569; white-space: pre-line;">${record.metadata.rejection_reason}</p>
+             </div>` : ''}`
         }
 
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">

@@ -159,6 +159,37 @@ describe('suggestion-moderated webhook', () => {
     expect(body.htmlContent).toContain('resource/rid-456');
   });
 
+  it('should include rejection reason in email when rejecting with a reason', async () => {
+    (createClient as any).mockReturnValue({
+      auth: { admin: { getUserById: vi.fn().mockResolvedValue({ data: { user: { email: 'submitter@example.com' } }, error: null }) } }
+    });
+    (global.fetch as any).mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
+
+    const request = new Request('http://localhost/api/webhooks/suggestion-moderated', {
+      method: 'POST',
+      headers: { 'X-Webhook-Secret': 'test-secret' },
+      body: JSON.stringify({
+        record: {
+          status: 'rejected',
+          action: 'create',
+          title: 'Rejected Resource',
+          submitted_by: 'user-123',
+          metadata: { rejection_reason: 'Contenu non conforme aux critères' }
+        },
+        old_record: { status: 'pending' }
+      })
+    });
+
+    const response = await POST({ request, locals: mockLocals } as any);
+    expect(response.status).toBe(200);
+
+    const fetchArgs = (global.fetch as any).mock.calls[0];
+    const body = JSON.parse(fetchArgs[1].body);
+    expect(body.subject).toContain('refusée');
+    expect(body.htmlContent).toContain('Motif du refus :');
+    expect(body.htmlContent).toContain('Contenu non conforme aux critères');
+  });
+
   it('should handle user not found', async () => {
     (createClient as any).mockReturnValue({
       auth: { admin: { getUserById: vi.fn().mockResolvedValue({ data: { user: null }, error: null }) } }
