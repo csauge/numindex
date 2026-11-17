@@ -10,8 +10,9 @@ Any proposal must provide genuine value to the Committed & Sustainable Digital c
 
 * **Companies / Organizations:** Their core business or primary mission must be **exclusively or predominantly** dedicated to Committed & Sustainable IT (eco-design, accessibility, ethics, hardware reuse, AI for good).
 * A simple CSR policy or internal charter is insufficient if the company's activity is not aligned.
+* To ensure operational capacity, structural viability, and long-term commitment, eligible organizations must have an established team of employees (sole proprietorships, single-member companies, or freelance-like structures are not eligible in this category and should refer to "Individuals" if supported by recognized personal expertise).
 * Proven track records or concrete evidence of actions are expected.
-* **Individuals:** The individual must have recognized and demonstrable expertise in the field: publications (books, reference articles), conferences, major open-source contributions, or strong peer recognition within the ecosystem.
+* **Individuals:** This category is strictly reserved for thought leaders and prominent figures whose authority and impact in the ecosystem are demonstrated and acknowledged by their peers. Providing professional services alone (consulting, training, freelance auditing, or coaching) does not qualify. Applicants must show proven, substantial contributions to the field: authoring seminal books or major public/industry standards, publishing recognized research reports or benchmark studies, delivering keynote speeches at leading conferences, or steering flagship open-source initiatives.
 
 ## Tools (Software, Frameworks, Training)
 
