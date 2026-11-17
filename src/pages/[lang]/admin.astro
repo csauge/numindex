@@ -248,11 +248,14 @@ const t = translations[lang as keyof typeof translations] || translations.fr;
         const id = btn.getAttribute('data-id');
         const card = document.querySelector(`.suggestion-card[data-id="${id}"]`);
         
-        const isConfirmed = confirm('Rejeter ?');
-        if (isConfirmed) {
+        const reason = prompt('Indiquer un motif de refus (optionnel) :');
+        if (reason !== null) {
           btn.classList.add('loading');
           try {
-            const { error } = await supabase!.rpc('reject_suggestion', { suggestion_id: id });
+            const { error } = await supabase!.rpc('reject_suggestion', { 
+              suggestion_id: id,
+              rejection_reason: reason.trim() || null
+            });
             if (error) {
               alert(`Erreur : ${error.message}`);
               btn.classList.remove('loading');

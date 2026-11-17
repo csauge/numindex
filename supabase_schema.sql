@@ -162,7 +162,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.reject_suggestion(suggestion_id uuid)
+CREATE OR REPLACE FUNCTION public.reject_suggestion(suggestion_id uuid, rejection_reason text DEFAULT NULL)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -191,7 +191,14 @@ BEGIN
         RAISE EXCEPTION 'An admin cannot reject their own suggestion';
     END IF;
 
-    UPDATE public.suggestions SET status = 'rejected' WHERE id = suggestion_id;
+    IF rejection_reason IS NOT NULL AND trim(rejection_reason) <> '' THEN
+        UPDATE public.suggestions 
+        SET status = 'rejected',
+            metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object('rejection_reason', trim(rejection_reason))
+        WHERE id = suggestion_id;
+    ELSE
+        UPDATE public.suggestions SET status = 'rejected' WHERE id = suggestion_id;
+    END IF;
 END;
 $$;
 
